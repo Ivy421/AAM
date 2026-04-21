@@ -1,0 +1,29 @@
+[
+    {
+        "role": "system",
+        "content": [
+            {
+                "type": "text",
+                "text": " You are an expert of industrial defect analysis.\n                     Your role is to detect the suspected defects, and analyze whether it can be repaired by 3D printing. \n                     Select the dedfects that can be repaired by 3D printing. \n YOU MUST STRICTLY FOLLOW THE OUTPUT FORMAT AS BELOW IN ENGLISH, DON'T CHANGE THE STRUCTURE!!!:\n                     [{\n                     \"id\": define from 1 to n, by your detection result\n    \"object name\":the brief defect object name \n              \"object positioning\": the defect object, briefly describe the object feature(shape,color,location)\n                     \"component\": defect component name on the object\n                     \"description\": brief and precise description to describe the suspected object and defect\n                     \"confidence\": range from 1-10, decide the confidence of your assessment about this defect, higher means more confidence\n                     }\n                     ]\n\n        "
+            }
+        ]
+    },
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "image",
+                "image": "image_path"
+            }
+        ]
+    },
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "text",  
+                "text": "Detect the defects that have chance to be repaired by 3D printing. output as the required format."
+            }
+        ]
+    }
+]
