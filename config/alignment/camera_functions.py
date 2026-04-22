@@ -211,4 +211,4 @@ def synchron_piper(arm_name,camera_syn_endpose_path):
     return endpose_info
 
 
-capture('/home/smmg/AAM/config/alignment/test_data/','7',1,1,0,1,True)
+capture('/home/smmg/AAM/config/alignment/test_data/','5',1,1,0,1,True)

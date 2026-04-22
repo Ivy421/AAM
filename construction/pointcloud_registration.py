@@ -82,7 +82,7 @@ def frame_pointcloud_generation(image_path,depth_path,endpose_path, config_path,
     cy = color_intrinsic['ppy']
 
     depth_scale = 1000.0
-    mask, box, score = positioning(image_path,'cup')
+    mask, box, score = positioning(image_path,'a broken black cube placed on table')
     if len(score) > 1:
             max_score_idx = np.argmax(score)
             box = [box[max_score_idx]]
@@ -129,7 +129,7 @@ def frame_pointcloud_generation(image_path,depth_path,endpose_path, config_path,
         pcd.colors = o3d.utility.Vector3dVector(colors)
     
     # 体素化降采样
-    pcd = pcd.voxel_down_sample(voxel_size=0.001)
+    pcd = pcd.voxel_down_sample(voxel_size=0.0005)
     # 统计滤波（杯子场景优化参数）
     cl, ind = pcd.remove_statistical_outlier(
         nb_neighbors=50,      # 检查 个邻居
@@ -153,16 +153,10 @@ def frame_pointcloud_generation(image_path,depth_path,endpose_path, config_path,
     
     return points_base, bcT
 
-def visualize_points(points):
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(points)  # points 是 Nx3 的 numpy 数组
-    o3d.visualization.draw_geometries([pcd])
-    return
-
-
+################ 获取每单帧的目标点云 ####################
 torch.cuda.empty_cache()
 gc.collect()
-folder_path = Path(r"/home/smmg/AAM/construction/result")
+folder_path = Path(r"/home/smmg/AAM/construction/result/temp")
 png_files = list(folder_path.glob('*.png'))
 png_names = [p.stem for p in png_files] # p.name 仅获取文件名，不含路径
 points_collection = []
@@ -170,7 +164,10 @@ bcT_collection = []
 print(png_names)
 
 ecT = np.load('/home/smmg/AAM/config/calibration/right_camera/ecT.npy')
-
+# ecT = np.array([[-0.2432    ,  0.9077    ,  0.342     , -0.06231196],
+#        [-0.9659    , -0.2588    ,  0.        ,  0.04250074],
+#        [ 0.0885    , -0.3304    ,  0.9397    ,  0.04    ],  # 0.0493
+#        [ 0        ,  0          ,  0         ,  1       ]],dtype=float)
 for name in png_names:
     print(f'Processing image: {name}.png')
     image_path =   str(folder_path) + '/'+ name + '.png'
@@ -182,29 +179,22 @@ for name in png_names:
     bcT_collection.append(bcT)
 
 
-# %% [markdown]
-# ### 刚性变换配准结果
-
 # %%
-chosen_frame_points = [ points_collection[1],points_collection[4]]  # ,
-merged_points = np.vstack(chosen_frame_points)
-
-# %%
-from mpl_toolkits.mplot3d import Axes3D
 def visualize_raw_registration_metplotlib(points_collection):
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection='3d')
-    
+
+    ax.scatter(points_collection[0][:, 0], points_collection[0][:, 1], points_collection[0][:, 2], s=1, c = 'yellow')
     ax.scatter(points_collection[1][:, 0], points_collection[1][:, 1], points_collection[1][:, 2], s=1, c = 'red')  # s=1 for small points
-    #ax.scatter(points_collection[4][:, 0], points_collection[4][:, 1], points_collection[4][:, 2], s=1, c = 'grey') 
-    ax.scatter(points_collection[3][:, 0], points_collection[3][:, 1], points_collection[3][:, 2], s=1, c = 'blue')  
-    #ax.scatter(points_collection[0][:, 0], points_collection[0][:, 1], points_collection[0][:, 2], s=1, c = 'green')
-    #ax.scatter(points_collection[7][:, 0], points_collection[7][:, 1], points_collection[7][:, 2], s=1, c = 'yellow')
+    #ax.scatter(points_collection[2][:, 0], points_collection[2][:, 1], points_collection[2][:, 2], s=1, c = 'grey') 
+    #ax.scatter(points_collection[3][:, 0], points_collection[3][:, 1], points_collection[3][:, 2], s=1, c = 'blue')  
+    #ax.scatter(points_collection[4][:, 0], points_collection[4][:, 1], points_collection[4][:, 2], s=1, c = 'green')
+    
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
     plt.title('Merged Point Cloud')
-    ax.view_init(elev=90, azim=0)
+    ax.view_init(elev=90, azim=-180)
     plt.show()
     return
 visualize_raw_registration_metplotlib(points_collection)
@@ -216,6 +206,14 @@ visualize_raw_registration_metplotlib(points_collection)
 import open3d as o3d
 import numpy as np
 import copy
+
+def draw_registration_result_o3d(source, target, transformation, title="ICP result"  ):
+    src = copy.deepcopy(source).transform(transformation).paint_uniform_color([0, 0, 1])
+    tgt = copy.deepcopy(target).paint_uniform_color([1, 0, 0])
+    o3d.visualization.draw_geometries([src, tgt], window_name=title)
+
+    return
+
 def draw_registration_result_matplotlib(source, target, transformation, title = "ICP result", elev = 60, azim = 50 ):
     source_temp = copy.deepcopy(source)
     target_temp = copy.deepcopy(target)
@@ -239,51 +237,56 @@ def draw_registration_result_matplotlib(source, target, transformation, title = 
     plt.show()
     
 
-# source: 2.png
 source = o3d.geometry.PointCloud()
 source.points = o3d.utility.Vector3dVector(points_collection[1][:, :3])
 bc2T = bcT_collection[1]
 
-# target: 4.png
 target = o3d.geometry.PointCloud()
-target.points = o3d.utility.Vector3dVector(points_collection[3][:, :3])
-bc4T = bcT_collection[3]
+target.points = o3d.utility.Vector3dVector(points_collection[0][:, :3])
+bc4T = bcT_collection[0]
 
 # %% [markdown]
 # #### point2point ICP
 
 # %%
-print("Apply point-to-point ICP")
-threshold = 0.01
+#print("Apply point-to-point ICP")
+#threshold = 0.01
 
 # points_Collection中存放的都是世界坐标系下的单帧点云表示，因此trans_init视作不用变换，单位阵表示
 
-trans_init = np.eye(4)
-reg_p2p = o3d.pipelines.registration.registration_icp(
-    source, target, threshold, trans_init,
-    o3d.pipelines.registration.TransformationEstimationPointToPoint())
-print(reg_p2p)
-print("Transformation is:")
-print(reg_p2p.transformation)
-print("")
-draw_registration_result_matplotlib(source, target, reg_p2p.transformation, title = 'point2point ICP',elev=90, azim = 0)
+# trans_init = np.eye(4)
+# reg_p2p = o3d.pipelines.registration.registration_icp(
+#     source, target, threshold, trans_init,
+#     o3d.pipelines.registration.TransformationEstimationPointToPoint())
+# print(reg_p2p)
+# print("Transformation is:")
+# print(reg_p2p.transformation)
+# print("")
+# draw_registration_result_o3d(source, target, reg_p2p.transformation, title = 'point2point ICP')
 
 # %% [markdown]
 # #### point2plane ICP
 
 # %%
-## 需要法线！
-# reg_p2l = o3d.pipelines.registration.registration_icp(
-#     source, target, threshold, trans_init,
-#     o3d.pipelines.registration.TransformationEstimationPointToPlane())
-# print(reg_p2l)
-# print("Transformation is:")
-# print(reg_p2l.transformation)
-# print("")
-# draw_registration_result(source, target, reg_p2l.transformation)
-# 
-# %% [markdown]
-# #### colored ICP
+# point to plane ICP
+threshold = 0.01
+trans_init = np.eye(4)
+source.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=10, max_nn=30))
+target.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=10, max_nn=30))
+
+reg_p2l = o3d.pipelines.registration.registration_icp(
+    source, target, threshold, trans_init,
+    o3d.pipelines.registration.TransformationEstimationPointToPlane())
+print(reg_p2l)
+print("Transformation is:")
+print(reg_p2l.transformation)
+print("")
+draw_registration_result_o3d(source, target, reg_p2l.transformation,title = 'point 2 plane ICP')
 
 # %%
+source_transformed = source.transform(reg_p2l.transformation)
 
+# 或者保存融合后的点云（source + target）
+fused_pcd = source_transformed + target
+o3d.io.write_point_cloud("fused.pcd", fused_pcd)
+# %%
