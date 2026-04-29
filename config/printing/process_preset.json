@@ -1,0 +1,16 @@
+{
+    "bottom_shell_layers": "5",
+    "enable_support": "1",
+    "from": "User",
+    "inherits": "0.16mm Optimal @BBL A1M",
+    "name": "0.16mm Optimal @BBL A1M",
+    "print_extruder_id": [
+        "1"
+    ],
+    "print_extruder_variant": [
+        "Direct Drive Standard"
+    ],
+    "print_settings_id": "0.16mm Optimal @BBL A1M",
+    "version": "2.6.0.2",
+    "wall_loops": "3"
+}

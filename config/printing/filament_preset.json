@@ -1,0 +1,12 @@
+{
+    "filament_extruder_variant": [
+        "Direct Drive Standard"
+    ],
+    "filament_settings_id": [
+        "Bambu PLA Basic @BBL A1M"
+    ],
+    "from": "User",
+    "inherits": "Bambu PLA Basic @BBL A1M",
+    "name": "Bambu PLA Basic @BBL A1M",
+    "version": "2.6.0.2"
+}

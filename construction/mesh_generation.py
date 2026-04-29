@@ -141,10 +141,7 @@ print("repair_block_pcd 总点数:", len(np.asarray(repair_block_pcd.points)))
 # 6. 保存结果
 # =========================================================
 save_dir = "E:/HKUSTGZ/AAM/construction/data/completion_result/"
-
-# o3d.io.write_point_cloud(save_dir + "extrude_pcd1_4mm.pcd", extrude_pcd1)
-# o3d.io.write_point_cloud(save_dir + "extrude_pcd2_4mm.pcd", extrude_pcd2)
-o3d.io.write_point_cloud(save_dir + "repair_block_points.pcd", repair_block_pcd)
+o3d.io.write_point_cloud(save_dir + "repair_model.pcd", repair_block_pcd)
 
 
 
@@ -234,9 +231,9 @@ mesh.compute_vertex_normals()
 # =========================================================
 # 10. 保存为可打印格式
 # =========================================================
-stl_path = save_dir + "repair_block_4mm.stl"
-ply_mesh_path = save_dir + "repair_block_4mm_mesh.ply"
-obj_path = save_dir + "repair_block_4mm.obj"
+stl_path = save_dir + "repair_model.stl"
+ply_mesh_path = save_dir + "repair_model.ply"
+obj_path = save_dir + "repair_model.obj"
 
 ok1 = o3d.io.write_triangle_mesh(stl_path, mesh)
 ok2 = o3d.io.write_triangle_mesh(ply_mesh_path, mesh)

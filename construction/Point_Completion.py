@@ -42,7 +42,7 @@ def get_largest_cluster(pcd, eps=0.02, min_points=10):
     indices = np.where(labels == largest_cluster_id)[0]
     return pcd.select_by_index(indices)
 
-def find_plane(points_np, voxel_size=0.001, distance_threshold=0.0015):
+def find_plane(points_np, voxel_size=0.001, distance_threshold=0.001):
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(points_np[:, :3])
 
@@ -77,7 +77,6 @@ def plane_from_pcd(plane_pcd):
     n = vh[-1]
     n = n / np.linalg.norm(n)
     return c, n
-
 
 def plane_basis_from_pcd(plane_pcd):
     c, n = plane_from_pcd(plane_pcd)
@@ -329,9 +328,9 @@ print("plane2 缺陷点数:", len(pts2))
 print("总缺陷点数:", len(np.asarray(defect_all.points)))
 
 #visualize
-# defect_all.paint_uniform_color([1, 0.5 , 0.5 ])  # 红色
-# pcd_raw.paint_uniform_color([0, 0, 1 ])  # 蓝色
-# o3d.visualization.draw_geometries([defect_all, pcd_raw])
+defect_all.paint_uniform_color([1, 0.5 , 0.5 ])  # 红色
+pcd_raw.paint_uniform_color([0, 0, 1 ])  # 蓝色
+o3d.visualization.draw_geometries([defect_all, pcd_raw])
 
 ################ 保存参数到本地 #################
 plane1_model = np.asarray(plane1_model, dtype=float)
@@ -340,7 +339,23 @@ n1 = plane1_model[:3]
 n1 = n1 / np.linalg.norm(n1)
 n2 = plane2_model[:3]
 n2 = n2 / np.linalg.norm(n2)
+
+### 确定两个平面的法线朝向，必须向内 ###
 object_center = np.asarray(pcd.points).mean(axis=0)
+plane1_center = np.asarray(plane1_pcd.points).mean(axis=0)
+plane2_center = np.asarray(plane2_pcd.points).mean(axis=0)
+defect1_center = np.asarray(defect_pcd1.points).mean(axis=0)
+defect2_center = np.asarray(defect_pcd2.points).mean(axis=0)
+if np.dot(n1, ( object_center - plane1_center )) < 0:
+    print('plane1 法向量改为朝内 ')
+    n1 = -n1
+if np.dot(n2, ( object_center - plane2_center )) < 0:
+    print('plane2 法向量改为朝内 ')
+    n2 = -n2
+
+
+
+
 o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/defect_pcd1.pcd", defect_pcd1)
 o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/defect_pcd2.pcd", defect_pcd2)
 o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/plane1_pcd.pcd", plane1_pcd)
@@ -351,7 +366,14 @@ np.savez(
     plane2_model=plane2_model,
     n1=n1,
     n2=n2,
-    object_center=object_center
+    plane1_center = plane1_center,
+    plane2_center = plane2_center,
+
+    object_center=object_center,
+    
+    defect1_center = defect1_center,
+    defect2_center = defect2_center
+
 )
 
 
