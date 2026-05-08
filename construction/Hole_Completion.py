@@ -5,20 +5,6 @@ from glob import glob
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import ndimage
-def draw_points_mat(points_list, title = 'point cloud visualize', elev = 45, azim = 120 ):
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(111, projection='3d')
-    color = ['red','orange','yellow','green','blue','black','purple']
-    for i in range (len(points_list)):
-        ax.scatter(points_list[i][:, 0], points_list[i][:, 1], points_list[i][:, 2], s=1, c = color[i])  # s=1 for small points
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
-        plt.title(title)
-        ax.view_init(elev, azim)
-    plt.show()    
-
-    return
 
 def get_largest_cluster(pcd, eps=0.02, min_points=10):
     labels = np.array(pcd.cluster_dbscan(eps=eps, min_points=min_points, print_progress=False))
@@ -109,7 +95,7 @@ def plane_intersection_line(plane1_pcd, plane2_pcd):
 
     return p0, d
 
-def split_points_by_two_planes(pcd, plane1_pcd, plane2_pcd, dist_thresh=0.002, margin=0.0005):
+def split_points_by_two_planes(pcd, plane1_pcd, plane2_pcd, dist_thresh=0.0005, margin=0.0003):
     pts = np.asarray(pcd.points)
 
     c1, n1 = plane_from_pcd(plane1_pcd)
@@ -133,7 +119,6 @@ def split_points_by_two_planes(pcd, plane1_pcd, plane2_pcd, dist_thresh=0.002, m
 
     return pcd1, pcd2, pcd_edge, (c1, n1), (c2, n2)
 
-
 def project_points_to_plane(pcd_part, plane_pcd):
     pts = np.asarray(pcd_part.points)
     c, u, v, n = plane_basis_from_pcd(plane_pcd)
@@ -152,8 +137,7 @@ def largest_component(mask, min_pixels=30):
     out = (lab == idx)
     return out if out.sum() >= min_pixels else np.zeros_like(mask, dtype=bool)
 
-
-def uv_to_defect_mask(u, v, plane_pcd, other_plane_pcd, grid_res=0.001, pad=0.002):
+def uv_to_defect_mask(u, v, plane_pcd, other_plane_pcd, grid_res=0.0005, pad=0.002):
     uv = np.stack([u, v], axis=1)
 
     # -------------------------
@@ -273,6 +257,92 @@ def defect_mask_to_3d(defect_mask, info, plane_pcd):
     pcd_defect.points = o3d.utility.Vector3dVector(pts3d)
     return pcd_defect
 
+
+##############模型拉伸建设立体 ###############
+# =========================================================
+# 3. 工具函数
+# =========================================================
+def normalize(v):
+    v = np.asarray(v, dtype=float)
+    n = np.linalg.norm(v)
+    if n < 1e-12:
+        raise ValueError("法向量长度接近 0，无法归一化")
+    return v / n
+
+
+def get_centroid(pcd):
+    pts = np.asarray(pcd.points)
+    if len(pts) == 0:
+        raise ValueError("点云为空，无法计算中心")
+    return pts.mean(axis=0)
+
+
+def orient_normal_inward(normal, plane_pcd, object_center):
+    """
+    让法向量指向物体内部：
+    如果法向量朝向 object_center，就保留；
+    否则翻转。
+    """
+    n = normalize(normal)
+    c_plane = get_centroid(plane_pcd)
+
+    # 从平面中心指向物体中心
+    to_center = np.asarray(object_center, dtype=float) - c_plane
+
+    if np.dot(n, to_center) < 0:
+        n = -n
+
+    return n
+
+
+def extrude_point_cloud_along_normal(defect_pcd, normal, thickness, step):
+    """
+    将 defect 点云沿 normal 方向拉伸成有厚度的点云
+    """
+    pts = np.asarray(defect_pcd.points)
+    if len(pts) == 0:
+        return o3d.geometry.PointCloud()
+
+    n = normalize(normal)
+
+    ts = np.arange(0.0, thickness + 1e-12, step)
+    all_layers = [pts + t * n for t in ts]
+    pts_extruded = np.vstack(all_layers)
+
+    out = o3d.geometry.PointCloud()
+    out.points = o3d.utility.Vector3dVector(pts_extruded)
+    return out
+
+def find_defect_plane(points_np, distance_threshold=1):
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(points_np[:, :3])
+    plane_model, inliers = pcd.segment_plane(
+        distance_threshold=distance_threshold,
+        ransac_n=3,
+        num_iterations=3000
+    )
+    plane_pcd = pcd.select_by_index(inliers)
+    rest_pcd = pcd.select_by_index(inliers, invert=True)
+
+    return plane_model, plane_pcd, rest_pcd
+
+def n_direction(n, n_ref, d):
+    if np.dot(n, n_ref) < 0:
+        print('change side of n')
+        n = -n
+        d = -d
+    n - np.asarray(n)
+    return n, d
+def point_smoothing(pcd,n, d, n_ref, n_otherplane, d_otherplane):
+    points = np.asarray(pcd.points)
+    filtered_points = [p for p in points if np.dot(n_otherplane, p) + d_otherplane >= 0]
+    filtered_pcd = o3d.geometry.PointCloud()
+    filtered_pcd.points = o3d.utility.Vector3dVector(np.array(filtered_points))
+    pcd = filtered_pcd
+
+    return pcd
+
+
 ####### run code
 pcd_raw = o3d.io.read_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/fused2.pcd")
 # o3d.visualization.draw_geometries([pcd_raw])
@@ -292,7 +362,7 @@ print("Plane 1:", plane1_model)   # ax + by + cz + d = 0
 print("Plane 2:", plane2_model)
 pcd1, pcd2, pcd_edge, plane1, plane2 = split_points_by_two_planes(
     pcd, plane1_pcd, plane2_pcd,
-    dist_thresh=0.002,
+    dist_thresh=0.005, # 0.005
     margin=0.0005
 )
 
@@ -304,44 +374,34 @@ u2, v2, proj2_3d = project_points_to_plane(pcd2, plane2_pcd)
 defect_mask1, info1 = uv_to_defect_mask(
     u1, v1,
     plane1_pcd, plane2_pcd,
-    grid_res=0.001, pad=0.001)
+    grid_res=0.0006, pad=0.0005)
 
 defect_mask2, info2 = uv_to_defect_mask(
     u2, v2,
     plane2_pcd, plane1_pcd,
-    grid_res=0.001, pad=0.001)
+    grid_res=0.0006, pad=0.0005)
 
 #把缺陷mask重投影回3D空间
 defect_pcd1 = defect_mask_to_3d(defect_mask1, info1, plane1_pcd)
 defect_pcd2 = defect_mask_to_3d(defect_mask2, info2, plane2_pcd)
-
-# 合并两个平面的补全点云
-pts1 = np.asarray(defect_pcd1.points)
-pts2 = np.asarray(defect_pcd2.points)
-
 defect_all = o3d.geometry.PointCloud()
-if len(pts1) + len(pts2) > 0:
-    defect_all.points = o3d.utility.Vector3dVector(np.vstack([pts1, pts2]))
+defect_all.points = o3d.utility.Vector3dVector(np.vstack([np.asarray(defect_pcd1.points), np.asarray(defect_pcd2.points)]))
+#defect_all.paint_uniform_color([0.55, 0.2 , 0.8 ])  # 红色
+#pcd_raw.paint_uniform_color([0, 0, 1 ])  # 蓝色
+#o3d.visualization.draw_geometries([defect_all, pcd_raw])
 
-print("plane1 缺陷点数:", len(pts1))
-print("plane2 缺陷点数:", len(pts2))
-print("总缺陷点数:", len(np.asarray(defect_all.points)))
-
-#visualize
-defect_all.paint_uniform_color([1, 0.5 , 0.5 ])  # 红色
-pcd_raw.paint_uniform_color([0, 0, 1 ])  # 蓝色
-o3d.visualization.draw_geometries([defect_all, pcd_raw])
-
-################ 保存参数到本地 #################
+##################### 生成参数 #######################
 plane1_model = np.asarray(plane1_model, dtype=float)
 plane2_model = np.asarray(plane2_model, dtype=float)
+plane1_model[3] = plane1_model[3] 
+plane2_model[3] = plane2_model[3] 
 n1 = plane1_model[:3]
 n1 = n1 / np.linalg.norm(n1)
 n2 = plane2_model[:3]
 n2 = n2 / np.linalg.norm(n2)
 
 ### 确定两个平面的法线朝向，必须向内 ###
-object_center = np.asarray(pcd.points).mean(axis=0)
+object_center = ((np.asarray(pcd.points).mean(axis=0))) 
 plane1_center = np.asarray(plane1_pcd.points).mean(axis=0)
 plane2_center = np.asarray(plane2_pcd.points).mean(axis=0)
 defect1_center = np.asarray(defect_pcd1.points).mean(axis=0)
@@ -354,12 +414,63 @@ if np.dot(n2, ( object_center - plane2_center )) < 0:
     n2 = -n2
 
 
+################ 缺陷表面平滑 ####################
+defect_plane1_model,_,_ = find_defect_plane(np.asarray(defect_pcd1.points), distance_threshold=1)
+defect_plane2_model,_,_ = find_defect_plane(np.asarray(defect_pcd2.points),  distance_threshold=1)
+n1_d = defect_plane1_model[:3]
+n2_d = defect_plane2_model[:3]
+d1_d = defect_plane1_model[-1]
+d2_d = defect_plane2_model[-1]
 
+## adjust n direction
+n1_d, d1_d = n_direction(n1_d, n1, d1_d)
+n2_d, d2_d = n_direction(n2_d, n2, d2_d)
+### defect_pcd1 ccacel points
+defect_pcd1 = point_smoothing(defect_pcd1,n1_d, d1_d, n1, n2_d, d2_d)
+defect_pcd2 = point_smoothing(defect_pcd2, n2_d, d2_d, n2, n1_d, d1_d)
 
+################ 面点云拉伸为体点云 #################
+thickness = 0.004     # 4 mm
+step = 0.0003         # 每层间距 0.3 mm
+n1_in = orient_normal_inward(n1, plane1_pcd, object_center)
+n2_in = orient_normal_inward(n2, plane2_pcd, object_center)
+
+print("n1_in =", n1_in)
+print("n2_in =", n2_in)
+
+# =========================================================
+# 5. 分别拉伸 4 mm
+# =========================================================
+extrude_pcd1 = extrude_point_cloud_along_normal(
+    defect_pcd1, n1_in, thickness=thickness, step=step
+)
+extrude_pcd2 = extrude_point_cloud_along_normal(
+    defect_pcd2, n2_in, thickness=thickness, step=step
+)
+
+pts1 = np.asarray(extrude_pcd1.points)
+pts2 = np.asarray(extrude_pcd2.points)
+
+repair_model_pcd = o3d.geometry.PointCloud()
+if len(pts1) + len(pts2) > 0:
+    repair_model_pcd.points = o3d.utility.Vector3dVector(
+        np.vstack([pts1, pts2])
+    )
+
+print("extrude_pcd1 点数:", len(pts1))
+print("extrude_pcd2 点数:", len(pts2))
+print("repair_block_pcd 总点数:", len(np.asarray(repair_model_pcd.points)))
+
+pcd_raw.paint_uniform_color([0, 0, 1 ])
+repair_model_pcd.paint_uniform_color([0.2,0.8,0.33])
+o3d.visualization.draw_geometries([repair_model_pcd])
+################ 保存参数到本地 #################
 o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/defect_pcd1.pcd", defect_pcd1)
 o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/defect_pcd2.pcd", defect_pcd2)
 o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/plane1_pcd.pcd", plane1_pcd)
 o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/plane2_pcd.pcd", plane2_pcd)
+o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/repair_model_pcd.pcd", repair_model_pcd)
+
 np.savez(
     "E:/HKUSTGZ/AAM/construction/data/completion_result/planes_meta.npz",
     plane1_model=plane1_model,
@@ -375,5 +486,3 @@ np.savez(
     defect2_center = defect2_center
 
 )
-
-

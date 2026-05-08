@@ -97,16 +97,16 @@ def create_min_residue_grip_local(
     handle_width=10.0,
     handle_thickness=4.0,
 
-    neck_length=3.0,
-    neck_width=1.0,
-    neck_thickness=0.8,
+    neck_length=4.0,
+    neck_width=2.0,
+    neck_thickness=1.2,
 
-    fracture_distance=0.55,
-    notch_length=0.7,
-    notch_ratio=0.38,
+    fracture_distance=1,
+    notch_length=0.8,
+    notch_ratio=0.6,
 
-    transition_length=4.0,
-    embed_depth=0.25,
+    transition_length=5.0,
+    embed_depth=0.35,
 ):
     """
     无底座夹持结构：
@@ -133,7 +133,7 @@ def create_min_residue_grip_local(
     x6 = neck_length + transition_length
     x7 = neck_length + transition_length + handle_length
 
-    waist_width = neck_width * notch_ratio
+    waist_width = neck_width # * notch_ratio
     waist_thickness = neck_thickness * notch_ratio
 
     sections = [
@@ -257,14 +257,13 @@ if __name__ == "__main__":
     # ===============================
 
     repair_stl = "E:\HKUSTGZ\AAM\construction\data\completion_result/repair_model.stl"
-    output_stl = "E:\HKUSTGZ\AAM\construction\data\completion_result/grip.stl"
+    output_stl = "E:\HKUSTGZ\AAM\construction\data\completion_result/whole_model.stl"
 
     plane_meta = np.load('E:\HKUSTGZ\AAM\construction\data\completion_result/planes_meta.npz')
 
     #确认安装中心为plane1 center
     fixed_center = plane_meta['defect1_center']
     fixed_center = fixed_center * 1000
-    # fixed_center= np.array( [400.83036001, -28.31026938 ,143.04948514], float)
     n1 = -plane_meta['n1']  # 令法向量朝外
 
     whole_model, grip = add_grip_structure(
@@ -280,21 +279,21 @@ if __name__ == "__main__":
 
         # 无底座，直接窄颈连接到外表面
         neck_length=3.0,
-        neck_width=1.0,
-        neck_thickness=0.8,
+        neck_width=2.0,
+        neck_thickness=1.2,
 
         # 越小残留越少；建议 0.45–0.8 mm
-        fracture_distance=0.55,
+        fracture_distance=1,
 
         # V形预断槽
-        notch_length=0.7,
-        notch_ratio=0.38,
+        notch_length=0.6,
+        notch_ratio=0.8,
 
         # 从窄颈过渡到宽夹持杆
-        transition_length=4.0,
+        transition_length=1.0,
 
         # 轻微嵌入模型内部，保证融合
-        embed_depth=0.25,
+        embed_depth=1,
 
         export_grip_only = None,
     )
