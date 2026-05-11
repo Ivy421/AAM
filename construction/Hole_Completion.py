@@ -6,28 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import ndimage
 
-def get_largest_cluster(pcd, eps=0.02, min_points=10):
-    labels = np.array(pcd.cluster_dbscan(eps=eps, min_points=min_points, print_progress=False))
-    max_label = labels.max()
-    
-    if max_label < 0:
-        print("未找到有效的连通域（全是噪声）")
-        return None
-
-    largest_cluster_id = -1
-    max_count = 0
-
-    for i in range(max_label + 1):
-        count = np.sum(labels == i)
-        if count > max_count:
-            max_count = count
-            largest_cluster_id = i
-            
-    print(f"找到 {max_label + 1} 个簇，最大簇包含 {max_count} 个点")
-
-    indices = np.where(labels == largest_cluster_id)[0]
-    return pcd.select_by_index(indices)
-
 def find_plane(points_np, voxel_size=0.001, distance_threshold=0.001):
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(points_np[:, :3])

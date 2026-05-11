@@ -1,6 +1,28 @@
 import json, os
 import numpy as np
 import open3d as o3d
+def get_largest_cluster(pcd, eps=0.02, min_points=10):
+    labels = np.array(pcd.cluster_dbscan(eps=eps, min_points=min_points, print_progress=False))
+    max_label = labels.max()
+    
+    if max_label < 0:
+        print("未找到有效的连通域（全是噪声）")
+        return None
+
+    largest_cluster_id = -1
+    max_count = 0
+
+    for i in range(max_label + 1):
+        count = np.sum(labels == i)
+        if count > max_count:
+            max_count = count
+            largest_cluster_id = i
+            
+    print(f"找到 {max_label + 1} 个簇，最大簇包含 {max_count} 个点")
+
+    indices = np.where(labels == largest_cluster_id)[0]
+    return pcd.select_by_index(indices)
+
 
 with open(os.getcwd()+ '/construction/data/frame_result/png_sequence.json','r',encoding='utf-8') as f:
     png_seq = json.load(f)
@@ -73,11 +95,12 @@ for i in range (len(points_collection)):
         #print(reg_p2l.fitness)
         # 有效匹配点<70% 或 误差>xxx mm
         if (reg_p2l.fitness < 0.7) or (reg_p2l.inlier_rmse > 0.003):
+            print(f"fitness:{reg_p2l.fitness}, rmse:{reg_p2l.inlier_rmse}")
             print('bad quality of source image:', png_seq[i])
             continue
 
         # 平移过多，导致滑切 阈值设为5cm
-        if np.linalg.norm (reg_p2l.transformation[:3,3]) > 0.05: 
+        if np.linalg.norm (reg_p2l.transformation[:3,3]) > 0.02: 
             print(f'translation:{np.linalg.norm (reg_p2l.transformation[:3,3]) }, delete source:{png_seq[i] }')
             continue
 
@@ -95,6 +118,11 @@ for i in range (len(points_collection)):
     else:
         break
 
+target = get_largest_cluster(target)
+target, ind = target.remove_radius_outlier(
+    nb_points=12,
+    radius=0.004
+)
 o3d.visualization.draw_geometries([target])
 o3d.io.write_point_cloud(os.getcwd()+"/construction/data/frame_result/depression_target.pcd", target)
 
