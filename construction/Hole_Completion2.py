@@ -5,6 +5,7 @@ from glob import glob
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import ndimage
+
 def get_largest_cluster(pcd, eps=0.02, min_points=10):
     labels = np.array(pcd.cluster_dbscan(eps=eps, min_points=min_points, print_progress=False))
     max_label = labels.max()
@@ -31,7 +32,7 @@ def find_plane(points_np, voxel_size=0.001, distance_threshold=0.001):
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(points_np[:, :3])
 
-    pcd = pcd.voxel_down_sample(voxel_size=voxel_size)
+    #pcd = pcd.voxel_down_sample(voxel_size=voxel_size)
 
     pcd, ind = pcd.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
     pcd = pcd.select_by_index(ind)
@@ -54,7 +55,6 @@ def find_plane(points_np, voxel_size=0.001, distance_threshold=0.001):
 
     return plane1_model, plane1_pcd, plane2_model, plane2_pcd, rest_pcd
 
-
 def plane_from_pcd(plane_pcd):
     pts = np.asarray(plane_pcd.points)
     c = pts.mean(axis=0)
@@ -64,15 +64,26 @@ def plane_from_pcd(plane_pcd):
     return c, n
 
 def plane_basis_from_pcd(plane_pcd):
+    world_x = np.array([1,0,0])
+    world_y = np.array([0,1,0])
     c, n = plane_from_pcd(plane_pcd)
-
     ref = np.array([1.0, 0.0, 0.0]) if abs(n[0]) < 0.9 else np.array([0.0, 1.0, 0.0])
-    bu = np.cross(n, ref)
-    bu = bu / np.linalg.norm(bu)
-    bv = np.cross(n, bu)
-    bv = bv / np.linalg.norm(bv)
+    u_temp = np.cross(n, ref)
+    u_temp = u_temp / np.linalg.norm(u_temp)
 
-    return c, bu, bv, n
+    # 改变u_axis方向使u_xais指向机械臂
+    if np.abs(np.dot(u_temp, world_x)) < np.abs(np.dot(u_temp, world_y)):
+        u_axis = np.cross(n, u_temp)
+        u_axis = u_axis / np.linalg.norm(u_axis)
+    else:
+        u_axis = u_temp
+
+    if np.dot(u_axis, world_x) >0:
+        u_axis = -u_axis
+    v_axis = np.cross(n, u_axis)
+    v_axis = v_axis / np.linalg.norm(v_axis)
+
+    return c, u_axis, v_axis, n
 
 def plane_intersection_line(plane1_pcd, plane2_pcd):
     c1, n1 = plane_from_pcd(plane1_pcd)
@@ -135,8 +146,15 @@ def largest_component(mask, min_pixels=30):
     idx = np.argmax(areas) + 1
     out = (lab == idx)
     return out if out.sum() >= min_pixels else np.zeros_like(mask, dtype=bool)
-
-def uv_to_defect_mask(u, v, plane_pcd, other_plane_pcd, grid_res=0.0005, pad=0.002):
+def uv_to_defect_mask(
+    u, v,
+    plane_pcd, other_plane_pcd,
+    grid_res=0.0005,
+    pad=0.002,
+    depth_percentile=95,          # 当前面“远离交线”的理论边界，鲁棒分位数
+    tangent_percentiles=(1, 99),  # 沿交线方向的范围
+    mask_pad_pix=1.5              # 给 domain_mask 留一点余量
+):
     uv = np.stack([u, v], axis=1)
 
     # -------------------------
@@ -151,7 +169,7 @@ def uv_to_defect_mask(u, v, plane_pcd, other_plane_pcd, grid_res=0.0005, pad=0.0
     ny = int(np.ceil((vmax - vmin) / grid_res)) + 1
 
     # -------------------------
-    # 2) 实际占据图
+    # 2) 实际占据图 actual_mask
     # -------------------------
     actual_mask = np.zeros((ny, nx), dtype=bool)
 
@@ -162,80 +180,108 @@ def uv_to_defect_mask(u, v, plane_pcd, other_plane_pcd, grid_res=0.0005, pad=0.0
     iy = np.clip(iy, 0, ny - 1)
 
     actual_mask[iy, ix] = True
-    #actual_mask = ndimage.binary_dilation(actual_mask, iterations=1)
     actual_mask = ndimage.binary_closing(actual_mask, iterations=1)
 
     # -------------------------
-    # 3) 原始矩形 ideal_mask
-    # -------------------------
-    u0, u1 = np.percentile(u, [1, 99])
-    v0, v1 = np.percentile(v, [1, 99])
-
-    ideal_mask = np.zeros((ny, nx), dtype=bool)
-
-    ix0 = int(np.floor((u0 - umin) / grid_res))
-    ix1 = int(np.ceil((u1 - umin) / grid_res))
-    iy0 = int(np.floor((v0 - vmin) / grid_res))
-    iy1 = int(np.ceil((v1 - vmin) / grid_res))
-
-    ix0 = np.clip(ix0, 0, nx - 1)
-    ix1 = np.clip(ix1, 0, nx - 1)
-    iy0 = np.clip(iy0, 0, ny - 1)
-    iy1 = np.clip(iy1, 0, ny - 1)
-
-    ideal_mask[iy0:iy1 + 1, ix0:ix1 + 1] = True
-
-    # -------------------------
-    # 4) 用两平面交线裁剪 ideal_mask
+    # 3) 计算两平面理论交线，并投影到当前 UV 平面
     # -------------------------
     c, bu, bv, n = plane_basis_from_pcd(plane_pcd)
     p0_3d, d_3d = plane_intersection_line(plane_pcd, other_plane_pcd)
 
-    # 交线投影到当前平面的 uv 坐标
     p0_uv = np.array([(p0_3d - c) @ bu, (p0_3d - c) @ bv])
     p1_uv = np.array([(p0_3d + d_3d - c) @ bu, (p0_3d + d_3d - c) @ bv])
 
-    du_line = p1_uv[0] - p0_uv[0]
-    dv_line = p1_uv[1] - p0_uv[1]
+    t = p1_uv - p0_uv
+    t_norm = np.linalg.norm(t)
+    if t_norm < 1e-12:
+        raise ValueError("交线方向长度过小")
+    t = t / t_norm                     # 交线方向（面内）
+    q = np.array([-t[1], t[0]])        # 面内、垂直于交线的方向
 
-    # 判断“实际点云”在哪一侧，就保留哪一侧
-    # side > 0 / side < 0 表示在线的两边
-    side_pts = du_line * (v - p0_uv[1]) - dv_line * (u - p0_uv[0])
-    keep_positive = np.sum(side_pts >= 0) >= np.sum(side_pts <= 0)
+    # -------------------------
+    # 4) 用交线构造 intersection_half_mask
+    #    不再用矩形 ideal_mask
+    # -------------------------
+    signed_depth = (uv - p0_uv) @ q
 
-    # 对整个栅格求半平面mask
+    # 当前面的点主要落在哪一侧，就保留哪一侧
+    keep_positive = np.sum(signed_depth >= 0) >= np.sum(signed_depth <= 0)
+    inward_sign = 1.0 if keep_positive else -1.0
+
+    # 统一成：当前面内部方向的“深度”
+    inward_depth = inward_sign * signed_depth
+
+    # -------------------------
+    # 5) 用鲁棒分位数生成 boundary_half_mask
+    #    表示“这个面离交线多远为止”
+    # -------------------------
+    valid_depth = inward_depth[inward_depth >= 0]
+    if len(valid_depth) == 0:
+        depth_max = 0.0
+    else:
+        depth_max = np.percentile(valid_depth, depth_percentile)
+
+    # -------------------------
+    # 6) 沿交线方向做有限裁剪 tangent_mask
+    #    防止 domain_mask 无限延伸
+    # -------------------------
+    tang_coord = (uv - p0_uv) @ t
+    t0, t1 = np.percentile(tang_coord, tangent_percentiles)
+
+    # -------------------------
+    # 7) 在整张栅格上计算三个 mask
+    # -------------------------
     uu = umin + (np.arange(nx) + 0.5) * grid_res
     vv = vmin + (np.arange(ny) + 0.5) * grid_res
     UU, VV = np.meshgrid(uu, vv)
 
-    side_grid = du_line * (VV - p0_uv[1]) - dv_line * (UU - p0_uv[0])
+    dU = UU - p0_uv[0]
+    dV = VV - p0_uv[1]
 
-    if keep_positive:
-        half_mask = side_grid >= -grid_res
-    else:
-        half_mask = side_grid <= grid_res
+    inward_grid = inward_sign * (dU * q[0] + dV * q[1])
+    tang_grid   = dU * t[0] + dV * t[1]
 
-    # 用交线裁掉多余那半边
-    ideal_mask = ideal_mask & half_mask
+    intersection_half_mask = inward_grid >= -mask_pad_pix * grid_res
+    boundary_half_mask     = inward_grid <= depth_max + mask_pad_pix * grid_res
+    tangent_mask           = (
+        (tang_grid >= t0 - mask_pad_pix * grid_res) &
+        (tang_grid <= t1 + mask_pad_pix * grid_res)
+    )
+
+    # 这就是新的“理论完整区域”
+    domain_mask = intersection_half_mask & boundary_half_mask & tangent_mask
 
     # -------------------------
-    # 5) 缺陷区域 = 理想 - 实际
+    # 8) 缺陷区域 = 理论完整区域 - 实际占据区域
     # -------------------------
-    defect_mask = ideal_mask & (~actual_mask)
-    defect_mask = largest_component(defect_mask, min_pixels=30)
-    # defect_mask = ndimage.binary_closing(defect_mask, iterations=1)
-
+    defect_mask_before_lcc = domain_mask & (~actual_mask)
+    defect_mask = largest_component(defect_mask_before_lcc, min_pixels=30)
 
     info = {
         "umin": umin,
         "vmin": vmin,
         "grid_res": grid_res,
+
         "actual_mask": actual_mask,
-        "ideal_mask": ideal_mask,
+
+        # 新规则
+        "domain_mask": domain_mask,
+        "intersection_half_mask": intersection_half_mask,
+        "boundary_half_mask": boundary_half_mask,
+        "tangent_mask": tangent_mask,
+
+        # 为兼容你原来调试代码，保留这个键
+        "ideal_mask": domain_mask,
+
+        "defect_mask_before_lcc": defect_mask_before_lcc,
         "defect_mask": defect_mask,
+
         "line_p0_uv": p0_uv,
         "line_p1_uv": p1_uv,
-        "half_mask": half_mask,
+        "keep_positive": keep_positive,
+        "depth_max": depth_max,
+        "t0": t0,
+        "t1": t1,
     }
     return defect_mask, info
 
@@ -337,19 +383,9 @@ def point_smoothing(pcd,n, d, n_ref, n_otherplane, d_otherplane):
 
     return pcd
 
-def plane_mark(plane1_n, plane2_n):
-    world_z = np.array([0,0,1])
-    
-    if np.abs(np.dot(plane1_n, world_z)) > np.abs(np.dot(plane2_n, world_z)) :
-        mark = {'top': 'defect_pcd1', 'side': 'defect_pcd2'}
-    else:
-        mark = {'top': 'defect_pcd2', 'side':'defect_pcd1'}
-    print("mark of defect plane: ",mark)
-    return mark
-
 ####### run code
 pcd_raw = o3d.io.read_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/fused2.pcd")
-# o3d.visualization.draw_geometries([pcd_raw])
+#o3d.visualization.draw_geometries([pcd_raw])
 pcd_raw = pcd_raw.voxel_down_sample(voxel_size=0.001)
 points_raw= np.asarray(pcd_raw.points)
 #draw_points_mat([pcd_raw, pcd_raw],elev = 45, azim = 120)
@@ -362,6 +398,10 @@ plane1_model, plane1_pcd, plane2_model, plane2_pcd, rest_pcd = find_plane(
     distance_threshold=0.003
 )
 
+plane1_pcd.paint_uniform_color([0,0,1])
+plane2_pcd.paint_uniform_color([0,1,0])
+o3d.visualization.draw_geometries([plane1_pcd,plane2_pcd])
+
 print("Plane 1:", plane1_model)   # ax + by + cz + d = 0
 print("Plane 2:", plane2_model)
 pcd1, pcd2, pcd_edge, plane1, plane2 = split_points_by_two_planes(
@@ -369,7 +409,6 @@ pcd1, pcd2, pcd_edge, plane1, plane2 = split_points_by_two_planes(
     dist_thresh=0.005, # 0.005
     margin=0.0005
 )
-
 # 点在两个拟合平面的坐标表示
 u1, v1, proj1_3d = project_points_to_plane(pcd1, plane1_pcd)
 u2, v2, proj2_3d = project_points_to_plane(pcd2, plane2_pcd)
@@ -377,121 +416,43 @@ u2, v2, proj2_3d = project_points_to_plane(pcd2, plane2_pcd)
 # 返回两个平面的缺陷mask
 defect_mask1, info1 = uv_to_defect_mask(
     u1, v1,
-    plane1_pcd, plane2_pcd,
+    pcd1, pcd2,
     grid_res=0.0006, pad=0.0005)
 
 defect_mask2, info2 = uv_to_defect_mask(
     u2, v2,
-    plane2_pcd, plane1_pcd,
+    pcd1, pcd2,  # plane1_pcd, plan2_pcd
     grid_res=0.0006, pad=0.0005)
+print(defect_mask1)
+
+uv1 = np.stack([u1, v1], axis=1)
+
+print(uv1.shape)
+print(defect_mask1.shape)
+
+#for defect_mask in [defect_mask1,defect_mask2]:
+#    
+#    y_false1, x_false1 = np.where(~defect_mask)
+#    y_true1,  x_true1  = np.where(defect_mask)
+#    plt.figure(figsize=(6, 6))
+#    plt.scatter(x_false1, y_false1, s=0.5, c='gray', label='False')
+#    plt.scatter(x_true1,  y_true1,  s=0.5, c='red',  label='True')
+#    #for p in uv1:
+#    #    plt.scatter(p[0],p[1], s = 0.5,c = 'yellow')
+#    plt.gca().invert_yaxis()
+#    plt.axis('equal')
+#    plt.xlabel('x / column')
+#    plt.ylabel('y / row')
+#    plt.legend()
+#    plt.tight_layout()
+#    plt.show()
+
 
 #把缺陷mask重投影回3D空间
 defect_pcd1 = defect_mask_to_3d(defect_mask1, info1, plane1_pcd)
 defect_pcd2 = defect_mask_to_3d(defect_mask2, info2, plane2_pcd)
 defect_all = o3d.geometry.PointCloud()
 defect_all.points = o3d.utility.Vector3dVector(np.vstack([np.asarray(defect_pcd1.points), np.asarray(defect_pcd2.points)]))
-#defect_all.paint_uniform_color([0.55, 0.2 , 0.8 ])  # 红色
-#pcd_raw.paint_uniform_color([0, 0, 1 ])  # 蓝色
+defect_all.paint_uniform_color([0.55, 0.2 , 0.8 ])  
+pcd_raw.paint_uniform_color([0, 0, 1 ])  
 #o3d.visualization.draw_geometries([defect_all, pcd_raw])
-
-##################### 生成参数 #######################
-plane1_model = np.asarray(plane1_model, dtype=float)
-plane2_model = np.asarray(plane2_model, dtype=float)
-plane1_model[3] = plane1_model[3] 
-plane2_model[3] = plane2_model[3] 
-n1 = plane1_model[:3]
-n1 = n1 / np.linalg.norm(n1)
-n2 = plane2_model[:3]
-n2 = n2 / np.linalg.norm(n2)
-
-### 确定两个平面的法线朝向，必须向内 ###
-object_center = ((np.asarray(pcd.points).mean(axis=0))) 
-plane1_center = np.asarray(plane1_pcd.points).mean(axis=0)
-plane2_center = np.asarray(plane2_pcd.points).mean(axis=0)
-defect1_center = np.asarray(defect_pcd1.points).mean(axis=0)
-defect2_center = np.asarray(defect_pcd2.points).mean(axis=0)
-if np.dot(n1, ( object_center - plane1_center )) < 0:
-    print('plane1 法向量改为朝内 ')
-    n1 = -n1
-if np.dot(n2, ( object_center - plane2_center )) < 0:
-    print('plane2 法向量改为朝内 ')
-    n2 = -n2
-
-
-################ 缺陷表面平滑 ####################
-defect_plane1_model,_,_ = find_defect_plane(np.asarray(defect_pcd1.points), distance_threshold=1)
-defect_plane2_model,_,_ = find_defect_plane(np.asarray(defect_pcd2.points),  distance_threshold=1)
-n1_d = defect_plane1_model[:3]
-n2_d = defect_plane2_model[:3]
-d1_d = defect_plane1_model[-1]
-d2_d = defect_plane2_model[-1]
-
-## adjust n direction
-n1_d, d1_d = n_direction(n1_d, n1, d1_d)
-n2_d, d2_d = n_direction(n2_d, n2, d2_d)
-mark = plane_mark(n1_d, n2_d)
-
-### defect_pcd1 ccacel points
-defect_pcd1 = point_smoothing(defect_pcd1,n1_d, d1_d, n1, n2_d, d2_d)
-defect_pcd2 = point_smoothing(defect_pcd2, n2_d, d2_d, n2, n1_d, d1_d)
-
-
-################ 面点云拉伸为体点云 #################
-thickness = 0.004     # 4 mm
-step = 0.0003         # 每层间距 0.3 mm
-n1_in = orient_normal_inward(n1, plane1_pcd, object_center)
-n2_in = orient_normal_inward(n2, plane2_pcd, object_center)
-
-print("n1_in =", n1_in)
-print("n2_in =", n2_in)
-
-# =========================================================
-# 5. 分别拉伸 4 mm
-# =========================================================
-extrude_pcd1 = extrude_point_cloud_along_normal(
-    defect_pcd1, n1_in, thickness=thickness, step=step
-)
-extrude_pcd2 = extrude_point_cloud_along_normal(
-    defect_pcd2, n2_in, thickness=thickness, step=step
-)
-
-pts1 = np.asarray(extrude_pcd1.points)
-pts2 = np.asarray(extrude_pcd2.points)
-
-repair_model_pcd = o3d.geometry.PointCloud()
-if len(pts1) + len(pts2) > 0:
-    repair_model_pcd.points = o3d.utility.Vector3dVector(
-        np.vstack([pts1, pts2])
-    )
-
-print("extrude_pcd1 点数:", len(pts1))
-print("extrude_pcd2 点数:", len(pts2))
-print("repair_block_pcd 总点数:", len(np.asarray(repair_model_pcd.points)))
-
-pcd_raw.paint_uniform_color([0, 0, 1 ])
-repair_model_pcd.paint_uniform_color([0.2,0.8,0.33])
-#o3d.visualization.draw_geometries([repair_model_pcd])
-################ 保存参数到本地 #################
-o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/defect_pcd1.pcd", defect_pcd1)
-o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/defect_pcd2.pcd", defect_pcd2)
-o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/plane1_pcd.pcd", plane1_pcd)
-o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/plane2_pcd.pcd", plane2_pcd)
-o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/repair_model_pcd.pcd", repair_model_pcd)
-
-np.savez(
-    "E:/HKUSTGZ/AAM/construction/data/completion_result/planes_meta.npz",
-    plane1_model=plane1_model,
-    plane2_model=plane2_model,
-    n1=n1,
-    n2=n2,
-    plane1_center = plane1_center,
-    plane2_center = plane2_center,
-
-    object_center=object_center,
-    
-    defect1_center = defect1_center,
-    defect2_center = defect2_center,
-
-)
-with open ('E:/HKUSTGZ/AAM/construction/data/completion_result/mark.json', 'w', encoding = 'utf-8') as f:
-    json.dump(mark, f)

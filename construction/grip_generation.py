@@ -1,7 +1,11 @@
+"""
+优化目标：
+如何让grip精准生成在前视面，而不是随机找一个defecy_pcd1来生成？
+
+"""
 import numpy as np
 import open3d as o3d
-import trimesh
-
+import trimesh,json
 
 def normalize(v, eps=1e-12):
     v = np.asarray(v, dtype=float)
@@ -11,25 +15,34 @@ def normalize(v, eps=1e-12):
     return v / n
 
 
-def build_frame_from_normal(origin, outward_normal, preferred_up=np.array([0, 0, 1.0])):
+def build_frame_from_normal(origin, outward_normal, top_normal):
     """
-    局部坐标：
-    x轴 = 夹持结构向外生长方向
-    y轴 = 夹持杆宽度方向
-    z轴 = 夹持杆厚度方向
-    """
-    x_axis = normalize(outward_normal)
+    x_axis: grip 生长方向 = outward_normal
+    z_axis: 尽量对齐 top_normal 在垂直于 x_axis 平面内的投影
+    y_axis: 由 x 和 z 决定
 
-    preferred_up = normalize(preferred_up)
-    z_axis = preferred_up - np.dot(preferred_up, x_axis) * x_axis
+    这样可以控制长方体绕 outward_normal 的旋转角度。
+    """
+    x_axis = np.asarray(outward_normal, dtype=float)
+    x_axis = x_axis / np.linalg.norm(x_axis)
+
+    top_normal = np.asarray(top_normal, dtype=float)
+    top_normal = top_normal / np.linalg.norm(top_normal)
+
+    # 把 top_normal 投影到垂直于 x_axis 的平面上
+    z_axis = top_normal - np.dot(top_normal, x_axis) * x_axis
 
     if np.linalg.norm(z_axis) < 1e-6:
-        preferred_up = np.array([0, 1.0, 0])
-        z_axis = preferred_up - np.dot(preferred_up, x_axis) * x_axis
+        ref = np.array([0.0, 1.0, 0.0])
+        z_axis = ref - np.dot(ref, x_axis) * x_axis
 
-    z_axis = normalize(z_axis)
-    y_axis = normalize(np.cross(z_axis, x_axis))
-    z_axis = normalize(np.cross(x_axis, y_axis))
+    z_axis = z_axis / np.linalg.norm(z_axis)
+
+    y_axis = np.cross(z_axis, x_axis)
+    y_axis = y_axis / np.linalg.norm(y_axis)
+
+    z_axis = np.cross(x_axis, y_axis)
+    z_axis = z_axis / np.linalg.norm(z_axis)
 
     T = np.eye(4)
     T[:3, 0] = x_axis
@@ -38,7 +51,6 @@ def build_frame_from_normal(origin, outward_normal, preferred_up=np.array([0, 0,
     T[:3, 3] = origin
 
     return T
-
 
 def create_rectangular_loft(sections):
     """
@@ -189,6 +201,7 @@ def add_grip_structure(
     output_stl,
     attach_center,
     outward_normal,
+    top_normal,
 
     handle_length=45.0,
     handle_width=10.0,
@@ -229,10 +242,7 @@ def add_grip_structure(
         embed_depth=embed_depth,
     )
 
-    T = build_frame_from_normal(
-        origin=attach_center,
-        outward_normal=outward_normal,
-    )
+    T = build_frame_from_normal(attach_center, outward_normal, top_normal)
 
     grip_world = grip_local.copy()
     grip_world.apply_transform(T)
@@ -260,22 +270,35 @@ if __name__ == "__main__":
     output_stl = "E:\HKUSTGZ\AAM\construction\data\completion_result/whole_model.stl"
 
     plane_meta = np.load('E:\HKUSTGZ\AAM\construction\data\completion_result/planes_meta.npz')
-
-    #确认安装中心为plane1 center
-    fixed_center = plane_meta['defect1_center']
+    with open ('E:\HKUSTGZ\AAM\construction\data\completion_result/mark.json','r',encoding='utf-8') as f:
+        mark = json.load(f)
+    
+    print('side plane:',mark['side'])
+    #确认安装中心为侧面的平面
+    if mark['side'] == 'defect_pcd1':
+        fixed_center = plane_meta['defect1_center']
+        n = -plane_meta['n1']  # 令法向量朝外
+        top_n = - plane_meta['n2']   # 令法向量朝外
+    else:
+        fixed_center = plane_meta['defect2_center']
+        n = -plane_meta['n2']
+        top_n = - plane_meta['n1']
     fixed_center = fixed_center * 1000
-    n1 = -plane_meta['n1']  # 令法向量朝外
+
+    print(f"fixed_center:{fixed_center}")
+    
 
     whole_model, grip = add_grip_structure(
         repair_stl=repair_stl,
         output_stl=output_stl,
         attach_center=fixed_center,
-        outward_normal=n1,
+        outward_normal=n,
+        top_normal = top_n,
 
         # 夹爪夹持长方体
         handle_length=45.0,
-        handle_width=10.0,
-        handle_thickness=4.0,
+        handle_width=3.0,
+        handle_thickness=8.0,
 
         # 无底座，直接窄颈连接到外表面
         neck_length=3.0,
@@ -297,3 +320,4 @@ if __name__ == "__main__":
 
         export_grip_only = None,
     )
+

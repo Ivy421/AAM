@@ -1,3 +1,12 @@
+"""
+
+优化目标：
+1. 缺陷位置转折点  - 通过多层边界ROI加权决定
+2. 修补块的size由边界点的平均值决定(pcd_raw是否需要对各个面先做滤波处理删除outlier?)/
+    如何更精准的找到修补块的size?
+3. 补全CORNER_MODE的规则/让CORNER_MODE智能化适应各个角空间
+
+""" 
 import numpy as np
 import open3d as o3d
 import matplotlib.pyplot as plt
@@ -513,7 +522,7 @@ occ_dilate_iter = 2
 
 # 对 defect mask 做平滑
 defect_close_iter = 2
-pcd_raw = o3d.io.read_point_cloud("E:/HKUSTGZ/AAM/construction/data/frame_result/target.pcd")
+pcd_raw = o3d.io.read_point_cloud("E:/HKUSTGZ/AAM/construction/data/frame_result/depression_target.pcd")
 points_raw = np.asarray(pcd_raw.points)
 plane1, plane1_pcd,  rest_pcd = find_plane(pcd_raw, voxel_size=0.001, distance_threshold=0.001)
 n = plane1[:3]

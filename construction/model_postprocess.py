@@ -36,7 +36,7 @@ def repair_with_pymeshlab(input_path, output_path):
     safe_filter("meshing_repair_non_manifold_vertices")
 
     # ---------- 小孔修补（可按需要调大/调小） ----------
-    safe_filter("meshing_close_holes", maxholesize=200)
+    safe_filter("meshing_close_holes", maxholesize=1000)
 
     # ---------- 再清理一次 ----------
     safe_filter("meshing_remove_duplicate_vertices")
@@ -92,7 +92,26 @@ def repair_with_open3d(input_path, output_path):
     print(f"Saved: {output_path}")
     return True
 
+# =========================================================
+# 可视化 mesh
+# =========================================================
+def visualize_mesh(mesh_path, window_name="Mesh Viewer"):
+    import open3d as o3d
 
+    mesh = o3d.io.read_triangle_mesh(mesh_path)
+    if mesh.is_empty():
+        raise RuntimeError(f"读取失败或网格为空: {mesh_path}")
+
+    mesh.compute_vertex_normals()
+
+    print(f"[Visualize] {mesh_path}")
+    print(f"vertices = {len(mesh.vertices)}, faces = {len(mesh.triangles)}")
+
+    o3d.visualization.draw_geometries(
+        [mesh],
+        window_name=window_name,
+        mesh_show_back_face=True
+    )
 # =========================================================
 # 主程序
 # =========================================================
@@ -107,3 +126,4 @@ if __name__ == "__main__":
         print(e)
         traceback.print_exc()
         repair_with_open3d(INPUT_MESH, OUTPUT_MESH)
+    visualize_mesh(OUTPUT_MESH, window_name="Processed STL")
