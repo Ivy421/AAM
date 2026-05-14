@@ -1,0 +1,19 @@
+[
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "image",
+                "image": "source_image"
+            },
+            {
+                "type": "image",
+                "image": "labeled_image"
+            },
+            {
+                "type": "text",
+                "text": "These two images show the same defective item, 'A BLACK OBJECT', taken from the same position.Figure 1 is the source image without manually added label. Figure 2 labels the four corners with text codes. Identify the text code corresponding to the defective corner in Figure 2. Answer with the text code only."
+            }
+        ]
+    }
+]

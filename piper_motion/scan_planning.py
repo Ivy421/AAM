@@ -170,15 +170,7 @@ depth = np.load(depth_path)
 img = cv2.imread(image_path)
 color_intrinsic,_,_,_ = load_camera_config(config_path)
 
-
-
-
-ecT = np.array([[0.2432,  0.9077,   0.342,      -0.0737+ 0.044*np.sin(15*np.pi/180)],
-                [-0.9659, 0.2588,   0,          0.044*np.cos(15*np.pi/180)],
-                [-0.0885,-0.3304,   0.9397,     0.0493],
-                [0,0,0,1]], dtype=np.float64)
-
-
+ecT = np.load('E:/HKUSTGZ/AAM/config/calibration/right_camera/ecT.npy')
 fx = color_intrinsic['fx']
 fy = color_intrinsic['fy']
 cx = color_intrinsic['ppx']

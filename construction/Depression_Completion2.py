@@ -524,7 +524,8 @@ occ_dilate_iter = 2
 defect_close_iter = 2
 pcd_raw = o3d.io.read_point_cloud("E:/HKUSTGZ/AAM/construction/data/frame_result/depression_target.pcd")
 points_raw = np.asarray(pcd_raw.points)
-plane1, plane1_pcd,  rest_pcd = find_plane(pcd_raw, voxel_size=0.001, distance_threshold=0.001)
+#o3d.visualization.draw_geometries([pcd_raw])
+plane1, plane1_pcd, rest_pcd = find_plane(pcd_raw, voxel_size=0.001, distance_threshold=0.001)
 n = plane1[:3]
 inward_vec = np.array([0,0,1])
 # 保证品面法向朝物品内部
@@ -534,8 +535,19 @@ if np.dot(n, inward_vec) >0:
 top_points = np.asarray(plane1_pcd.points)
 
 origin, u_axis, v_axis, n_axis = build_plane_basis(top_points, n)
-uv = project_to_uv(top_points, origin, u_axis, v_axis)
-
+uv = project_to_uv(points_raw, origin, u_axis, v_axis)
+print(uv.shape)
+plt.figure()
+plt.scatter(
+    uv[:, 0], uv[:, 1],
+    s=0.3,
+    c="lightgray",
+    label="top projected points"
+)
+plt.axis("equal")
+plt.xlabel("u")
+plt.ylabel("v")
+plt.show()
 edge_bin_size = 0.0005  # 可根据点云密度调整
 
 pts_u_min = extract_side_points(uv, "u_min", bin_size=edge_bin_size)
@@ -543,7 +555,7 @@ pts_u_max = extract_side_points(uv, "u_max", bin_size=edge_bin_size)
 pts_v_min = extract_side_points(uv, "v_min", bin_size=edge_bin_size)
 pts_v_max = extract_side_points(uv, "v_max", bin_size=edge_bin_size)
 
-
+"""
 if CORNER_MODE == 'max_u_min_v':
     len_v_phy = max(pts_v_min[:,0]) - min(pts_v_min[:,0] )
     len_u_phy = max(pts_u_max[:,1]) - min(pts_u_max[:,1] )
@@ -985,3 +997,4 @@ o3d.visualization.draw_geometries([
 ])
 
 o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/depression_repair_model.pcd", repair_model_pcd)
+"""

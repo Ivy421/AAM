@@ -19,7 +19,7 @@ def find_bambu_studio() -> Path:
     """
 
     candidates = [
-        Path("/home/smmg/Bambu_Studio_linux.AppImage"),
+        Path("/home/smmg/BambuStudio_ubuntu-22.04.AppImage"),
         Path("/home/smmg/BambuStudio.AppImage"),
     ]
 
@@ -184,7 +184,7 @@ def slice_stl_to_3mf(
     filament_json: Path,
     output_3mf: Path,
     scale: float = 1.0,
-    use_xvfb: bool = False,
+    use_xvfb: bool = True,
 ):
     """
     使用 Bambu Studio CLI 将 STL 切片为 3MF。
@@ -199,7 +199,7 @@ def slice_stl_to_3mf(
         "--debug", "2",
 
         # 自动调整模型方向
-        "--orient",
+        "--orient", "1",
 
         # 自动摆放到打印板
         "--arrange", "1",
@@ -213,6 +213,8 @@ def slice_stl_to_3mf(
         # 加载耗材配置
         "--load-filaments", str(filament_json),
 
+        "--no-check",
+
         # 切片所有 plate
         "--slice", "0",
 
@@ -224,7 +226,12 @@ def slice_stl_to_3mf(
     ]
 
     if use_xvfb:
-        cmd = ["xvfb-run", "-a"] + bambu_cmd
+        cmd = [
+    "xvfb-run",
+    "-a",
+    "-s",
+    "-screen 0 1920x1080x24 +extension GLX +render -noreset", ] + bambu_cmd
+        # cmd = ["xvfb-run", "-a"] + bambu_cmd
     else:
         cmd = bambu_cmd
 
@@ -250,8 +257,8 @@ def parse_args():
 
     parser.add_argument(
         "--stl",
-        default="/home/smmg/AAM/construction/data/completion_result/repair_model.stl",
-        help="输入 STL 文件路径，默认 repair_block_4mm.stl",
+        default="/home/smmg/AAM/construction/data/completion_result/whole_model_processed.stl",
+        help="输入 STL 文件路径，默认 whole_model_processed.stl",
     )
 
     parser.add_argument(
@@ -262,32 +269,32 @@ def parse_args():
 
     parser.add_argument(
         "--machine",
-        default="/home/smmg/AAM/config/printing/printer_preset.json",
-        help="打印机配置 JSON，默认 /home/smmg/AAM/config/printing/printer_preset.json",
+        default="/home/smmg/AAM/config/printing/machine_FULL.json",
+        help="打印机配置 JSON，默认 /home/smmg/AAM/config/printing/Bambu Lab A1 mini 0.4 nozzle.json",
     )
 
     parser.add_argument(
         "--process",
-        default="/home/smmg/AAM/config/printing/process_preset.json",
-        help="工艺配置 JSON，默认 /home/smmg/AAM/config/printing/process_preset.json",
+        default="/home/smmg/AAM/config/printing/process_FULL.json",
+        help="工艺配置 JSON，默认 /home/smmg/AAM/config/printing/0.16mm Optimal @BBL A1M.json",
     )
 
     parser.add_argument(
         "--filament",
-        default="/home/smmg/AAM/config/printing/filament_preset.json",
-        help="耗材配置 JSON，默认 /home/smmg/AAM/config/printing/filament_preset.json",
+        default="/home/smmg/AAM/config/printing/filament_FULL.json",
+        help="耗材配置 JSON，默认 /home/smmg/AAM/config/printing/Bambu PLA Basic @BBL A1M.json",
     )
 
     parser.add_argument(
         "--output",
-        default="/home/smmg/AAM/model2print/data/slicer_output.3mf",
-        help="输出 3MF 文件路径，默认 /home/smmg/AAM/model2print/data/slicer_output.3mf",
+        default="/home/smmg/AAM/model2print/data/whole_model_sliced.3mf",
+        help="输出 3MF 文件路径，默认 /home/smmg/AAM/model2print/data/whole_model_sliced.3mf",
     )
 
     parser.add_argument(
         "--scale",
         type=float,
-        default=1.0,
+        default=1, ### 如果模型以米为单位，x1000,转换成毫米单位
         help="模型缩放比例，默认 1.0",
     )
 
