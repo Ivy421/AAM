@@ -1,6 +1,7 @@
 import os, sys
-sys.path.append('E:/HKUSTGZ/AAM')
+sys.path.append('/public/home/rastus/AAM')
 import json
+import re
 import numpy as np
 import open3d as o3d
 import cv2
@@ -11,7 +12,7 @@ from AI_models.LLM_funcitons  import *
 # ============================================================
 
 ROOT = os.getcwd()
-FRAME_DIR = os.path.join(ROOT, "construction/data/frame_result")
+FRAME_DIR = os.path.join(ROOT, "data/frame_result")
 
 # 你要标注的 RGB 图
 # 建议先手动指定为和点云对应的那一帧 RGB
@@ -20,12 +21,24 @@ IMG_SEQ = os.path.join(FRAME_DIR, "png_sequence.json")
 # 融合后的目标点云
 PCD_PATH = os.path.join(FRAME_DIR, "depression_target.pcd")
 
-CAMERA_CONFIG_PATH  = ('E:/HKUSTGZ/AAM/config/calibration/right_camera/camera_config.npy')
+CAMERA_CONFIG_PATH  = ('/public/home/rastus/AAM/config/calibration/right_camera/camera_config.npy')
 
 TRANSFORMATION_PATH = os.path.join(FRAME_DIR, "frame_point_result.npy")
 
 # 输出标注图
 OUT_PATH = os.path.join(FRAME_DIR, "rgb_with_uv_corner_labels.png")
+MAPPING_PATH = os.path.join(FRAME_DIR, "corner_label_mapping.json")
+INFERENCE_RESULT_PATH = os.path.join(FRAME_DIR, "corner_inference_result.json")
+
+# 固定用短标签给 VLM 看，代码再映射回真实 corner_mode
+# 按你之前约定：A/B/C/D -> 四个 uv corner mode
+LETTER_TO_CORNER = {
+    "A": "min_u_min_v",
+    "B": "min_u_max_v",
+    "C": "max_u_min_v",
+    "D": "max_u_max_v",
+}
+CORNER_TO_LETTER = {v: k for k, v in LETTER_TO_CORNER.items()}
 
 
 # ============================================================
@@ -141,33 +154,94 @@ def project_points_to_image(points_3d, K, cbT=None):
 # 绘图辅助
 # ============================================================
 
-def draw_label(img, text, pt, color=(0, 255, 255)):
+def clamp_int(v, lo, hi):
+    return int(max(lo, min(hi, v)))
+
+
+def draw_label(img, text, pt, color=(0, 0, 0), bg_color=(255, 255, 255)):
+    """
+    大号白底标签。保留这个函数名，避免影响其他代码调用。
+    """
     x, y = int(pt[0]), int(pt[1])
 
     font = cv2.FONT_HERSHEY_SIMPLEX
-    scale = 0.7
-    thickness = 1
+    scale = 1.4
+    thickness = 3
+    pad = 10
 
-    (tw, th), _ = cv2.getTextSize(text, font, scale, thickness)
+    (tw, th), baseline = cv2.getTextSize(text, font, scale, thickness)
+    H, W = img.shape[:2]
 
-    cv2.rectangle(
-        img,
-        (x - 4, y - th - 8),
-        (x + tw + 4, y + 4),
-        (255, 255, 255),
-        -1
-    )
+    x1 = clamp_int(x - pad, 0, W - 1)
+    y1 = clamp_int(y - th - pad - baseline, 0, H - 1)
+    x2 = clamp_int(x + tw + pad, 0, W - 1)
+    y2 = clamp_int(y + pad, 0, H - 1)
 
-    cv2.putText(
-        img,
-        text,
-        (x, y),
-        font,
-        scale,
-        color,
-        thickness,
-        cv2.LINE_AA
-    )
+    cv2.rectangle(img, (x1, y1), (x2, y2), bg_color, -1)
+    cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
+    cv2.putText(img, text, (x, y), font, scale, color, thickness, cv2.LINE_AA)
+
+
+def draw_corner_letter_label(img, letter, corner_pt, object_center_pt, color):
+    """
+    在角点附近画大号 [A]/[B]/[C]/[D]，并用箭头指向真实角点。
+    这样比直接写 min_u_min_v 这类长字符串更容易被 VLM/OCR 识别。
+    """
+    H, W = img.shape[:2]
+    corner_pt = np.asarray(corner_pt, dtype=float)
+    object_center_pt = np.asarray(object_center_pt, dtype=float)
+
+    direction = corner_pt - object_center_pt
+    norm = np.linalg.norm(direction)
+    if norm < 1e-6:
+        direction = np.array([1.0, -1.0])
+    else:
+        direction = direction / norm
+
+    # 标签放在角点外侧，避免盖住角点；已有 BORDER，所以一般不会出界
+    label_center = corner_pt + direction * 70.0
+
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    text = f"{letter}"
+    scale = 1.8
+    thickness = 4
+    pad = 14
+
+    (tw, th), baseline = cv2.getTextSize(text, font, scale, thickness)
+
+    # 将 label_center 转为文本左下角坐标
+    tx = int(round(label_center[0] - tw / 2))
+    ty = int(round(label_center[1] + th / 2))
+
+    # 防止文字被裁剪
+    tx = clamp_int(tx, pad, W - tw - pad)
+    ty = clamp_int(ty, th + pad, H - baseline - pad)
+
+    x1 = clamp_int(tx - pad, 0, W - 1)
+    y1 = clamp_int(ty - th - pad, 0, H - 1)
+    x2 = clamp_int(tx + tw + pad, 0, W - 1)
+    y2 = clamp_int(ty + baseline + pad, 0, H - 1)
+
+    # 标签中心，用于画箭头
+    box_center = np.array([(x1 + x2) / 2, (y1 + y2) / 2], dtype=float)
+    p_corner = tuple(np.round(corner_pt).astype(int))
+    p_box = tuple(np.round(box_center).astype(int))
+
+    # 角点圆圈 + 箭头 + 白底大号标签
+    cv2.circle(img, p_corner, 9, color, -1)
+    cv2.circle(img, p_corner, 13, (255, 255, 255), 2)
+    #cv2.arrowedLine(img, p_box, p_corner, color, thickness=3, tipLength=0.22)
+
+    cv2.rectangle(img, (x1, y1), (x2, y2), (255, 255, 255), -1)
+    cv2.rectangle(img, (x1, y1), (x2, y2), color, 3)
+    cv2.putText(img, text, (tx, ty), font, scale, (0, 0, 0), thickness, cv2.LINE_AA)
+
+    return {
+        "letter": letter,
+        "corner_pixel": [float(corner_pt[0]), float(corner_pt[1])],
+        "label_box": [int(x1), int(y1), int(x2), int(y2)],
+    }
+
 
 def draw_arrow(img, p0, p1, color, text):
     p0 = tuple(np.round(p0).astype(int))
@@ -203,12 +277,16 @@ def build_defect_corner_prompt(
     object_name: str,
 ):
     text_prompt = (
-        f"These two images show the same defective item, '{object_name}', "
-        "taken from the same position. "
-        "Figure 1 is the source image without manually added label. "
-        "Figure 2 labels the four corners with text codes. "
-        "Identify the text code corresponding to the defective corner in Figure 2. "
-        "Answer with the text code only."
+        f"These two images show the same defective item, '{object_name}', taken from the same camera view.\n"
+        "Image 1 is the original RGB image.\n"
+        "Image 2 is the same image with four corner labels: A, B, C， and D.\n"
+        "The labels are attached to the four physical object corners.\n\n"
+        "Task: identify which label in Image 2 corresponds to the defective/damaged corner visible in Image 1.\n\n"
+        "Rules:\n"
+        "- Choose exactly one from A, B, C, D.\n"
+        "- Do not output any other words."
+        "- Do not explain.\n"
+        "- Return only JSON in this format: {\"label\": \"A\"}\n"
     )
 
     messages = [
@@ -232,6 +310,68 @@ def build_defect_corner_prompt(
     ]
 
     return messages
+
+
+def parse_corner_letter(model_output: str) -> str:
+    """
+    从模型输出中解析 A/B/C/D。
+    兼容：{"label":"A"}、A、[A]、The answer is A 等输出。
+    """
+    if model_output is None:
+        raise ValueError("模型输出为空，无法解析 corner label")
+
+    s = str(model_output).strip()
+    s_upper = s.upper()
+
+    # 优先解析 JSON
+    try:
+        data = json.loads(s)
+        if isinstance(data, dict):
+            label = str(data.get("label", "")).strip().upper()
+            if label in LETTER_TO_CORNER:
+                return label
+    except Exception:
+        pass
+
+    # 解析 "label": "A" 这种不完全标准 JSON
+    m = re.search(r'["\']?label["\']?\s*[:=]\s*["\']?([ABCD])["\']?', s, flags=re.I)
+    if m:
+        return m.group(1).upper()
+
+    # 解析单独的 A/B/C/D，避免把 Answer 里的 A 当成标签
+    candidates = re.findall(r'(?<![A-Z0-9])([ABCD])(?![A-Z0-9])', s_upper)
+    if candidates:
+        return candidates[-1]
+
+    raise ValueError(f"无法从模型输出中解析 A/B/C/D: {model_output}")
+
+
+def save_corner_mapping(mapping_path, corner_names, corner_uv, corner_pixels, corner_valid, label_draw_infos=None):
+    """
+    保存 A/B/C/D 到真实 corner_mode 的映射，后续模型只需要识别字母。
+    """
+    label_draw_infos = label_draw_infos or {}
+    mapping = {}
+    for i, corner_mode in enumerate(corner_names):
+        letter = CORNER_TO_LETTER[corner_mode]
+        p = corner_pixels[i]
+        uv = corner_uv[corner_mode]
+        mapping[letter] = {
+            "corner_mode": corner_mode,
+            "uv": [float(uv[0]), float(uv[1])],
+            "pixel": [float(p[0]), float(p[1])],
+            "valid": bool(corner_valid[i]),
+        }
+        if letter in label_draw_infos:
+            mapping[letter].update(label_draw_infos[letter])
+
+    with open(mapping_path, "w", encoding="utf-8") as f:
+        json.dump(mapping, f, indent=2, ensure_ascii=False)
+
+    print("Saved corner label mapping:", mapping_path)
+    return mapping
+
+
 # ============================================================
 # 主流程
 # ============================================================
@@ -358,11 +498,20 @@ def main():
     # 7. 标注四个角
     # ----------------------------
     label_colors = {
-        "min_u_min_v": (255, 0, 0),
-        "max_u_min_v": (0, 0, 255),
-        "min_u_max_v": (0, 180, 255),
-        "max_u_max_v": (0, 100, 0),
+        "A": (255, 0, 0),       # blue in BGR
+        "B": (0, 180, 255),     # orange/yellow
+        "C": (0, 0, 255),       # red
+        "D": (0, 130, 0),       # green
     }
+
+    # 用投影后的四角中心作为文字外偏移的参考中心
+    valid_corner_pixels = corner_pixels[corner_valid]
+    if len(valid_corner_pixels) > 0:
+        object_center_pixel = np.nanmean(valid_corner_pixels, axis=0)
+    else:
+        object_center_pixel = np.array([W_img / 2, H_img / 2], dtype=float)
+
+    label_draw_infos = {}
 
     for i, name in enumerate(corner_names):
         if not corner_valid[i]:
@@ -374,31 +523,46 @@ def main():
         if not (0 <= p[0] < W_img and 0 <= p[1] < H_img):
             print(f"角点 {name} 投影在图像外: {p}")
 
-        draw_label(img,name,p,color=label_colors[name])
+        letter = CORNER_TO_LETTER[name]
+        label_draw_infos[letter] = draw_corner_letter_label(
+            img,
+            letter=letter,
+            corner_pt=p,
+            object_center_pt=object_center_pixel,
+            color=label_colors[letter]
+        )
 
-        cv2.circle(img,tuple(np.round(p).astype(int)),5,label_colors[name],-1)
+    # 保存 A/B/C/D -> corner_mode 的映射，模型只判断字母，代码再转回真实 corner_mode
+    corner_mapping = save_corner_mapping(
+        MAPPING_PATH,
+        corner_names=corner_names,
+        corner_uv=corner_uv,
+        corner_pixels=corner_pixels,
+        corner_valid=corner_valid,
+        label_draw_infos=label_draw_infos,
+    )
 
     # ----------------------------
     # 8. 画 +u / +v 箭头
     # ----------------------------
-    if np.all(arrow_valid):
-        draw_arrow(
-            img,
-            arrow_pixels[0],
-            arrow_pixels[1],
-            color=(0, 0, 255),   # 红色 +u
-            text="+u"
-        )
-
-        draw_arrow(
-            img,
-            arrow_pixels[0],
-            arrow_pixels[2],
-            color=(255, 0, 0),   # 蓝色 +v
-            text="+v"
-        )
-    else:
-        print("警告：u/v 箭头投影无效")
+    #if np.all(arrow_valid):
+    #    draw_arrow(
+    #        img,
+    #        arrow_pixels[0],
+    #        arrow_pixels[1],
+    #        color=(0, 0, 255),   # 红色 +u
+    #        text="+u"
+    #    )
+#
+    #    draw_arrow(
+    #        img,
+    #        arrow_pixels[0],
+    #        arrow_pixels[2],
+    #        color=(255, 0, 0),   # 蓝色 +v
+    #        text="+v"
+    #    )
+    #else:
+    #    print("警告：u/v 箭头投影无效")
 
     # ----------------------------
     # 9. 保存结果
@@ -406,14 +570,29 @@ def main():
     cv2.imwrite(OUT_PATH, img)
     print("Saved annotated RGB:", OUT_PATH)
 
-    cv2.imshow("annotated_rgb", img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # 注意：SSH/Jupyter/超算节点通常没有 GUI，不要用 cv2.imshow，容易导致 kernel died。
+    # 如需查看结果，直接打开 OUT_PATH 保存的图片。
 
     ######################### inference ######################### 
-    messages = build_defect_corner_prompt(RGB_PATH,OUT_PATH,'a black object' )
-    corner_mode = qwen3_inference(messages)
-    print(corner_mode, type(corner_mode))
+    messages = build_defect_corner_prompt(RGB_PATH, OUT_PATH, 'a black object')
+    raw_response = qwen3_inference(messages)
+    corner_letter = parse_corner_letter(raw_response)
+    corner_mode = LETTER_TO_CORNER[corner_letter]
+
+    #result = {
+    #    "raw_response": str(raw_response),
+    #    "corner_letter": corner_letter,
+    #    "corner_mode": corner_mode,
+    #    "mapping_path": MAPPING_PATH,
+    #    "labeled_image_path": OUT_PATH,
+    #}
+    #with open(INFERENCE_RESULT_PATH, "w", encoding="utf-8") as f:
+    #    json.dump(result, f, indent=2, ensure_ascii=False)
+#
+    print("raw_response:", raw_response)
+    print("corner_letter:", corner_letter)
+    print("corner_mode:", corner_mode)
+    #print("Saved inference result:", INFERENCE_RESULT_PATH)
 
 
 if __name__ == "__main__":

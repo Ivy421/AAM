@@ -1,4 +1,5 @@
 import numpy as np
+import json
 import open3d as o3d
 import matplotlib.pyplot as plt
 from scipy import ndimage
@@ -526,15 +527,18 @@ def mask_to_uv_points(mask, u_min, v_min, grid_res):
 #################################################################################
 #################################################################################
 
+## 加载LLM给出的corner_mode参数
+with open('E:/HKUSTGZ/AAM/construction/data/frame_result/corner_mode_mapping.json','r',encoding='utf-8') as f:
+    data = json.load(f)
+CORNER_MODE = data['corner_mode']
+print('corner mode:', CORNER_MODE)
+
 # 点云单位如果是 m，则 0.001 = 1 mm
 grid_res = 0.0008        # 2D 栅格分辨率
 pad = 0            # 理想矩形外扩边界
 
-# 只补缺陷角附近，避免把普通扫描空洞也补上
-# 可选："min_u_min_v", "max_u_min_v", "min_u_max_v", "max_u_max_v"
-CORNER_MODE = "max_u_min_v"
 # 默认的ROI占据边长的比例
-ROI_restriction = 0.15  # 物理约束 缺陷长宽不超过10cm
+ROI_restriction = 0.15  # 物理约束 缺陷长宽不超过15cm
 roi_frac_u = 0.5
 roi_frac_v = 0.5
 
@@ -593,6 +597,7 @@ for p in pts_u_max:
     plt.scatter(p[0],p[1],s = 0.5, c = 'red') 
 plt.show()
 
+"""
 if CORNER_MODE == 'max_u_min_v':
     len_v_phy = max(pts_v_min[:,0]) - min(pts_v_min[:,0] )
     len_u_phy = max(pts_u_max[:,1]) - min(pts_u_max[:,1] )
@@ -991,3 +996,4 @@ o3d.visualization.draw_geometries([
 
 #o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/depression_repair_model.pcd", repair_model_pcd)
 
+"""

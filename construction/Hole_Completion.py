@@ -136,7 +136,121 @@ def largest_component(mask, min_pixels=30):
     out = (lab == idx)
     return out if out.sum() >= min_pixels else np.zeros_like(mask, dtype=bool)
 
-def uv_to_defect_mask(u, v, plane_pcd, other_plane_pcd, grid_res=0.0005, pad=0.002):
+
+def make_disk_structure(radius_pix):
+    """
+    生成圆盘结构元素，用于按“宽度阈值”切掉细长分支
+    """
+    r = int(np.ceil(max(1, radius_pix)))
+    yy, xx = np.mgrid[-r:r + 1, -r:r + 1]
+    return (xx ** 2 + yy ** 2) <= (r ** 2)
+
+
+def cut_narrow_branches_mask(
+    defect_mask,
+    grid_res,
+    width_thresh=0.0018,
+    min_pixels=30,
+    recover_ratio=0.60
+):
+    """
+    在二维 defect_mask 上做后处理：
+    通过“宽度阈值”切掉细长棱边/细长分支
+
+    参数
+    ----
+    width_thresh : float
+        物理宽度阈值（单位与点云一致，当前代码里默认是米）
+        小于该宽度的细长分支会被 opening 切掉
+    recover_ratio : float
+        opening 后再适度膨胀回来，避免主体被削得过狠
+    """
+    defect_mask = np.asarray(defect_mask, dtype=bool)
+    if defect_mask.sum() == 0:
+        info = {
+            "used": False,
+            "radius_pix": 0,
+            "mask_before": defect_mask.copy(),
+            "mask_open": defect_mask.copy(),
+            "mask_after": defect_mask.copy(),
+            "local_width": np.zeros_like(defect_mask, dtype=float),
+        }
+        return defect_mask.copy(), info
+
+    # 局部宽度（用于调试观察，不直接参与裁切）
+    dist = ndimage.distance_transform_edt(defect_mask) * grid_res
+    local_width = 2.0 * dist
+
+    radius_pix = max(1, int(np.ceil(width_thresh / (2.0 * grid_res))))
+    st_open = make_disk_structure(radius_pix)
+
+    # opening：切掉比阈值更窄的细长分支
+    mask_open = ndimage.binary_opening(defect_mask, structure=st_open)
+
+    # 如果 opening 把东西切没了，说明阈值太狠，直接回退
+    if mask_open.sum() == 0:
+        info = {
+            "used": False,
+            "radius_pix": radius_pix,
+            "mask_before": defect_mask.copy(),
+            "mask_open": mask_open.copy(),
+            "mask_after": defect_mask.copy(),
+            "local_width": local_width,
+        }
+        return defect_mask.copy(), info
+
+    # 只保留 opening 后的主体最大连通域
+    mask_open = largest_component(mask_open, min_pixels=max(10, min_pixels // 2))
+    if mask_open.sum() == 0:
+        info = {
+            "used": False,
+            "radius_pix": radius_pix,
+            "mask_before": defect_mask.copy(),
+            "mask_open": mask_open.copy(),
+            "mask_after": defect_mask.copy(),
+            "local_width": local_width,
+        }
+        return defect_mask.copy(), info
+
+    # 适度恢复主体边界，但不让细长分支长回来
+    recover_r = max(1, int(np.ceil(radius_pix * recover_ratio)))
+    st_recover = make_disk_structure(recover_r)
+    mask_recover = ndimage.binary_dilation(mask_open, structure=st_recover)
+
+    # 只允许在原 defect 内恢复
+    mask_after = defect_mask & mask_recover
+    mask_after = ndimage.binary_closing(mask_after, structure=make_disk_structure(1))
+    mask_after = largest_component(mask_after, min_pixels=min_pixels)
+
+    # 如果切完太少，也回退
+    if mask_after.sum() < max(10, int(0.15 * defect_mask.sum())):
+        info = {
+            "used": False,
+            "radius_pix": radius_pix,
+            "mask_before": defect_mask.copy(),
+            "mask_open": mask_open.copy(),
+            "mask_after": defect_mask.copy(),
+            "local_width": local_width,
+        }
+        return defect_mask.copy(), info
+
+    info = {
+        "used": True,
+        "radius_pix": radius_pix,
+        "mask_before": defect_mask.copy(),
+        "mask_open": mask_open.copy(),
+        "mask_after": mask_after.copy(),
+        "local_width": local_width,
+    }
+    return mask_after, info
+
+
+def uv_to_defect_mask(
+    u, v, plane_pcd, other_plane_pcd,
+    grid_res=0.0005, pad=0.002,
+    ridge_width_thresh=0.005,
+    ridge_recover_ratio=0.60
+):
     uv = np.stack([u, v], axis=1)
 
     # -------------------------
@@ -162,7 +276,6 @@ def uv_to_defect_mask(u, v, plane_pcd, other_plane_pcd, grid_res=0.0005, pad=0.0
     iy = np.clip(iy, 0, ny - 1)
 
     actual_mask[iy, ix] = True
-    #actual_mask = ndimage.binary_dilation(actual_mask, iterations=1)
     actual_mask = ndimage.binary_closing(actual_mask, iterations=1)
 
     # -------------------------
@@ -199,11 +312,10 @@ def uv_to_defect_mask(u, v, plane_pcd, other_plane_pcd, grid_res=0.0005, pad=0.0
     dv_line = p1_uv[1] - p0_uv[1]
 
     # 判断“实际点云”在哪一侧，就保留哪一侧
-    # side > 0 / side < 0 表示在线的两边
     side_pts = du_line * (v - p0_uv[1]) - dv_line * (u - p0_uv[0])
     keep_positive = np.sum(side_pts >= 0) >= np.sum(side_pts <= 0)
 
-    # 对整个栅格求半平面mask
+    # 对整个栅格求半平面 mask
     uu = umin + (np.arange(nx) + 0.5) * grid_res
     vv = vmin + (np.arange(ny) + 0.5) * grid_res
     UU, VV = np.meshgrid(uu, vv)
@@ -215,16 +327,24 @@ def uv_to_defect_mask(u, v, plane_pcd, other_plane_pcd, grid_res=0.0005, pad=0.0
     else:
         half_mask = side_grid <= grid_res
 
-    # 用交线裁掉多余那半边
     ideal_mask = ideal_mask & half_mask
 
     # -------------------------
     # 5) 缺陷区域 = 理想 - 实际
     # -------------------------
-    defect_mask = ideal_mask & (~actual_mask)
-    defect_mask = largest_component(defect_mask, min_pixels=30)
-    # defect_mask = ndimage.binary_closing(defect_mask, iterations=1)
+    defect_mask_raw = ideal_mask & (~actual_mask)
+    defect_mask_raw = largest_component(defect_mask_raw, min_pixels=30)
 
+    # -------------------------
+    # 6) 细长棱边后处理：按宽度阈值切掉细长分支
+    # -------------------------
+    defect_mask, ridge_info = cut_narrow_branches_mask(
+        defect_mask_raw,
+        grid_res=grid_res,
+        width_thresh=ridge_width_thresh,
+        min_pixels=30,
+        recover_ratio=ridge_recover_ratio
+    )
 
     info = {
         "umin": umin,
@@ -232,12 +352,15 @@ def uv_to_defect_mask(u, v, plane_pcd, other_plane_pcd, grid_res=0.0005, pad=0.0
         "grid_res": grid_res,
         "actual_mask": actual_mask,
         "ideal_mask": ideal_mask,
+        "defect_mask_raw": defect_mask_raw,
         "defect_mask": defect_mask,
         "line_p0_uv": p0_uv,
         "line_p1_uv": p1_uv,
         "half_mask": half_mask,
+        "ridge_info": ridge_info,
     }
     return defect_mask, info
+
 
 def defect_mask_to_3d(defect_mask, info, plane_pcd):
     c, bu, bv, n = plane_basis_from_pcd(plane_pcd)
@@ -378,12 +501,12 @@ u2, v2, proj2_3d = project_points_to_plane(pcd2, plane2_pcd)
 defect_mask1, info1 = uv_to_defect_mask(
     u1, v1,
     plane1_pcd, plane2_pcd,
-    grid_res=0.0006, pad=0.0005)
+    grid_res=0.0006, pad=0.0)
 
 defect_mask2, info2 = uv_to_defect_mask(
     u2, v2,
     plane2_pcd, plane1_pcd,
-    grid_res=0.0006, pad=0.0005)
+    grid_res=0.0006, pad=0.0)
 
 #把缺陷mask重投影回3D空间
 defect_pcd1 = defect_mask_to_3d(defect_mask1, info1, plane1_pcd)

@@ -172,10 +172,11 @@ points_collection = []
 bcT_collection = []
 print(png_names)
 
-ecT = np.array([[0,0.9397,0.342,-0.0737],
-    [-1,0,0,0.044],
-    [0,-0.342,0.9397,0.0493],
-    [0,0,0,1]], dtype=np.float64)
+#ecT = np.array([[0,0.9397,0.342,-0.0737],
+#    [-1,0,0,0.044],
+#    [0,-0.342,0.9397,0.0493],
+#    [0,0,0,1]], dtype=np.float64)
+ecT = np.load('E:/HKUSTGZ/AAM/config/calibration/right_camera/ecT.npy')
 
 for name in png_names:
     print(f'Processing image: {name}.png')
