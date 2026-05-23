@@ -595,14 +595,15 @@ pcd_raw.paint_uniform_color([0, 0, 1 ])
 repair_model_pcd.paint_uniform_color([0.2,0.8,0.33])
 #o3d.visualization.draw_geometries([repair_model_pcd])
 ################ 保存参数到本地 #################
-o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/defect_pcd1.pcd", defect_pcd1)
-o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/defect_pcd2.pcd", defect_pcd2)
-o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/plane1_pcd.pcd", plane1_pcd)
-o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/plane2_pcd.pcd", plane2_pcd)
-o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/repair_model_pcd.pcd", repair_model_pcd)
+out_dir = "E:/HKUSTGZ/AAM/construction/data/completion_result/hole"
+o3d.io.write_point_cloud(out_dir + "/defect_pcd1.pcd", defect_pcd1)
+o3d.io.write_point_cloud(out_dir + "/defect_pcd2.pcd", defect_pcd2)
+o3d.io.write_point_cloud(out_dir + "/plane1_pcd.pcd", plane1_pcd)
+o3d.io.write_point_cloud(out_dir + "/plane2_pcd.pcd", plane2_pcd)
+o3d.io.write_point_cloud(out_dir + "/repair_model_pcd.pcd", repair_model_pcd)
 
 np.savez(
-    "E:/HKUSTGZ/AAM/construction/data/completion_result/planes_meta.npz",
+    out_dir + "/meta.npz",
     plane1_model=plane1_model,
     plane2_model=plane2_model,
     n1=n1,
@@ -616,5 +617,5 @@ np.savez(
     defect2_center = defect2_center,
 
 )
-with open ('E:/HKUSTGZ/AAM/construction/data/completion_result/mark.json', 'w', encoding = 'utf-8') as f:
+with open (out_dir + '/mark.json', 'w', encoding = 'utf-8') as f:
     json.dump(mark, f)

@@ -6,6 +6,7 @@ from scipy import ndimage
 from sklearn.cluster import DBSCAN
 from scipy.signal import savgol_filter
 from scipy.signal import find_peaks, savgol_filter
+
 def find_plane(pcd, voxel_size=0.001, distance_threshold=0.003):
     pcd = pcd.voxel_down_sample(voxel_size=voxel_size)
     plane1_model, inliers1 = pcd.segment_plane(
@@ -18,9 +19,11 @@ def find_plane(pcd, voxel_size=0.001, distance_threshold=0.003):
 
     return plane1_model, plane1_pcd, rest_pcd
 
+## 归一化（法）向量
 def normalize(v):
     return v / (np.linalg.norm(v) + 1e-12)
 
+## 提取顶面边界点
 def extract_side_points(uv, side, bin_size=0.003):
     """
     从二维点云中提取某一侧的边界候选点。
@@ -67,41 +70,48 @@ def extract_side_points(uv, side, bin_size=0.003):
 
     return np.asarray(pts)
 
-def filter_side_points_by_local_median(points, side, window=5, th=0.003):
+## 边界提取点平滑-删掉跳变点
+## 根据corner_mode来决定滤波的顺序是points升序/降序
+def filter_side_points_by_local_median(points, side, corner_mode, window=5, th=0.003):
     """
     边界点连续性滤波：
     用当前点与前 window 个已保留点的局部中位数比较。
-    
     对 u_min / u_max 边：
         边界主要沿 v 方向延伸，所以检查 u 方向跳变。
-    
     对 v_min / v_max 边：
         边界主要沿 u 方向延伸，所以检查 v 方向跳变。
-    
     points: (N, 2)
     side: "u_min", "u_max", "v_min", "v_max"
     window: 使用前几个已保留点做局部中位数
     th: 垂直方向跳变阈值，单位 m
     """
-    #points = np.asarray(points)
-
-    if len(points) <= window:
-        return points
-
-    # 确保边界点顺序正确
-    if side in ["u_min", "u_max"]:
-        # u 边界沿 v 方向走
-        #points = points[np.argsort(points[:, 1])]
-        check_dim = 0   # 检查 u 方向跳变
-    elif side in ["v_min", "v_max"]:
-        # v 边界沿 u 方向走
-        #points = points[np.argsort(points[:, 0])]
-        check_dim = 1   # 检查 v 方向跳变
-    else:
-        raise ValueError("side 必须是 u_min/u_max/v_min/v_max")
-
+    
+    if corner_mode == 'max_u_max_v':
+        print('升序处理边界点，使边界点从平稳开始过度到跳变')
+        if side in ["u_min", "u_max"]:
+            print(f'处理边界:{side}')
+            points = points[np.argsort(points[:, 1])]
+            check_dim = 0   # 检查 u 方向跳变
+        elif side in ["v_min", "v_max"]:
+            print(f'处理边界:{side}')
+            points = points[np.argsort(points[:, 0])]  # np.argsort默认升序排列
+            check_dim = 1   # 检查 v 方向跳变
+        else:
+            raise ValueError("side 必须是 u_min/u_max/v_min/v_max")
+        
+    elif corner_mode == 'max_u_min_v':
+        print('升序处理u边界点，使边界点从平稳开始过度到跳变')
+        if side in ["u_min", "u_max"]:
+            points = points[np.argsort(points[:, 1])]
+            check_dim = 0   # 检查 u 方向跳变
+        elif side in ["v_min", "v_max"]:
+            # v 边界沿 u 方向走
+            points = points[np.argsort(points[:, 0])[::-1]]
+            check_dim = 1   # 检查 v 方向跳变
+        else:
+            raise ValueError("side 必须是 u_min/u_max/v_min/v_max")        
+    
     kept = []
-
     for p in points:
         if len(kept) < window:
             kept.append(p)
@@ -304,6 +314,7 @@ def compute_corner_roi_frac_from_turns(
     turn_u_on_v_line = v_line[turn_idx_v, 0]  # 用来算 u 方向缺陷长度
     turn_v_on_u_line = u_line[turn_idx_u, 1]  # 用来算 v 方向缺陷长度
 
+
     if corner_mode == "max_u_min_v":
         len_u_defect = u_max_all - turn_u_on_v_line
         len_v_defect = turn_v_on_u_line - v_min_all
@@ -322,7 +333,7 @@ def compute_corner_roi_frac_from_turns(
 
     else:
         raise ValueError("CORNER_MODE 设置错误")
-
+    
     frac_u = len_u_defect / total_u
     frac_v = len_v_defect / total_v
 
@@ -336,39 +347,46 @@ def compute_corner_roi_frac_from_turns(
 
     return frac_u, frac_v
 
-## u 是长边，v是短边
+## 基于顶面点云建立局部坐标系，保证u始终是最能指向机械臂前方的轴
 def build_plane_basis(points, normal):
     """
     基于顶面点云建立局部坐标系：
     origin: 顶面中心
-    u_axis, v_axis: 顶面内两个正交方向
     n_axis: 顶面法向
+    u_axis: 顶面内更接近机械臂正前方 [1,0,0] 的轴
+    v_axis: 与 n_axis, u_axis 构成右手系
+
+    注意：
+    u_axis 不再按长边/短边定义，而是按与 world_x=[1,0,0] 的夹角定义。
     """
+
     n_axis = normalize(normal)
     origin = points.mean(axis=0)
-
-    # 去掉法向分量，只保留平面内分量
     pts = points - origin
     pts_plane = pts - np.outer(pts @ n_axis, n_axis)
-
-    # PCA 找顶面内主方向
     cov = np.cov(pts_plane.T)
     eigvals, eigvecs = np.linalg.eigh(cov)
-    
-    u_axis = eigvecs[:, np.argmax(eigvals)]
-    u_axis = normalize(u_axis - np.dot(u_axis, n_axis) * n_axis)
-    
-    #物体坐标系U轴（x轴）朝前指向机械臂
-    world_x = np.array([1,0,0])
+    order = np.argsort(eigvals)[::-1]
+    axis1 = eigvecs[:, order[0]]
+    axis2 = eigvecs[:, order[1]]
+    axis1 = normalize(axis1 - np.dot(axis1, n_axis) * n_axis)
+    axis2 = normalize(axis2 - np.dot(axis2, n_axis) * n_axis)
+    world_x = np.array([1.0, 0.0, 0.0])
+    score1 = abs(np.dot(axis1, world_x))
+    score2 = abs(np.dot(axis2, world_x))
+    if score1 >= score2:
+        u_axis = axis1
+        print("u_axis selected from PCA axis1")
+    else:
+        u_axis = axis2
+        print("u_axis selected from PCA axis2")
+
     if np.dot(world_x,u_axis) > 0:
         print('change side of u')
         u_axis = - u_axis
-    v_axis = normalize(np.cross(n_axis, u_axis))
 
     v_axis = normalize(np.cross(n_axis, u_axis))
-
-    return origin, u_axis, v_axis, n_axis
-
+    return origin, u_axis, v_axis
 
 def project_to_uv(points, origin, u_axis, v_axis):
     """
@@ -524,6 +542,182 @@ def mask_to_uv_points(mask, u_min, v_min, grid_res):
 
     return np.column_stack([u, v])
 
+def extract_top_defect_margin_points(
+    defect_mask,
+    top_occ_mask,
+    u_min,
+    v_min,
+    grid_res,
+    origin,
+    u_axis,
+    v_axis,
+    margin_dilate_iter=1
+):
+    """
+    提取已有顶面点云一侧的 defect margin。
+    也就是 top_occ_mask 中靠近 defect_mask 的那一圈。
+    """
+
+    defect_near = ndimage.binary_dilation(
+        defect_mask,
+        iterations=margin_dilate_iter
+    )
+
+    # 注意这里反过来了：取 top_occ 侧，不取 defect 侧
+    margin_mask = top_occ_mask & defect_near
+
+    top_defect_margin_uv = mask_to_uv_points(
+        margin_mask,
+        u_min,
+        v_min,
+        grid_res
+    )
+
+    if len(top_defect_margin_uv) > 0:
+        top_defect_margin_points = uv_to_3d(
+            top_defect_margin_uv,
+            origin,
+            u_axis,
+            v_axis
+        )
+    else:
+        top_defect_margin_points = np.empty((0, 3))
+
+    top_defect_margin_pcd = o3d.geometry.PointCloud()
+    top_defect_margin_pcd.points = o3d.utility.Vector3dVector(
+        top_defect_margin_points
+    )
+    top_defect_margin_pcd.paint_uniform_color([1.0, 0.0, 0.0])
+
+    return top_defect_margin_pcd, top_defect_margin_points, top_defect_margin_uv
+
+def make_colored_pcd(points, color):
+    """
+    根据点数组创建单色 Open3D 点云。
+    """
+    pcd = o3d.geometry.PointCloud()
+    points = np.asarray(points)
+    if len(points) > 0:
+        pcd.points = o3d.utility.Vector3dVector(points)
+        pcd.paint_uniform_color(color)
+    return pcd
+
+def fit_plane_normal_pca(points):
+    """
+    用 PCA 拟合点云平面，返回：
+        centroid: 平面中心
+        normal: 平面法向
+        plane_d: 平面方程 n·x + d = 0 的 d
+    """
+    points = np.asarray(points)
+
+    centroid = points.mean(axis=0)
+    pts = points - centroid
+
+    cov = pts.T @ pts
+    eigvals, eigvecs = np.linalg.eigh(cov)
+
+    # 最小特征值对应平面法向
+    normal = eigvecs[:, np.argmin(eigvals)]
+    normal = normalize(normal)
+
+    plane_d = -np.dot(normal, centroid)
+
+    return centroid, normal, plane_d
+
+## 获得两个边界侧面的朝外的法向量，返回dict mark,保存为json
+def get_side_normal( corner_mode, u_axis, v_axis, n_axis):
+    """
+    根据 u/v 边界约束 + n_axis 堆叠方向，解析计算侧面的指向外侧的法向。
+    """
+    side_n_mark = {}
+    if corner_mode == 'max_u_max_v':
+        #side_n_mark = { {'max_u_outward':v_axis},{'max_v_outward':u_axis}}
+        side_n_mark['max_u_outward'] = v_axis
+        side_n_mark['max_v_outward'] = u_axis
+    elif corner_mode == 'max_u_min_v':
+        #side_n_mark = { {'max_u_outward':-v_axis},{'min_v_outward':u_axis}}
+        side_n_mark['max_u_outward'] = -v_axis
+        side_n_mark['min_v_outward'] = u_axis        
+
+    return side_n_mark
+
+## 通过corner_mode决定返回哪两个边界侧面的平面点云
+def get_target_sides_from_corner_mode(corner_mode):
+    """
+    根据 CORNER_MODE 决定修补块需要提取哪两个规则侧面。
+    """
+    if corner_mode == "min_u_min_v":
+        return ["min_u", "min_v"]
+    elif corner_mode == "max_u_min_v":
+        return ["max_u", "min_v"]
+    elif corner_mode == "min_u_max_v":
+        return ["min_u", "max_v"]
+    elif corner_mode == "max_u_max_v":
+        return ["max_u", "max_v"]
+    else:
+        raise ValueError(f"未知 corner_mode: {corner_mode}")
+
+## 返回边界侧面的平面mask+点云    
+def extract_side_plane_points(
+    repair_points,origin,
+    u_axis,v_axis,n_axis,corner_mode,
+    u_min,u_max,v_min,v_max,side_tol=0.001 ):
+    """
+    利用 flood fill 生成规则：
+    修补点云是 uv mask 沿 n_axis 堆叠得到的。
+    因此侧面点云可以通过 u/v 是否接近边界直接筛选。
+
+    返回：
+        side_masks: dict
+        side_points: dict
+        side_normals: dict
+        side_info: dict
+    """
+
+    repair_points = np.asarray(repair_points)
+
+    repair_local = project_to_uvz(
+        repair_points,
+        origin,
+        u_axis,
+        v_axis,
+        n_axis
+    )
+
+    repair_u = repair_local[:, 0]
+    repair_v = repair_local[:, 1]
+
+    target_sides = get_target_sides_from_corner_mode(corner_mode)
+
+    boundary_dict = {
+        "min_u": u_min,
+        "max_u": u_max,
+        "min_v": v_min,
+        "max_v": v_max,
+    }
+
+    coord_dict = {
+        "min_u": repair_u,
+        "max_u": repair_u,
+        "min_v": repair_v,
+        "max_v": repair_v,
+    }
+
+    side_masks = {}
+    side_points = {}
+
+    for side_name in target_sides:
+        boundary = boundary_dict[side_name]
+        coord = coord_dict[side_name]
+
+        mask = np.abs(coord - boundary) <= side_tol
+        points = repair_points[mask]
+
+        side_masks[side_name] = mask
+        side_points[side_name] = points
+
+    return side_masks, side_points
 #################################################################################
 #################################################################################
 
@@ -533,6 +727,7 @@ with open('E:/HKUSTGZ/AAM/construction/data/frame_result/corner_mode_mapping.jso
 CORNER_MODE = data['corner_mode']
 print('corner mode:', CORNER_MODE)
 
+CORNER_MODE = 'max_u_max_v'
 # 点云单位如果是 m，则 0.001 = 1 mm
 grid_res = 0.0008        # 2D 栅格分辨率
 pad = 0            # 理想矩形外扩边界
@@ -551,16 +746,15 @@ pcd_raw = o3d.io.read_point_cloud("E:/HKUSTGZ/AAM/construction/data/frame_result
 points_raw = np.asarray(pcd_raw.points)
 plane1, plane1_pcd,  _ = find_plane(pcd_raw, voxel_size=0.001, distance_threshold=0.003)
 _, _,  rest_pcd = find_plane(pcd_raw, voxel_size=0.001, distance_threshold=0.001)
-n = plane1[:3]
+n_axis = plane1[:3]
 inward_vec = np.array([0,0,1])
-if np.dot(n, inward_vec) >0:
-    print('change side of n')
-    n = -n
+if np.dot(n_axis, inward_vec) >0:
+    print('顶面法线指向物体内部与[0,0,-1]同向')
+    n_axis = -n_axis
 top_points = np.asarray(plane1_pcd.points)
+#o3d.visualization.draw_geometries([plane1_pcd])
 
-o3d.visualization.draw_geometries([plane1_pcd])
-
-origin, u_axis, v_axis, n_axis = build_plane_basis(top_points, n)
+origin, u_axis, v_axis = build_plane_basis(top_points, n_axis)
 uv = project_to_uv(top_points, origin, u_axis, v_axis)
 
 edge_bin_size = 0.0005  # 可根据点云密度调整
@@ -570,6 +764,8 @@ pts_u_max = extract_side_points(uv, "u_max", bin_size=edge_bin_size)
 pts_v_min = extract_side_points(uv, "v_min", bin_size=edge_bin_size)
 pts_v_max = extract_side_points(uv, "v_max", bin_size=edge_bin_size)
 
+
+
 # 边界点处理
 pts_u_max = pts_u_max[10:-10]
 pts_u_max = pts_u_max[::-1]
@@ -578,26 +774,22 @@ pts_u_min = pts_u_min[::-1]
 pts_v_min = pts_v_min [10:-10]
 pts_v_max = pts_v_max [10:-10]
 
+#### 边界点filter，更平滑，容易找到转折角index
 boundary_jump_th = 0.006   # 3 mm，可调 0.002~0.004
 median_window = 20
+pts_u_min = filter_side_points_by_local_median(pts_u_min, "u_min", CORNER_MODE, window=median_window, th=boundary_jump_th)
+pts_u_max = filter_side_points_by_local_median(pts_u_max, "u_max", CORNER_MODE, window=median_window, th=boundary_jump_th)
+pts_v_min = filter_side_points_by_local_median(pts_v_min, "v_min", CORNER_MODE,window=median_window, th=boundary_jump_th)
+pts_v_max = filter_side_points_by_local_median(pts_v_max, "v_max", CORNER_MODE,window=median_window, th=boundary_jump_th)
 
-pts_u_min = filter_side_points_by_local_median(pts_u_min, "u_min", window=median_window, th=boundary_jump_th)
-pts_u_max = filter_side_points_by_local_median(pts_u_max, "u_max", window=median_window, th=boundary_jump_th)
-pts_v_min = filter_side_points_by_local_median(pts_v_min, "v_min", window=median_window, th=boundary_jump_th)
-pts_v_max = filter_side_points_by_local_median(pts_v_max, "v_max", window=median_window, th=boundary_jump_th)
+#plt.figure()
+#for p in pts_v_max:
+#    plt.scatter(p[0],p[1],s = 0.5, c = 'grey')   
+#for p in pts_u_max:
+#    plt.scatter(p[0],p[1],s = 0.5, c = 'red') 
+#plt.show()
 
-plt.figure()
-for p in pts_v_min:
-    plt.scatter(p[0],p[1],s = 0.5, c = 'yellow')
-for p in pts_v_max:
-    plt.scatter(p[0],p[1],s = 0.5, c = 'grey')   
-for p in pts_u_min:
-    plt.scatter(p[0],p[1],s = 0.5, c = 'blue')
-for p in pts_u_max:
-    plt.scatter(p[0],p[1],s = 0.5, c = 'red') 
-plt.show()
 
-"""
 if CORNER_MODE == 'max_u_min_v':
     len_v_phy = max(pts_v_min[:,0]) - min(pts_v_min[:,0] )
     len_u_phy = max(pts_u_max[:,1]) - min(pts_u_max[:,1] )
@@ -626,15 +818,20 @@ if CORNER_MODE == 'max_u_min_v':
     defect_frac_v = v_line[turn_idx_v]
     defect_frac_u = u_line[turn_idx_u]
 
-    plt.figure()
-    for p in u_line:
-        plt.scatter(p[0], p[1],s = 0.5,c = 'r')
-    plt.scatter(defect_frac_u[0], defect_frac_u[1],s = 20, c = 'r')
+    #plt.figure()
+    #for p in u_line:
+    #    plt.scatter(p[0], p[1],s = 0.5,c = 'r')
+    #plt.scatter(defect_frac_u[0], defect_frac_u[1],s = 20, c = 'r')
+##
+    #for p in v_line:
+    #    plt.scatter(p[0], p[1],s = 0.5,c = 'b')
+    #plt.scatter(defect_frac_v[0],defect_frac_v[1],s = 20, c = 'b')
+    #plt.show()
 
-    for p in v_line:
-        plt.scatter(p[0], p[1],s = 0.5,c = 'b')
-    plt.scatter(defect_frac_v[0],defect_frac_v[1],s = 20, c = 'b')
-    plt.show()
+    print("u_line shape:", np.asarray(u_line).shape)
+    print("v_line shape:", np.asarray(v_line).shape)
+    print("turn_idx_u:", turn_idx_u, type(turn_idx_u))
+    print("turn_idx_v:", turn_idx_v, type(turn_idx_v))
 
     roi_frac_u, roi_frac_v = compute_corner_roi_frac_from_turns(
         uv=uv,
@@ -646,6 +843,90 @@ if CORNER_MODE == 'max_u_min_v':
         margin_ratio=1.10
     )
     print(f'缺陷边界转折比例// 短边，长边：{roi_frac_u, roi_frac_v}')
+    
+elif CORNER_MODE == 'max_u_max_v':
+    # max_u_max_v 对应：
+    # 1. max_u 侧边界：pts_u_max
+    # 2. max_v 侧边界：pts_v_max
+
+    len_v_phy = max(pts_v_max[:, 0]) - min(pts_v_max[:, 0])
+    len_u_phy = max(pts_u_max[:, 1]) - min(pts_u_max[:, 1])
+
+    # 在当前案例中，fac_v = 1 因为v边长7cm，小于roi_restriction 15cm
+    fac_v = min(round(ROI_restriction / len_v_phy, 2), 1)
+    fac_u = min(round(ROI_restriction / len_u_phy, 2), 1)
+
+    len_v = pts_v_max.shape[0]
+    len_u = pts_u_max.shape[0]
+
+    frac_v = int(len_v * fac_v)
+    frac_u = int(len_u * fac_u)
+    print(frac_v, frac_u)
+    u_line = pts_u_max[-frac_u:]
+    v_line = pts_v_max[-frac_v:]
+    print(u_line.shape, v_line.shape)
+
+    #plt.figure()
+    #for p in u_line:
+    #    plt.scatter(p[0], p[1],s = 0.5, color = 'blue')
+    #for p in v_line:
+    #    plt.scatter(p[0], p[1],s = 0.5, color = 'red')
+    #plt.title('边界线清洗前的ROI line')
+    #plt.show()
+
+    u_line_clean = keep_main_cluster(u_line, eps=0.002, min_samples=15)
+    u_line = smooth_line(u_line_clean, window=41, polyorder=2)
+
+    v_line_clean = keep_main_cluster(v_line, eps=0.002, min_samples=15)
+    v_line = smooth_line(v_line_clean, window=41, polyorder=2)
+
+    #plt.figure()
+    #for p in u_line:
+    #    plt.scatter(p[0], p[1],s = 0.5, color = 'blue')
+    #for p in v_line:
+    #    plt.scatter(p[0], p[1],s = 0.5, color = 'red')
+    #plt.title('边界线清洗后的ROI line')
+    #plt.show()
+
+    # u line
+    turn_idx_u, peaks_u, score_u, theta_u, tangents_u = detect_turn(
+        u_line,
+        pca_win=31,
+        step=21,
+        score_smooth_win=31,
+        distance=30,
+        prominence_ratio=0.1
+    )
+
+    # v line
+    turn_idx_v, peaks_v, score_v, theta_v, tangents_v = detect_turn(
+        v_line,
+        pca_win=21,
+        step=15,
+        score_smooth_win=31,
+        distance=30,
+        prominence_ratio=0.15
+    )
+
+    defect_frac_v = v_line[turn_idx_v]
+    defect_frac_u = u_line[turn_idx_u]
+
+    print("u_line shape:", np.asarray(u_line).shape)
+    print("v_line shape:", np.asarray(v_line).shape)
+    print("turn_idx_u:", turn_idx_u, type(turn_idx_u))
+    print("turn_idx_v:", turn_idx_v, type(turn_idx_v))
+
+    roi_frac_u, roi_frac_v = compute_corner_roi_frac_from_turns(
+        uv=uv,
+        u_line=u_line,
+        v_line=v_line,
+        turn_idx_u=turn_idx_u,
+        turn_idx_v=turn_idx_v,
+        corner_mode=CORNER_MODE,
+        margin_ratio=1.10
+    )
+
+    print(f'缺陷u, v边界转折比例: {roi_frac_u, roi_frac_v}')
 
 u_min, v_min = uv.min(axis=0) - pad
 u_max, v_max = uv.max(axis=0) + pad
@@ -658,22 +939,12 @@ v_grid = np.arange(v_min, v_max + grid_res, grid_res)
 
 W = len(u_grid)
 H = len(v_grid)
-
-# 理想矩形区域：整个二维 bounding box
 ideal_mask = np.ones((H, W), dtype=bool)
-
-# ============================================================
-# 4. 生成当前顶面占据 mask
-# ============================================================
 
 # uv 坐标转成栅格 index
 u_idx = ((uv[:, 0] - u_min) / grid_res).astype(int)
 v_idx = ((uv[:, 1] - v_min) / grid_res).astype(int)
-
-valid = (
-    (u_idx >= 0) & (u_idx < W) &
-    (v_idx >= 0) & (v_idx < H)
-)
+valid = ((u_idx >= 0) & (u_idx < W) &(v_idx >= 0) & (v_idx < H))
 
 u_idx = u_idx[valid]
 v_idx = v_idx[valid]
@@ -693,25 +964,16 @@ top_occ_mask = ndimage.binary_closing(
     iterations=1
 )
 
-corner_roi = build_corner_roi(
-    H, W,
-    CORNER_MODE,
-    frac_u=roi_frac_u,
-    frac_v=roi_frac_v
-)
+print(H,W,roi_frac_u,roi_frac_v)
 
-# 理想矩形中没有被当前顶面点云占据的位置，就是候选缺陷区域
+corner_roi = build_corner_roi(H, W,CORNER_MODE,frac_u=roi_frac_u,frac_v=roi_frac_v)
+
 defect_mask = ideal_mask & (~top_occ_mask)
 
 # 只保留缺陷角附近
 defect_mask = defect_mask & corner_roi
-
 # 平滑 defect mask
-defect_mask = ndimage.binary_closing(
-    defect_mask,
-    iterations=defect_close_iter
-)
-
+defect_mask = ndimage.binary_closing(defect_mask,iterations=defect_close_iter)
 # 只保留最大连通区域，去掉零散噪点
 label_mask, num = ndimage.label(defect_mask)
 
@@ -722,6 +984,46 @@ if num > 0:
 else:
     print("警告：没有检测到 defect mask，请检查 CORNER_MODE 或 roi_frac")
 
+
+# ============================================================
+# 提取顶面 defect margin points
+# ============================================================
+
+(top_defect_margin_pcd, top_defect_margin_points, top_defect_margin_uv) = extract_top_defect_margin_points(
+    defect_mask=defect_mask,
+    top_occ_mask=top_occ_mask,
+    u_min=u_min,
+    v_min=v_min,
+    grid_res=grid_res,
+    origin=origin,
+    u_axis=u_axis,
+    v_axis=v_axis,
+    margin_dilate_iter=1
+)
+
+#-------- 统计这个defect到底在机械臂左边还是右边
+left_count = 0
+right_count = 0
+for p in top_defect_margin_points:
+    if p[1] >0:
+        left_count +=1
+    elif p[1]<0:
+        right_count +=1
+if left_count > right_count:
+    defect_world_y = 'left'
+elif left_count <= right_count:
+    defect_world_y = 'right'
+
+
+
+print("top defect margin point num:", len(top_defect_margin_points))
+
+top_defect_margin_pcd.paint_uniform_color([1,0,0])
+plane1_pcd.paint_uniform_color([0.2,0.2,0.2])
+o3d.visualization.draw_geometries([
+    plane1_pcd,
+    top_defect_margin_pcd
+])
 
 ys, xs = np.where(defect_mask)
 
@@ -738,17 +1040,13 @@ repair_top_pcd.paint_uniform_color([1.0, 0.0, 0.0])  # 红色：补全顶面点
 
 plane1_pcd.paint_uniform_color([0.6, 0.6, 0.6])  # 灰色：已有顶面
 
-
-
-out_dir = "E:/HKUSTGZ/AAM/construction/data/frame_result"
-
 # ----------------------------
 # 参数
 # ----------------------------
-layer_step = 0.001          # 每层厚度间隔，单位 m，3 mm
+layer_step = 0.001          # 每层厚度间隔，单位 m，1 mm
 band_width = 0.0007          # 每层取点厚度范围，建议略小于/接近 layer_step
 thres_points_num = 50       # 每层缺陷点少于该值，则认为该层点不足
-max_bad_layers = 5          # 连续 3 层失败则停止
+max_bad_layers = 5          # 连续 5 层失败则停止
 
 barrier_dilate_iter = 4     # 把缺陷截面点膨胀成阻挡边界
 barrier_close_iter = 2      # 连接断裂的 barrier
@@ -756,7 +1054,7 @@ barrier_close_iter = 2      # 连接断裂的 barrier
 max_area_ratio = 0.6       # flood fill 面积过大，认为 barrier 无效
 min_area_pixels = 20        # repair mask 太小也认为无效
 
-max_search_depth = 0.08     # 最大搜索深度，保险限制，单位 m；不知道厚度时防止死循环
+max_search_depth = 0.15     # 最大搜索深度，保险限制，单位 m；不知道厚度时防止死循环
 
 # ============================================================
 # 2. 提取缺陷凹陷面候选点
@@ -932,68 +1230,101 @@ while z <= max_search_depth:
     # 4.6 停止条件
     # ----------------------------
     if bad_barrier_count >= max_bad_layers:
-        print("\n停止：连续 3 层无法形成有效阻挡")
+        print(f"\n停止：连续 {max_bad_layers} 层无法形成有效阻挡")
         break
 
     if low_points_count >= max_bad_layers:
-        print("\n停止：连续 3 层缺陷点数量少于 thres_points_num")
+        print(f"\n停止：连续 {max_bad_layers}层缺陷点数量少于 {thres_points_num}")
         break
 
     z += layer_step
 
-
 # ============================================================
 # 5. 把所有有效层的 repair mask 转成 3D 点云
 # ============================================================
-
 all_layer_points = []
-
 for layer in repair_layers:
     z_layer = layer["z"]
     mask_layer = layer["mask"]
-
     uv_layer = mask_to_uv_points(mask_layer, u_min, v_min, grid_res)
-
     if len(uv_layer) == 0:
         continue
-
     z_arr = np.full(len(uv_layer), z_layer)
-
-    pts_3d = uvz_to_3d(
-        uv_layer,
-        z_arr,
-        origin,
-        u_axis,
-        v_axis,
-        thickness_axis
-    )
-
+    pts_3d = uvz_to_3d(uv_layer,z_arr,origin,u_axis,v_axis, thickness_axis)
     all_layer_points.append(pts_3d)
-
 repair_volume_points = np.vstack(all_layer_points)
-
-repair_model_pcd = o3d.geometry.PointCloud()
-repair_model_pcd.points = o3d.utility.Vector3dVector(repair_volume_points)
-repair_model_pcd.paint_uniform_color([1.0, 0.0, 0.0])  # 红色：分层补全体点云
-
+repair_point_center = repair_volume_points.mean(axis=0)
 print("\n有效层数:", len(repair_layers))
 print("补全体点云数量:", len(repair_volume_points))
 print("最大有效深度:", max([layer["z"] for layer in repair_layers]), "m")
 
-# ============================================================
-# 7. 可视化
-# ============================================================
 
-pcd_raw.paint_uniform_color([0.6, 0.6, 0.6])        # 灰色：顶面
-#defect_surface_pcd.paint_uniform_color([0.0, 0.0, 1.0]) # 蓝色：缺陷凹陷面
-repair_model_pcd.paint_uniform_color([1.0, 0.0, 0.0]) # 红色：分层补全点云
+side_n_mark = get_side_normal( CORNER_MODE, u_axis, v_axis, n_axis)
+print(side_n_mark)
 
-o3d.visualization.draw_geometries([
-    pcd_raw,
-    #defect_surface_pcd,
-    repair_model_pcd
-])
+side_tol = layer_step
+side_masks, side_points = extract_side_plane_points(repair_points=repair_volume_points,
+    origin=origin,
+    u_axis=u_axis,
+    v_axis=v_axis,
+    n_axis=thickness_axis,
+    corner_mode=CORNER_MODE,
+    u_min=u_min,
+    u_max=u_max,
+    v_min=v_min,
+    v_max=v_max,
+    side_tol=side_tol)
 
-#o3d.io.write_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/depression_repair_model.pcd", repair_model_pcd)
 
+# ---------------可视化补全结果 + 侧面点云提取结果 ---------------------------#
+
+repair_model_pcd = o3d.geometry.PointCloud()
+repair_model_pcd.points = o3d.utility.Vector3dVector(repair_volume_points)
+repair_model_pcd.paint_uniform_color([1.0, 0.0, 0.0]) 
+
+u_side_pcd = o3d.geometry.PointCloud()
+u_side_pcd.points = o3d.utility.Vector3dVector(side_points['max_u'])
+u_side_pcd.paint_uniform_color([0.0, 1.0, 0.0])  
+
+v_side_pcd = o3d.geometry.PointCloud()
+v_side_pcd.points = o3d.utility.Vector3dVector(side_points['max_v'])
+v_side_pcd.paint_uniform_color([0.0, 0.0, 1.0])  
+
+#o3d.visualization.draw_geometries([pcd_raw, repair_model_pcd,u_side_pcd,v_side_pcd])
+#o3d.visualization.draw_geometries([repair_model_pcd])
+
+############## 保存 补全点云块，两个side的朝外的法向量，两个side的平面点云
+completion_out_dir = "E:/HKUSTGZ/AAM/construction/data/completion_result/depression"
+o3d.io.write_point_cloud(
+    completion_out_dir + "/model.pcd", repair_model_pcd)
+o3d.io.write_point_cloud(
+    completion_out_dir + "/u_side_plane.pcd", u_side_pcd)
+o3d.io.write_point_cloud(
+    completion_out_dir + "/v_side_plane.pcd", v_side_pcd)
+o3d.io.write_point_cloud(
+    completion_out_dir + "/top_plane.pcd", plane1_pcd)
+o3d.io.write_point_cloud(
+    completion_out_dir + "/top_defect_margin.pcd",
+    top_defect_margin_pcd
+)
+
+
+np.savez(
+    completion_out_dir + '/meta.npz', 
+         side_n_mark = side_n_mark,
+         repair_point_center = repair_point_center,
+         n_axis = n_axis,
+         top_plane_model = plane1,
+         defect_world_y = defect_world_y
+         )
+
+np.savez(
+    completion_out_dir + "/top_defect_margin.npz",
+    top_defect_margin_points=top_defect_margin_points,
+    top_defect_margin_uv=top_defect_margin_uv
+)
+"""
+######------------#
+后续保存的内容还需要添加: repair block安装时候如何提取defect mask? 确定位姿？
+#---------######### 
 """

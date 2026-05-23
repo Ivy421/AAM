@@ -1,8 +1,8 @@
 import os
 import traceback
 
-INPUT_MESH = "E:/HKUSTGZ/AAM/construction/data/completion_result/whole_model.stl"
-OUTPUT_MESH = "E:/HKUSTGZ/AAM/construction/data/completion_result/whole_model_processed.stl"
+INPUT_MESH = "E:/HKUSTGZ/AAM/construction/data/completion_result/depression_repair_model.stl"
+OUTPUT_MESH = "E:/HKUSTGZ/AAM/construction/data/completion_result/depression_print_model.stl"
 
 
 # =========================================================

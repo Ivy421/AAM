@@ -4,7 +4,7 @@ import pymeshlab
 from model_orientation import orient_stl
 import json
 
-repair_block_pcd = o3d.io.read_point_cloud('E:/HKUSTGZ/AAM/construction/data/completion_result/repair_model_pcd.pcd')
+repair_block_pcd = o3d.io.read_point_cloud('E:/HKUSTGZ/AAM/construction/data/completion_result/depression_repair_model.pcd')
 #o3d.visualization.draw_geometries([repair_block_pcd])
 print("\n开始从 repair_block_pcd 生成网格...")
 
@@ -85,7 +85,7 @@ mesh_show.paint_uniform_color([0.7, 0.7, 0.7])
 # 10. 保存为可打印格式
 # =========================================================
 save_dir = "E:/HKUSTGZ/AAM/construction/data/completion_result/"
-o3d.io.write_point_cloud(save_dir + "repair_model.pcd", repair_block_pcd)
-stl_path = save_dir + "hole_repair_model.stl"
+o3d.io.write_point_cloud(save_dir + "depression_repair_model.pcd", repair_block_pcd)
+stl_path = save_dir + "depression_repair_model.stl"
 ok1 = o3d.io.write_triangle_mesh(stl_path, mesh)
 
