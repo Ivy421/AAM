@@ -4,14 +4,14 @@ import pymeshlab
 from model_orientation import orient_stl
 import json
 
-repair_block_pcd = o3d.io.read_point_cloud('E:/HKUSTGZ/AAM/construction/data/completion_result/depression_repair_model.pcd')
+hole_dir = 'E:/HKUSTGZ/AAM/construction/data/completion_result/hole'
+depression_dir = 'E:/HKUSTGZ/AAM/construction/data/completion_result/depression'
+
+repair_block_pcd = o3d.io.read_point_cloud(depression_dir + '/model_oriented.pcd')
 #o3d.visualization.draw_geometries([repair_block_pcd])
 print("\n开始从 repair_block_pcd 生成网格...")
 
-# 先做一次轻量下采样，避免点太密
 #repair_block_pcd = repair_block_pcd.voxel_down_sample(voxel_size=0.0005)
-
-# 估计法向
 repair_block_pcd.estimate_normals(
     search_param=o3d.geometry.KDTreeSearchParamHybrid(
         radius=0.002,
@@ -84,8 +84,8 @@ mesh_show.paint_uniform_color([0.7, 0.7, 0.7])
 # =========================================================
 # 10. 保存为可打印格式
 # =========================================================
-save_dir = "E:/HKUSTGZ/AAM/construction/data/completion_result/"
-o3d.io.write_point_cloud(save_dir + "depression_repair_model.pcd", repair_block_pcd)
-stl_path = save_dir + "depression_repair_model.stl"
+save_dir = "E:/HKUSTGZ/AAM/construction/data/completion_result/depression/"
+#o3d.io.write_point_cloud(save_dir + "depression_repair_model.pcd", repair_block_pcd)
+stl_path = save_dir + "model.stl"
 ok1 = o3d.io.write_triangle_mesh(stl_path, mesh)
 

@@ -1,0 +1,69 @@
+{
+    "plates": [
+        {
+            "plate_index": 1,
+            "plate_name": "plate_1",
+            "need_arrange": true,
+            "objects": [
+                                {
+                                        "path": "1.stl",
+                                        "count": 2,
+                                        "filaments": [1, 1],
+                                        "pos_x": [30.0, 30.0],
+                                        "pos_y": [0.0, 40.0],
+                                        "pos_z": [0.0, 0.0],
+                                        "assemble_index": [1, 2],
+                                        "print_params": {
+                                                 "sparse_infill_density": "30%",
+                                                 "slice_closing_radius": "0.05",
+                                                 "detect_thin_wall": "1",
+                                                 "wall_generator": "arachne",
+                                                 "bridge_angle": "45",
+                                                 "brim_type": "no_brim"
+                                        }
+                                },
+                                {
+                                        "path": "2.stl",
+                                        "count": 2,
+                                        "filaments": [2, 2],
+                                        "pos_x": [-20.0, -20.0],
+                                        "pos_y": [0.0, 40.0],
+                                        "pos_z": [0.0, 0.0],
+                                        "assemble_index": [1, 2]
+                                },
+                                {
+                                        "path": "3.stl",
+                                        "count": 2,
+                                        "filaments": [3, 3],
+                                        "pos_x": [30.0, 30.0],
+                                        "pos_y": [0.0, 40.0],
+                                        "pos_z": [0.0, 0.0],
+                                        "assemble_index": [1, 2]
+                                },
+                                {
+                                        "path": "4.stl",
+                                        "count": 2,
+                                        "filaments": [4, 4],
+                                        "assemble_index": [0, 0]
+                                }
+                        ],
+                        "plate_params": {
+                                "print_sequence": "by layer"
+                        }
+        },
+        {
+            "plate_name": "plate_2",
+            "need_arrange": false,
+            "objects": [
+                                {
+                                        "path": "5.stl",
+                                        "count": 6,
+                                        "pos_x": [-307.2, 30.0, 70.0, -50.0, -90.0, -130.0],
+                                        "pos_y": [0.0, 0.0,  0.0,  0.0,  0.0,   0.0],
+                                        "pos_z": [0.0, 0.0,  0.0,  0.0,  0.0,   0.0],
+                                        "filaments": [3, 3, 3, 3, 3, 3 ]
+                                }
+                        ]
+        }
+    ]
+}

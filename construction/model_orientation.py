@@ -3,6 +3,23 @@ import glob
 import numpy as np
 import open3d as o3d
 
+"""
+STL坐标系变换定义：
+XOY 平面：
+    打印平台平面 / 模型最低点所在平面
+
+Z=0：
+    模型最低点接触打印平台
+
+XY 原点：
+    repair_point_center 投影到 XOY 平面的位置
+
+-Z 方向：
+    被选中的 side 面 outward normal 方向
+
+-Y 方向：
+    另一个 side 面 outward normal 方向，也就是你说的“朝外”方向
+"""
 
 # =========================================================
 # User config
@@ -15,6 +32,7 @@ DEFECT_Y_TO_DOWN_SIDE = {
     "left": "u",
     "right": "v",
 }
+UNIT_SCALE = 1000
 
 TARGET_DOWN_NORMAL = np.array([0.0, 0.0, -1.0])   # side outward normal points to -Z, face touches XOY bed
 TARGET_OTHER_NORMAL = np.array([0.0, -1.0, 0.0])  # other side outward normal points to -Y, face parallel to XOZ
@@ -238,7 +256,7 @@ def orient_stl(
     meta = load_meta(meta_path=meta_path, completion_dir=completion_dir)
 
     side_n_mark = meta["side_n_mark"]
-    repair_point_center = meta["repair_point_center"]
+    repair_point_center = meta["repair_point_center"]  # * UNIT_SCALE
     defect_world_y = meta["defect_world_y"]
 
     down_key, other_key, down_family, other_family = select_side_keys(
@@ -263,10 +281,14 @@ def orient_stl(
         output_stl_path = os.path.join(completion_dir, "model_oriented.stl")
 
     mesh = o3d.io.read_triangle_mesh(input_stl_path)
+    
     if len(mesh.vertices) == 0:
         raise RuntimeError(f"Empty STL mesh: {input_stl_path}")
 
     vertices = np.asarray(mesh.vertices, dtype=float)
+    #vertices = np.asarray(mesh.vertices, dtype=float) * UNIT_SCALE
+
+    mesh.vertices = o3d.utility.Vector3dVector(vertices)
     vertices_rot = (R @ vertices.T).T
 
     center_rot = R @ repair_point_center
@@ -368,10 +390,15 @@ def orient_stl(
 
 
 if __name__ == "__main__":
+    model_dir = "E:/HKUSTGZ/AAM/construction/data/completion_result/depression/"
+    input_stl_path = model_dir + '/model.stl'
+    output_stl_path = model_dir + '/model_oriented.stl'
+
     orient_stl(
-        input_stl_path=None,
-        output_stl_path=None,
+        input_stl_path=input_stl_path,
+        output_stl_path=output_stl_path,
         meta_path=None,
         completion_dir=COMPLETION_DIR,
         visualize=True,
     )
+

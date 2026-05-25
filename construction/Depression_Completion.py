@@ -1020,10 +1020,7 @@ print("top defect margin point num:", len(top_defect_margin_points))
 
 top_defect_margin_pcd.paint_uniform_color([1,0,0])
 plane1_pcd.paint_uniform_color([0.2,0.2,0.2])
-o3d.visualization.draw_geometries([
-    plane1_pcd,
-    top_defect_margin_pcd
-])
+o3d.visualization.draw_geometries([plane1_pcd,top_defect_margin_pcd])
 
 ys, xs = np.where(defect_mask)
 
@@ -1290,7 +1287,7 @@ v_side_pcd = o3d.geometry.PointCloud()
 v_side_pcd.points = o3d.utility.Vector3dVector(side_points['max_v'])
 v_side_pcd.paint_uniform_color([0.0, 0.0, 1.0])  
 
-#o3d.visualization.draw_geometries([pcd_raw, repair_model_pcd,u_side_pcd,v_side_pcd])
+o3d.visualization.draw_geometries([pcd_raw, repair_model_pcd,u_side_pcd,v_side_pcd])
 #o3d.visualization.draw_geometries([repair_model_pcd])
 
 ############## 保存 补全点云块，两个side的朝外的法向量，两个side的平面点云
