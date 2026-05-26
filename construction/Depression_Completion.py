@@ -551,17 +551,14 @@ def extract_top_defect_margin_points(
     origin,
     u_axis,
     v_axis,
-    margin_dilate_iter=1
+    margin_dilate_iter=0
 ):
     """
     提取已有顶面点云一侧的 defect margin。
     也就是 top_occ_mask 中靠近 defect_mask 的那一圈。
     """
 
-    defect_near = ndimage.binary_dilation(
-        defect_mask,
-        iterations=margin_dilate_iter
-    )
+    defect_near = ndimage.binary_dilation(defect_mask,iterations=margin_dilate_iter) #margin_dilate_iter
 
     # 注意这里反过来了：取 top_occ 侧，不取 defect 侧
     margin_mask = top_occ_mask & defect_near
@@ -953,16 +950,8 @@ top_occ_mask = np.zeros((H, W), dtype=bool)
 top_occ_mask[v_idx, u_idx] = True
 
 # 膨胀已有点云占据区域，避免稀疏点云产生大量假空洞
-top_occ_mask = ndimage.binary_dilation(
-    top_occ_mask,
-    iterations=occ_dilate_iter
-)
-
-# 可选：闭运算，让已有顶面区域更连续
-top_occ_mask = ndimage.binary_closing(
-    top_occ_mask,
-    iterations=1
-)
+#top_occ_mask = ndimage.binary_dilation(top_occ_mask,iterations=occ_dilate_iter)
+top_occ_mask = ndimage.binary_closing(top_occ_mask, iterations=1)
 
 print(H,W,roi_frac_u,roi_frac_v)
 
@@ -998,7 +987,7 @@ else:
     origin=origin,
     u_axis=u_axis,
     v_axis=v_axis,
-    margin_dilate_iter=1
+    margin_dilate_iter=0
 )
 
 #-------- 统计这个defect到底在机械臂左边还是右边
@@ -1020,7 +1009,7 @@ print("top defect margin point num:", len(top_defect_margin_points))
 
 top_defect_margin_pcd.paint_uniform_color([1,0,0])
 plane1_pcd.paint_uniform_color([0.2,0.2,0.2])
-o3d.visualization.draw_geometries([plane1_pcd,top_defect_margin_pcd])
+#o3d.visualization.draw_geometries([plane1_pcd,top_defect_margin_pcd])
 
 ys, xs = np.where(defect_mask)
 
@@ -1159,16 +1148,8 @@ while z <= max_search_depth:
         barrier_mask = barrier_mask & domain_mask
 
         # 把稀疏截面点膨胀/闭运算，形成连续阻挡边界
-        barrier_mask = ndimage.binary_dilation(
-            barrier_mask,
-            iterations=barrier_dilate_iter
-        )
-
-        barrier_mask = ndimage.binary_closing(
-            barrier_mask,
-            iterations=barrier_close_iter
-        )
-
+        #barrier_mask = ndimage.binary_dilation(barrier_mask,iterations=barrier_dilate_iter)
+        barrier_mask = ndimage.binary_closing(barrier_mask,iterations=barrier_close_iter)
         barrier_mask = barrier_mask & domain_mask
 
         # ----------------------------
@@ -1287,7 +1268,8 @@ v_side_pcd = o3d.geometry.PointCloud()
 v_side_pcd.points = o3d.utility.Vector3dVector(side_points['max_v'])
 v_side_pcd.paint_uniform_color([0.0, 0.0, 1.0])  
 
-o3d.visualization.draw_geometries([pcd_raw, repair_model_pcd,u_side_pcd,v_side_pcd])
+frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.03)
+o3d.visualization.draw_geometries([pcd_raw, repair_model_pcd,frame])
 #o3d.visualization.draw_geometries([repair_model_pcd])
 
 ############## 保存 补全点云块，两个side的朝外的法向量，两个side的平面点云

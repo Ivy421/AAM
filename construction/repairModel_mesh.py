@@ -6,8 +6,10 @@ import json
 
 hole_dir = 'E:/HKUSTGZ/AAM/construction/data/completion_result/hole'
 depression_dir = 'E:/HKUSTGZ/AAM/construction/data/completion_result/depression'
+repair_block_pcd = o3d.io.read_point_cloud(depression_dir + '/model.pcd')
+save_dir = "E:/HKUSTGZ/AAM/construction/data/completion_result/depression/"
+stl_path = save_dir + "model.stl"
 
-repair_block_pcd = o3d.io.read_point_cloud(depression_dir + '/model_oriented.pcd')
 #o3d.visualization.draw_geometries([repair_block_pcd])
 print("\n开始从 repair_block_pcd 生成网格...")
 
@@ -74,18 +76,16 @@ mesh = o3d.geometry.TriangleMesh()
 mesh.vertices = o3d.utility.Vector3dVector(v2)
 mesh.triangles = o3d.utility.Vector3iVector(f2)
 mesh.compute_vertex_normals()
+
 # =========================================================
-# 可视化
+# 可视化 + 保存
 # =========================================================
 mesh_show = o3d.geometry.TriangleMesh(mesh)
 mesh_show.paint_uniform_color([0.7, 0.7, 0.7])
-#o3d.visualization.draw_geometries([mesh_show])
+frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.03)
+o3d.visualization.draw_geometries([mesh_show,frame])
 
-# =========================================================
-# 10. 保存为可打印格式
-# =========================================================
 save_dir = "E:/HKUSTGZ/AAM/construction/data/completion_result/depression/"
-#o3d.io.write_point_cloud(save_dir + "depression_repair_model.pcd", repair_block_pcd)
 stl_path = save_dir + "model.stl"
 ok1 = o3d.io.write_triangle_mesh(stl_path, mesh)
 

@@ -210,26 +210,6 @@ def transform_points(points: np.ndarray, R: np.ndarray, t: np.ndarray) -> np.nda
     points = np.asarray(points, dtype=float)
     return (R @ points.T).T + t.reshape(1, 3)
 
-
-def find_default_stl(completion_dir: str = COMPLETION_DIR):
-    candidates = [
-        os.path.join(completion_dir, "model.stl"),
-        os.path.join(completion_dir, "repair_model.stl"),
-        os.path.join(completion_dir, "depression_repair_model.stl"),
-        os.path.join(os.path.dirname(completion_dir), "depression_repair_model.stl"),
-    ]
-
-    for p in candidates:
-        if os.path.exists(p):
-            return p
-
-    extra = glob.glob(os.path.join(completion_dir, "*.stl"))
-    if extra:
-        return extra[0]
-
-    raise FileNotFoundError("Cannot find input STL. Tried:\n" + "\n".join(candidates))
-
-
 # =========================================================
 # Main API
 # =========================================================
@@ -273,9 +253,6 @@ def orient_stl(
         down_normal_dst=TARGET_DOWN_NORMAL,
         other_normal_dst=TARGET_OTHER_NORMAL,
     )
-
-    if input_stl_path is None:
-        input_stl_path = find_default_stl(completion_dir)
 
     if output_stl_path is None:
         output_stl_path = os.path.join(completion_dir, "model_oriented.stl")
@@ -373,8 +350,8 @@ def orient_stl(
     if visualize:
         mesh_show = o3d.geometry.TriangleMesh(mesh)
         mesh_show.paint_uniform_color([0.7, 0.7, 0.7])
-        frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.03)
-        o3d.visualization.draw_geometries([mesh_show, frame])
+        frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.06)
+        o3d.visualization.draw_geometries([mesh_show,frame])
 
     orientation_info = {
         "R": R,
