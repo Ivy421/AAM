@@ -2,8 +2,8 @@ import os
 import traceback
 
 depression_dir = "E:/HKUSTGZ/AAM/construction/data/completion_result/depression"
-INPUT_MESH = depression_dir + "/model_oriented.stl"
-OUTPUT_MESH = depression_dir + "/print_model.stl"
+INPUT_MESH = depression_dir + "/model.stl"
+OUTPUT_MESH = depression_dir + "/model_processed.stl"
 
 
 # =========================================================

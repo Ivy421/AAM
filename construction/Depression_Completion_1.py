@@ -41,15 +41,15 @@ bf_bbox.color = [1.0, 0.0, 0.0]
 
 aft_bbox = aft_pcd.get_axis_aligned_bounding_box()
 aft_bbox.color = [0.0, 0.4, 1.0]
-
+print(aft_bbox)
 bf_pcd.paint_uniform_color([0.68, 0.45 ,0.55])
 aft_pcd.paint_uniform_color([0.5,0.22,0.8])
 o3d.visualization.draw_geometries([
     bf_pcd,
     aft_pcd,
-    world_frame,
-    #bf_frame,
-    #aft_frame,
-    #bf_bbox,
-    #aft_bbox
+    #world_frame,
+    bf_frame,
+    aft_frame,
+    bf_bbox,
+    aft_bbox
 ])

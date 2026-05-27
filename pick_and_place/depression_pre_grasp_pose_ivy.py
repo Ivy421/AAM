@@ -31,11 +31,20 @@ def trans_to_endpose(T):
 depression_dir = 'E:\HKUSTGZ\AAM/construction/data/completion_result/depression'
 pick_dir = 'E:\HKUSTGZ\AAM/pick_and_place/data/pick'
 
-model_path = depression_dir + '/print_model.stl'
+model_path = depression_dir + '/model_oriented.stl'
 pcd_path = depression_dir + '/model_oriented.pcd'
-gripper_length_z = 142.5 # mm 末端Z轴朝前伸出方向
-gripper_width_y = 164 # mm  ## 夹爪开合方向
-gripper_thickness =75 # mm 
+
+## 抓取位置位于顶面中点
+orient_mata = np.load(depression_dir + '/orientation_meta.npz',allow_pickle=True)
+top_plane_center = orient_mata['top_plane_center_oriented']
+
+## 抓取高度还要加上半个grip height
+grip_meta = np.load(depression_dir + '/gripper_meta.npz',allow_pickle=True)
+grip_height_total = (grip_meta['grip_body_height'] + grip_meta['base_height'] + grip_meta['v_neck_height']) * 1000
+
+arm_gripper_length_z = 142.5 # mm 末端Z轴朝前伸出方向
+arm_gripper_width_y = 164 # mm  ## 夹爪开合方向
+arm_gripper_thickness =75 # mm 
 #### p 代表打印机平台坐标系，b代表机械臂base坐标系 #######
 theta = np.deg2rad(90)
 Rz = np.array([
@@ -54,18 +63,20 @@ points = np.asarray(pcd.points)
 
 ## pcd文件的点以m为单位，转换为mm
 unit_scale = 1000
-min_y = np.min(points[:, 1]) * unit_scale
-max_x = np.max(points[:, 0]) * unit_scale
-min_x = np.min(points[:, 0]) * unit_scale
-max_z = np.max(points[:, 2]) * unit_scale
+#min_y = np.min(points[:, 1]) * unit_scale
+#max_x = np.max(points[:, 0]) * unit_scale
+#min_x = np.min(points[:, 0]) * unit_scale
+#max_z = np.max(points[:, 2]) * unit_scale
 
-# 在object_grab坐标系下的抓取位置
-p_grab_pos = np.array([ (max_x+min_x)/2 , min_y, max_z/2, 1 ])
+# 在object_grab坐标系下的抓取位置(仅考虑gripper)
+#p_grab_pos = np.array([ (max_x+min_x)/2 , min_y, max_z/2, 1 ])
+p_grab_pos = np.array([top_plane_center[0], top_plane_center[1], top_plane_center[2] + grip_height_total/2 ,1])
 
 #base坐标系下的抓取endpose
 b_grab_pos = b_obj_grab_T @ p_grab_pos
 b_pre_end_grab  = np.array([b_grab_pos[0], b_grab_pos[1], b_grab_pos[2]+pre_grab_height,180,0,0])# mm,degree
-b_end_grab =  np.array([b_grab_pos[0], b_grab_pos[1], b_grab_pos[2]+gripper_length_z,180,0,0])
+b_end_grab =  np.array([b_grab_pos[0], b_grab_pos[1], b_grab_pos[2] + arm_gripper_length_z,180,0,0])
+print('grab endpose:', b_end_grab)
 #抓取末端姿态在base下的变换矩阵
 base_end_grab_T = base_end_grab_trans(b_end_grab)
 
@@ -80,18 +91,18 @@ base_obj_fix_t = base_obj_fix_t * 1000
 base_obj_fix_T = np.column_stack([base_obj_fix_R, base_obj_fix_t])
 base_obj_fix_T = np.vstack([base_obj_fix_T, np.array([0,0,0,1])])
 
-##########不确定要不要取逆，试一下哈
+##########取逆
 base_obj_fix_T = np.linalg.inv(base_obj_fix_T)
-#print(base_obj_fix_T)
 
 ### 计算最终的安装旋转矩阵
 base_end_fix_T =  base_obj_fix_T @ np.linalg.inv(end_grab_obj_grab_T)
 endpose_fix = trans_to_endpose(base_end_fix_T)
-print(endpose_fix)
+print('fix endpose:', endpose_fix)
 
 np.savez(
     pick_dir + '/pick_place_pose.npz',
-    pre_pick_pos = b_pre_end_grab,
-    pick_pos = b_end_grab
+    pre_pick_endpose = b_pre_end_grab,
+    pick_endpose = b_end_grab,
+    fix_endpose = endpose_fix
     )
 

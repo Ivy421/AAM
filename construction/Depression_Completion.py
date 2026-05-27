@@ -749,6 +749,7 @@ if np.dot(n_axis, inward_vec) >0:
     print('顶面法线指向物体内部与[0,0,-1]同向')
     n_axis = -n_axis
 top_points = np.asarray(plane1_pcd.points)
+
 #o3d.visualization.draw_geometries([plane1_pcd])
 
 origin, u_axis, v_axis = build_plane_basis(top_points, n_axis)
@@ -1019,7 +1020,7 @@ repair_v = v_min + (ys+0.5) * grid_res
 
 repair_uv = np.column_stack([repair_u, repair_v])
 repair_top_points = uv_to_3d(repair_uv, origin, u_axis, v_axis)
-
+top_plane_center = np.median(repair_top_points, axis=0)
 repair_top_pcd = o3d.geometry.PointCloud()
 repair_top_pcd.points = o3d.utility.Vector3dVector(repair_top_points)
 repair_top_pcd.paint_uniform_color([1.0, 0.0, 0.0])  # 红色：补全顶面点
@@ -1294,6 +1295,7 @@ np.savez(
          repair_point_center = repair_point_center,
          n_axis = n_axis,
          top_plane_model = plane1,
+         top_plane_center = top_plane_center,
          defect_world_y = defect_world_y
          )
 

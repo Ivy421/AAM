@@ -5,11 +5,11 @@ import zipfile
 import bambulabs_api as bl
 
 # 建议用环境变量保存，避免把 access code 写死在代码里
-IP = os.getenv("BAMBU_IP", "10.41.3.35")
-SERIAL = os.getenv("BAMBU_SERIAL", "0309AA441000235")
-ACCESS_CODE = os.getenv("BAMBU_ACCESS_CODE", "PASTE_ACCESS_CODE_HERE")
+IP = "10.41.3.35"
+SERIAL = '0309AA441000235'
+ACCESS_CODE = '39222760'
 
-INPUT_FILE_PATH = "/home/smmg/AAM/model2print/data/whole_model_sliced.3mf"
+INPUT_FILE_PATH = "/home/smmg/AAM/model2print/data/print_sliced.3mf"
 PLATE_NUMBER = 1
 POLL_INTERVAL = 5  # seconds
 STOP_ON_ERROR = False  # True: 出错后 stop_print；False: 出错后 pause_print
@@ -66,10 +66,10 @@ def monitor_print(printer):
                 printer.pause_print()
             break
 
-        state_str = str(state).lower()
-        if state_str in ("finish", "finished", "complete", "completed", "idle"):
-            print("Print finished or printer returned to idle.")
-            break
+        #state_str = str(state).lower()
+        #if state_str in ("finish", "finished", "complete", "completed", "idle"):
+        #    print("Print finished or printer returned to idle.")
+        #    break
 
         try:
             if float(percent) >= 100:

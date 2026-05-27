@@ -2,4 +2,5 @@ frame_point_Extraction ->ICP
 
 Hole_Completion - > repairModel_mesh -> grip_generation -> model_postprocess
 
-Depression_Completion -> repairModel_mesh -> model_orientation -> model_postprocess
+Depression_Completion -> repairModel_mesh ->depression_gripper_generation.py ->model_postprocess -> model_orientation 
+（model_orientation 可以放到最后一步来做，等整个打印刚体都完善好了再做）
