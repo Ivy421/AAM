@@ -57,29 +57,29 @@ GRIPPER_META = os.path.join(COMPLETION_DIR, "gripper_meta.npz")
 MM = 0.001
 
 # Small overlap into the model to avoid numerical gap at top surface.
-EMBED_DEPTH = 0.30 * MM
 
-# -------------------------
-# Base block / lower stem
-# -------------------------
+##  base section: 6 × 9 mm
+##        ↓ 线性收缩
+##  waist section: 3 × 5 mm
+##        ↓ 线性放大
+##  grip section: 8 × 12 mm
+
+## u,v参数要按比例调整 6:9 = 4:6 这样
+
+EMBED_DEPTH = 0.0 * MM
+
 BASE_HEIGHT = 2.0 * MM
-BASE_WIDTH_U = 5.0 * MM
-BASE_LENGTH_V = 8.0 * MM
+BASE_WIDTH_U = 6.0 * MM
+BASE_LENGTH_V = 9.0 * MM
 
-# -------------------------
-# V / dog-bone twist-off neck
-# -------------------------
-V_NECK_HEIGHT = 5.0 * MM
-V_NECK_MIN_WIDTH_U = 3 * MM
-V_NECK_MIN_LENGTH_V = 5 * MM
-V_NECK_SECTION_NUM = 9
+V_NECK_HEIGHT = 3.0 * MM
+V_NECK_MIN_WIDTH_U = 2 * MM
+V_NECK_MIN_LENGTH_V = 3 * MM
+V_NECK_SECTION_NUM = 15
 
-# -------------------------
-# Upper grip body
-# -------------------------
-GRIP_BODY_HEIGHT = 14.0 * MM
-GRIP_BODY_WIDTH_U = 5.0 * MM
-GRIP_BODY_LENGTH_V = 10.0 * MM
+GRIP_BODY_HEIGHT = 15.0 * MM
+GRIP_BODY_WIDTH_U = 6.0 * MM
+GRIP_BODY_LENGTH_V = 9.0 * MM
 
 VISUALIZE = True
 
@@ -114,24 +114,18 @@ def load_meta(meta_path: str):
     meta = {k: unwrap_np_value(data[k]) for k in data.files}
     meta["n_axis"] = normalize(np.asarray(meta["n_axis"], dtype=float))
 
-    # Prefer repair_top_center because top_plane_center may refer to the whole object top plane,
-    # not the repair block top region.
-    if "repair_top_center" in meta:
-        attach_center = np.asarray(meta["repair_top_center"], dtype=float).reshape(3)
-        attach_key = "repair_top_center"
-    elif "top_plane_center" in meta:
-        attach_center = np.asarray(meta["top_plane_center"], dtype=float).reshape(3)
-        attach_key = "top_plane_center"
-    elif "repair_point_center" in meta:
-        attach_center = np.asarray(meta["repair_point_center"], dtype=float).reshape(3)
-        attach_key = "repair_point_center"
-    else:
-        raise KeyError(
-            "meta.npz must contain repair_top_center, top_plane_center, or repair_point_center"
-        )
+
+    if "top_plane_center" in meta:
+        top_plane_center = np.asarray(meta["top_plane_center"], dtype=float).reshape(3)
+        #attach_key = "top_plane_center"
+    if 'repair_point_center' in meta:
+        repair_point_center = meta['repair_point_center']
+
+    # 这里有一个潜在的问题，attach center有可能因为缺陷模型的极端畸形而周围没有点云，是在半空的
+    attach_center = np.asarray([repair_point_center[0], repair_point_center[1],top_plane_center[2] ])
 
     meta["attach_center"] = attach_center
-    meta["attach_center_key"] = attach_key
+    #meta["attach_center_key"] = attach_key
     return meta
 
 
@@ -430,7 +424,7 @@ def main():
     np.savez(
         GRIPPER_META,
         attach_center=attach_center,
-        attach_center_key=meta["attach_center_key"],
+        #attach_center_key=meta["attach_center_key"],
         n_axis=n_axis,
         h_axis=h_axis,
         u_axis=u_axis,
@@ -457,7 +451,7 @@ def main():
     print("output STL:", OUTPUT_STL)
     print("gripper only STL:", GRIPPER_ONLY_STL)
     print("gripper meta:", GRIPPER_META)
-    print("attach center key:", meta["attach_center_key"])
+    #print("attach center key:", meta["attach_center_key"])
     print("attach center:", attach_center)
     print("height direction h_axis = -n_axis:", h_axis)
     print("width direction u_axis:", u_axis)

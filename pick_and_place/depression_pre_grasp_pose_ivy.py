@@ -28,55 +28,62 @@ def trans_to_endpose(T):
     endpose_fix = np.concatenate([pos, euler])
     return endpose_fix
 
+
+arm_gripper_length_z = 142.5 # mm 末端Z轴朝前伸出方向
+arm_gripper_width_y = 164 # mm  ## 夹爪开合方向
+arm_gripper_thickness =75 # mm 
+arm_flange = 10.5 # mm
+ 
 depression_dir = 'E:\HKUSTGZ\AAM/construction/data/completion_result/depression'
 pick_dir = 'E:\HKUSTGZ\AAM/pick_and_place/data/pick'
 
 model_path = depression_dir + '/model_oriented.stl'
 pcd_path = depression_dir + '/model_oriented.pcd'
+meta = np.load(depression_dir + '/meta.npz', allow_pickle=True)
+orient_meta = np.load(depression_dir + '/orientation_meta.npz', allow_pickle=True)
+grip_meta = np.load(depression_dir + '/gripper_meta.npz', allow_pickle=True)
+unit_scale = 1000
 
-## 抓取位置位于顶面中点
-orient_mata = np.load(depression_dir + '/orientation_meta.npz',allow_pickle=True)
-top_plane_center = orient_mata['top_plane_center_oriented']
+attach_center = np.asarray(orient_meta['attach_center_oriented'] ) * unit_scale
+full_box_z_height = np.asarray(orient_meta['full_box_z_height'] ) * unit_scale
+grip_height_total = (grip_meta['grip_body_height'] + grip_meta['base_height'] + grip_meta['v_neck_height']) * unit_scale
 
-## 抓取高度还要加上半个grip height
-grip_meta = np.load(depression_dir + '/gripper_meta.npz',allow_pickle=True)
-grip_height_total = (grip_meta['grip_body_height'] + grip_meta['base_height'] + grip_meta['v_neck_height']) * 1000
+####
+#### 打印物体抓取坐标系相对base坐标系的变换矩阵 #######
+####
 
-arm_gripper_length_z = 142.5 # mm 末端Z轴朝前伸出方向
-arm_gripper_width_y = 164 # mm  ## 夹爪开合方向
-arm_gripper_thickness =75 # mm 
-#### p 代表打印机平台坐标系，b代表机械臂base坐标系 #######
 theta = np.deg2rad(90)
 Rz = np.array([
     [np.cos(theta), -np.sin(theta), 0],
     [np.sin(theta),  np.cos(theta), 0],
     [0,              0,             1]
 ])
-b_obj_grab_t = np.array([[-240],[240],[50]])  ## 后续要修改这里的绝对固定值
+b_obj_grab_t = np.array([[-240],[240],[50 + full_box_z_height/2 ]])  ## 固定值代表打印平台原点在base坐标系下的表达
 b_obj_grab_T = np.column_stack([Rz, b_obj_grab_t])
 b_obj_grab_T = np.vstack([b_obj_grab_T,np.array([0,0,0,1])])
+
+
+####
+#### 定义抓取位姿: x, y follow attach_center, z 下降到GRIP的一半长度处
+####
+
 pre_grab_height = 200
-
-######### -- 抓取位置定义为立侧面的垂直中线，最终下降到一半的z高度 #######
-pcd = o3d.io.read_point_cloud(pcd_path)
-points = np.asarray(pcd.points)
-
-## pcd文件的点以m为单位，转换为mm
-unit_scale = 1000
-#min_y = np.min(points[:, 1]) * unit_scale
-#max_x = np.max(points[:, 0]) * unit_scale
-#min_x = np.min(points[:, 0]) * unit_scale
-#max_z = np.max(points[:, 2]) * unit_scale
-
 # 在object_grab坐标系下的抓取位置(仅考虑gripper)
-#p_grab_pos = np.array([ (max_x+min_x)/2 , min_y, max_z/2, 1 ])
-p_grab_pos = np.array([top_plane_center[0], top_plane_center[1], top_plane_center[2] + grip_height_total/2 ,1])
+
+#p_grab_pos = np.array([attach_center[0], top_plane_center[1], top_plane_center[2]*2 + grip_height_total/2 ,1])
+obj_grabx = attach_center[0]
+obj_graby = attach_center[1] 
+obj_grabz = (attach_center[2]  +grip_height_total/2 )
+obj_grab_pos = np.array([obj_grabx, obj_graby , obj_grabz, 1 ])
+# print('objecy grab pos:', obj_grab_pos)
 
 #base坐标系下的抓取endpose
-b_grab_pos = b_obj_grab_T @ p_grab_pos
+b_grab_pos = b_obj_grab_T @ obj_grab_pos
+print('base grab pos:', b_grab_pos)
 b_pre_end_grab  = np.array([b_grab_pos[0], b_grab_pos[1], b_grab_pos[2]+pre_grab_height,180,0,0])# mm,degree
-b_end_grab =  np.array([b_grab_pos[0], b_grab_pos[1], b_grab_pos[2] + arm_gripper_length_z,180,0,0])
+b_end_grab =  np.array([b_grab_pos[0], b_grab_pos[1], b_grab_pos[2] + arm_gripper_length_z + arm_flange,180,0,0])
 print('grab endpose:', b_end_grab)
+
 #抓取末端姿态在base下的变换矩阵
 base_end_grab_T = base_end_grab_trans(b_end_grab)
 
@@ -84,10 +91,9 @@ base_end_grab_T = base_end_grab_trans(b_end_grab)
 end_grab_obj_grab_T = np.linalg.inv(base_end_grab_T) @ b_obj_grab_T 
 
 #### 计算base_obj_fix_T
-orient_meta = np.load(depression_dir + '/orientation_meta.npz', allow_pickle=True)
 base_obj_fix_R = orient_meta['R']
 base_obj_fix_t = orient_meta['t']
-base_obj_fix_t = base_obj_fix_t * 1000
+base_obj_fix_t = base_obj_fix_t * unit_scale
 base_obj_fix_T = np.column_stack([base_obj_fix_R, base_obj_fix_t])
 base_obj_fix_T = np.vstack([base_obj_fix_T, np.array([0,0,0,1])])
 
