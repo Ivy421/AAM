@@ -1,0 +1,36 @@
+hole_orientation.py result
+==========================
+
+input_stl  = E:\HKUSTGZ\AAM\construction\data\completion_result\hole\model_with_gripper.stl
+output_stl = E:\HKUSTGZ\AAM\construction\data\completion_result\hole\model_oriented.stl
+npz        = E:\HKUSTGZ\AAM\construction\data\completion_result\hole\hole_orientation_info.npz
+json       = E:\HKUSTGZ\AAM\construction\data\completion_result\hole\hole_orientation_info.json
+meta used  = ['E:\\HKUSTGZ\\AAM\\construction\\data\\completion_result\\hole\\meta.npz', 'E:\\HKUSTGZ\\AAM\\construction\\data\\completion_result\\hole\\grip_meta.npz', 'E:\\HKUSTGZ\\AAM\\construction\\data\\completion_result\\hole\\gripper_meta.npz', 'E:\\HKUSTGZ\\AAM\\construction\\data\\completion_result\\hole\\planes_meta.npz']
+
+top_n_used_key  = top_n_inward
+side_n_used_key = side_n_inward
+side_source_type = direct
+
+R =
+[[ 0.182656700248  0.943342498195  0.277022491783]
+ [ 0.978898849653 -0.200749447108  0.038166760843]
+ [ 0.091616439584  0.264205583939 -0.960105117898]]
+
+t =
+[-0.091801034974 -0.402477787826  0.104307164392]
+
+T =
+[[ 0.182656700248  0.943342498195  0.277022491783 -0.091801034974]
+ [ 0.978898849653 -0.200749447108  0.038166760843 -0.402477787826]
+ [ 0.091616439584  0.264205583939 -0.960105117898  0.104307164392]
+ [ 0.              0.              0.              1.            ]]
+
+check normals:
+R @ top_n_src  = [-1.11022302e-16 -4.85722573e-17  1.00000000e+00]
+R @ side_n_src = [7.45931095e-17 9.99997588e-01 2.19647024e-03]
+
+check bbox after orientation:
+bbox_min_after    = [-0.03394182 -0.02252625 -0.03992603]
+bbox_max_after    = [0.03394182 0.02252625 0.03992603]
+bbox_center_after = [3.46944695e-18 0.00000000e+00 6.93889390e-18]
+bbox_size_after   = [0.06788364 0.04505251 0.07985205]

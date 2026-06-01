@@ -6,9 +6,9 @@ import json
 
 hole_dir = 'E:/HKUSTGZ/AAM/construction/data/completion_result/hole'
 depression_dir = 'E:/HKUSTGZ/AAM/construction/data/completion_result/depression'
-repair_block_pcd = o3d.io.read_point_cloud(depression_dir + '/model.pcd')
-save_dir = "E:/HKUSTGZ/AAM/construction/data/completion_result/depression/"
-stl_path = save_dir + "model.stl"
+repair_block_pcd = o3d.io.read_point_cloud(hole_dir + '/model.pcd')
+
+stl_path = hole_dir + "/model.stl"
 
 #o3d.visualization.draw_geometries([repair_block_pcd])
 print("\n开始从 repair_block_pcd 生成网格...")
@@ -84,8 +84,5 @@ mesh_show = o3d.geometry.TriangleMesh(mesh)
 mesh_show.paint_uniform_color([0.7, 0.7, 0.7])
 frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.03)
 o3d.visualization.draw_geometries([mesh_show,frame])
-
-save_dir = "E:/HKUSTGZ/AAM/construction/data/completion_result/depression/"
-stl_path = save_dir + "model.stl"
 ok1 = o3d.io.write_triangle_mesh(stl_path, mesh)
 

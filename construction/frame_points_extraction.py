@@ -165,7 +165,7 @@ def visualize_points(points):
 
 torch.cuda.empty_cache()
 gc.collect()
-folder_path = Path(r"/public/home/rastus/AAM/construction/data/frame_result/depression_defect")
+folder_path = Path(r"/public/home/rastus/AAM/construction/data/frame_result/hole")
 png_files = list(folder_path.glob('*.png'))
 png_names = [p.stem for p in png_files] # p.name 仅获取文件名，不含路径
 points_collection = []

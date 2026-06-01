@@ -1,0 +1,197 @@
+{
+  "completion_dir": "E:\\HKUSTGZ\\AAM\\construction\\data\\completion_result\\hole",
+  "input_stl": "E:\\HKUSTGZ\\AAM\\construction\\data\\completion_result\\hole\\model_with_gripper.stl",
+  "output_stl": "E:\\HKUSTGZ\\AAM\\construction\\data\\completion_result\\hole\\model_oriented.stl",
+  "loaded_meta_paths": [
+    "E:\\HKUSTGZ\\AAM\\construction\\data\\completion_result\\hole\\meta.npz",
+    "E:\\HKUSTGZ\\AAM\\construction\\data\\completion_result\\hole\\grip_meta.npz",
+    "E:\\HKUSTGZ\\AAM\\construction\\data\\completion_result\\hole\\gripper_meta.npz",
+    "E:\\HKUSTGZ\\AAM\\construction\\data\\completion_result\\hole\\planes_meta.npz"
+  ],
+  "top_n_used_key": "top_n_inward",
+  "side_n_used_key": "side_n_inward",
+  "side_source_type": "direct",
+  "selected_side_key_config": null,
+  "unit_scale": 1.0,
+  "unit_note": "No unit conversion is applied. Input meter -> output meter.",
+  "target_side_n": [
+    0.0,
+    1.0,
+    0.0
+  ],
+  "target_top_n": [
+    0.0,
+    0.0,
+    1.0
+  ],
+  "top_n_src": [
+    0.09161643958379581,
+    0.26420558393933535,
+    -0.9601051178976516
+  ],
+  "side_n_src_inward": [
+    0.9790977210939574,
+    -0.20016864314852906,
+    0.03605782645551534
+  ],
+  "top_n_after": [
+    -1.1102230246251565e-16,
+    -4.85722573273506e-17,
+    1.0
+  ],
+  "side_n_after": [
+    7.45931094670027e-17,
+    0.9999975877563294,
+    0.002196470241629521
+  ],
+  "R": [
+    [
+      0.18265670024773795,
+      0.9433424981951912,
+      0.27702249178264166
+    ],
+    [
+      0.9788988496533217,
+      -0.20074944710790754,
+      0.038166760843341
+    ],
+    [
+      0.0916164395837958,
+      0.26420558393933535,
+      -0.9601051178976517
+    ]
+  ],
+  "t": [
+    -0.091801034974129,
+    -0.40247778782571636,
+    0.10430716439222396
+  ],
+  "T": [
+    [
+      0.18265670024773795,
+      0.9433424981951912,
+      0.27702249178264166,
+      -0.091801034974129
+    ],
+    [
+      0.9788988496533217,
+      -0.20074944710790754,
+      0.038166760843341,
+      -0.40247778782571636
+    ],
+    [
+      0.0916164395837958,
+      0.26420558393933535,
+      -0.9601051178976517,
+      0.10430716439222396
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "bbox_min_before": [
+    0.3733680844306946,
+    -0.0493011549115181,
+    0.10155471414327621
+  ],
+  "bbox_max_before": [
+    0.42354586720466614,
+    0.0161283016204834,
+    0.18059958517551422
+  ],
+  "bbox_center_before": [
+    0.39845697581768036,
+    -0.01658642664551735,
+    0.14107714965939522
+  ],
+  "bbox_size_before": [
+    0.05017778277397156,
+    0.0654294565320015,
+    0.079044871032238
+  ],
+  "bbox_min_rot_before_centering": [
+    0.0578592158694381,
+    0.37995153482356864,
+    -0.1442331912150677
+  ],
+  "bbox_max_rot_before_centering": [
+    0.1257428540788199,
+    0.4250040408278641,
+    -0.0643811375693802
+  ],
+  "bbox_center_rot_before_centering": [
+    0.091801034974129,
+    0.40247778782571636,
+    -0.10430716439222396
+  ],
+  "bbox_size_rot_before_centering": [
+    0.06788363820938181,
+    0.045052506004295445,
+    0.0798520536456875
+  ],
+  "bbox_min_after": [
+    -0.0339418191046909,
+    -0.022526253002147723,
+    -0.03992602682284374
+  ],
+  "bbox_max_after": [
+    0.03394181910469091,
+    0.022526253002147723,
+    0.039926026822843755
+  ],
+  "bbox_center_after": [
+    3.469446951953614e-18,
+    0.0,
+    6.938893903907228e-18
+  ],
+  "bbox_size_after": [
+    0.06788363820938181,
+    0.045052506004295445,
+    0.0798520536456875
+  ],
+  "basis_info": {
+    "x_src": [
+      0.1826567002477379,
+      0.9433424981951913,
+      0.2770224917826416
+    ],
+    "y_src": [
+      0.978898849653322,
+      -0.20074944710790735,
+      0.03816676084334102
+    ],
+    "z_src": [
+      0.09161643958379583,
+      0.2642055839393354,
+      -0.9601051178976516
+    ],
+    "side_n_src_projected": [
+      0.978898849653322,
+      -0.20074944710790735,
+      0.03816676084334102
+    ],
+    "top_n_src_reorthogonalized": [
+      0.09161643958379583,
+      0.2642055839393354,
+      -0.9601051178976516
+    ],
+    "side_n_dst_check": [
+      7.45931094670027e-17,
+      0.9999975877563294,
+      0.002196470241629521
+    ],
+    "top_n_dst_check": [
+      -1.1102230246251565e-16,
+      -4.85722573273506e-17,
+      1.0
+    ]
+  },
+  "extra_saved": [
+    "E:\\HKUSTGZ\\AAM\\construction\\data\\completion_result\\hole\\model_oriented.stl",
+    "E:\\HKUSTGZ\\AAM\\construction\\data\\completion_result\\hole\\model_oriented.pcd"
+  ],
+  "transformed_meta_path": "E:\\HKUSTGZ\\AAM\\construction\\data\\completion_result\\hole\\hole_meta_oriented.npz"
+}

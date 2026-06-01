@@ -471,7 +471,8 @@ def plane_mark(plane1_n, plane2_n):
     return mark
 
 ####### run code
-pcd_raw = o3d.io.read_point_cloud("E:/HKUSTGZ/AAM/construction/data/completion_result/fused2.pcd")
+hole_dir = 'E:/HKUSTGZ/AAM/construction/data/frame_result'
+pcd_raw = o3d.io.read_point_cloud(hole_dir + "/pcd_raw.pcd")
 # o3d.visualization.draw_geometries([pcd_raw])
 pcd_raw = pcd_raw.voxel_down_sample(voxel_size=0.001)
 points_raw= np.asarray(pcd_raw.points)
@@ -600,7 +601,7 @@ o3d.io.write_point_cloud(out_dir + "/defect_pcd1.pcd", defect_pcd1)
 o3d.io.write_point_cloud(out_dir + "/defect_pcd2.pcd", defect_pcd2)
 o3d.io.write_point_cloud(out_dir + "/plane1_pcd.pcd", plane1_pcd)
 o3d.io.write_point_cloud(out_dir + "/plane2_pcd.pcd", plane2_pcd)
-o3d.io.write_point_cloud(out_dir + "/repair_model_pcd.pcd", repair_model_pcd)
+o3d.io.write_point_cloud(out_dir + "/model.pcd", repair_model_pcd)
 
 np.savez(
     out_dir + "/meta.npz",
