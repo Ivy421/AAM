@@ -38,23 +38,25 @@ def go_zero(piper):
     time.sleep(1)
     return piper
 
-def move_to_pos(piper, X, Y, Z, RX, RY, RZ):  ## 外部输入单位是mm
+def move_to_pos(piper, X, Y, Z, RX, RY, RZ, vel = 20):  ## 外部输入单位是mm
     fac = 1000
     count = 0
     X = int(X* fac)
     Y = int(Y* fac)
     Z = int(Z* fac)
-    RX = int(RX* fac)
-    RY = int(RY* fac)
-    RZ = int(RZ* fac)
+    RX = int(RX * fac)
+    RY = int(RY * fac)
+    RZ = int(RZ * fac)
     
 
     while True:
         if count == 0 :
             print('move to position')
-            piper.MotionCtrl_2(0x01, 0x00, 100, 0x00)
+            piper.MotionCtrl_2(0x01, 0x00, vel, 0x00)
             piper.EndPoseCtrl(X,Y,Z,RX,RY,RZ)
-            piper.GripperCtrl(0, 1000, 0x01, 0)
+            #piper.GripperCtrl(0,1000,0x02, 0)
+            #piper.GripperCtrl(0,1000,0x01, 0)
+            time.sleep(0.2)
             armStatus = piper.GetArmStatus()
             print(armStatus)
             time.sleep(1) 
@@ -62,6 +64,21 @@ def move_to_pos(piper, X, Y, Z, RX, RY, RZ):  ## 外部输入单位是mm
         else:
             break 
 
+    return piper
+
+def move_gripper(piper,range,effort = 1000):  ## unit 0.001mm, 外部输入单位是mm
+    fac = 1000
+    piper.GripperCtrl(0,1000,0x02, 0)
+    piper.GripperCtrl(0,1000,0x01, 0)
+    count = 0
+    while True:
+        if count == 0:
+            print(piper.GetArmGripperMsgs())
+            piper.GripperCtrl(abs(range*1000), effort, 0x01, 0)
+            time.sleep(0.005)
+            count +=1
+        else: break
+    
     return piper
 
 def get_endpose(piper):
@@ -109,6 +126,7 @@ def move_joint(piper,position =  [0,0,0,0,0,0,0] ):
             print(piper.GetArmStatus())
             print(position)
             time.sleep(0.005)
+            count +=1
         else: break
     
     return
@@ -119,13 +137,40 @@ def move_joint(piper,position =  [0,0,0,0,0,0,0] ):
 if __name__ == "__main__":
     piper = disable('r_piper')
     piper = enable('r_piper')
-    # piper = move_to_pos(piper, 73.5  ,-6.24  ,264 ,128.6,66.9 ,121 )  ##俯视调整
 
+    piper.GripperTeachingPendantParamConfig(100, 70, 1)
+    piper.ArmParamEnquiryAndConfig(4)
     #piper = read_param(piper)
     piper = go_zero(piper)
+    time.sleep(3)
+    piper = move_gripper(piper,50,1000)
+    #### grab object
+    piper = move_to_pos(piper, -191.3,  208.94, 157+50 ,180,0,0 ) 
+###
+    time.sleep(2)
+    piper = move_to_pos(piper, -191.3,  208.94, 159 ,180,0,0 )   ## 外部输入单位是mm,  degrees
+    time.sleep(2)
+    piper = move_gripper(piper,0,1000)
+    time.sleep(2)
+    piper = move_to_pos(piper, -191.3,  208.94, 157+50 ,180,0,0 )
+    time.sleep(2)
+    piper = move_to_pos(piper, 351.06,  95.73 ,244.07 ,175.26, -1.85, 130.2 ) 
+    time.sleep(3)
+##
 
-    
-    #piper = move_to_pos(piper,27,3,265,144,73,139 ) #feasible para: 30,-80,350,0,85,-45
+
+    #time.sleep(1)
+    #piper = move_to_pos(piper,-101.4553,197.45,130,180,0,0 ) 
+    #time.sleep(1)
+    #piper = move_gripper(piper,0,1000)
+    #time.sleep(1)
+    #piper = move_to_pos(piper,-101.4553,197.45,200,180,0,0 ) 
+    #time.sleep(1)
+    #piper = go_zero(piper)
+    #move_joint(piper, position = [0, 0, 0, 180, 0, 0, 0])
+
+
+#
     #endpose_info = get_endpose(piper)
     #print(endpose_info)
     #print(piper.GetArmStatus())
@@ -138,26 +183,3 @@ if __name__ == "__main__":
     # j6 = (159155 + 0000)   / 1000           # j6 控制手腕左右转（正右转）
     # time.sleep(1)
     # move_joint(piper, position = [j1, j2, j3, j4, j5, j6, 0])
-# 
-    # time.sleep(1)
-    # print(piper.GetArmJointMsgs())
-    # print(piper.GetArmStatus())
-
-    '''
-Joint 1:-8245
-Joint 2:2506
-Joint 3:-21565
-Joint 4:6994
-Joint 5:37937
-Joint 6:3587
-
-# 俯视
-j2 += 40000
-j3 -= 25000
-
-#左侧视
-
-
-#右侧视
-
-    '''
