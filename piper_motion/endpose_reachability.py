@@ -1,142 +1,349 @@
-import os, torch, gc, json, cv2, sys
-sys.path.append('/home/smmg/AAM')
+# reachability_test_function.py
+# Callable Pinocchio-based reachability test for Piper arm.
+# Usage in another file:
+#     from reachability_test_function import reachability_test
+#     result = reachability_test([x, y, z, rx, ry, rz])  # mm, degree
+#     print(result["reachable"], result["q_solution_deg"])
+
+import os
 import numpy as np
-import ikpy.chain
+import pinocchio as pin
+from scipy.optimize import least_squares
 from scipy.spatial.transform import Rotation as R
-from ikpy.inverse_kinematics import inverse_kinematic_optimization
 
-
-# ================= 配置区域 =================
-URDF_PATH = "/home/smmg/AAM/piper_motion/piper_link.urdf"  # 👈 替换为你的URDF实际路径
-BASE_LINK = "base_link"
-# active_links_mask: [base_link(fixed), link1, link2, link3, link4, link5, link6]
-ACTIVE_LINKS_MASK = [False, True, True, True, True, True, True]
-# ===========================================
-
-# 加载机械臂链 (use_collision=False 避免 package:// mesh 路径问题)
-chain = ikpy.chain.Chain.from_urdf_file(
-    URDF_PATH,
-    base_elements=[BASE_LINK] ,
-    active_links_mask=ACTIVE_LINKS_MASK,
-    name = 'piper'
+# ============================================================
+# Fixed config: modify here if your URDF or EE frame changes.
+# ============================================================
+DEFAULT_URDF = os.path.expanduser(
+    r"E:/HKUSTGZ/AAM/config/piper/piper_description.urdf"
 )
+DEFAULT_EE_FRAME = "link6"   # If you use TCP/gripper frame later, change this.
 
-# Piper 关节限位 (从URDF提取，用于双重验证)
-PIPER_JOINT_LIMITS = np.array([
-    [-2.618, 2.168],    # joint1
-    [0.0, 3.14],        # joint2  
-    [-2.967, 0.0],      # joint3
-    [-1.745, 1.745],    # joint4
-    [-1.22, 1.22],      # joint5
-    [-2.0944, 2.0944]   # joint6
-])
+# IK judgement thresholds
+POS_TOL_MM = 2.0
+ROT_TOL_DEG = 3.0
 
-def validate_and_solve_ik(x, y, z, rx, ry, rz, current_joints=None, 
-                         pos_tol=2e-2, rot_tol=3e-2, euler_order='xyz'):
+# IK search config
+N_RANDOM_INIT = 100
+RANDOM_SEED = 0
+POS_SCALE = 0.005             # m, residual normalization
+ROT_SCALE = np.deg2rad(3.0)   # rad, residual normalization
+
+# Simple joint interpolation path check
+PATH_CHECK_STEPS = 50
+
+# Internal cache: avoids rebuilding URDF model every call.
+_MODEL_CACHE = None
+
+
+# ============================================================
+# Basic conversion utilities
+# ============================================================
+def endpose_to_se3(endpose):
     """
-    Piper机械臂逆运动学可达性验证
-    
-    参数:
-    - x,y,z: 末端位置 (米, 相对于base_link坐标系)
-    - rx,ry,rz: 末端姿态欧拉角 (弧度), 顺序由euler_order指定
-    - current_joints: 当前关节角 (6维), 用于保证解的连续性
-    - pos_tol: 位置容差 (米), 默认1mm
-    - rot_tol: 姿态容差 (弧度), 默认~0.57°
-    - euler_order: 欧拉角顺序, 默认'xyz'(即RPY: roll-pitch-yaw intrinsic)
-    
-    返回:
-    - dict: 包含success, joint_angles, 误差等信息
+    Convert endpose [x, y, z, rx, ry, rz] to pin.SE3.
+
+    x, y, z: mm
+    rx, ry, rz: degree
+    Euler order: scipy 'xyz', same as your original code.
     """
-    # 1. 构建目标齐次变换矩阵
-    target_pos = np.array([x, y, z])
-    target_rot = R.from_euler(euler_order, [rx, ry, rz]).as_matrix()
-    target_pose = np.eye(4)
-    target_pose[:3, :3] = target_rot
-    target_pose[:3, 3] = target_pos
-    
-    if current_joints is None:
-        # 使用中间位置（7个元素，包括 base_link）
-        initial_position = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
-        # 设置活动关节的初始值
-        for i in range(1, 7):
-            lower, upper = PIPER_JOINT_LIMITS[i]
-            initial_position[i] = (lower + upper) / 2
-    else:
-        # current_joints 是6维数组，需要扩展为7维
-        initial_position = np.zeros(7)
-        initial_position[1:7] = current_joints  # 跳过 base_link
+    endpose = np.asarray(endpose, dtype=float).reshape(6)
+    x, y, z, rx, ry, rz = endpose
 
-    # 2. 逆运动学求解 (ikpy自动应用URDF中的joint limits)
-    ik_result = inverse_kinematic_optimization(
-        chain=chain,
-        target_frame=target_pose,           # ✅ 4x4 齐次变换矩阵
-        starting_nodes_angles=initial_position,
-        orientation_mode='all',              # ✅ 控制全部三个轴（完整姿态）
-        max_iter=100,
-        regularization_parameter=0.1,        # 正则化，防止奇异
-        optimizer='least_squares'            # 使用最小二乘法
-    )
-    print('inverse kinematics result: ', ik_result)
+    t = np.array([x, y, z], dtype=float) / 1000.0
+    rot = R.from_euler("xyz", [rx, ry, rz], degrees=True).as_matrix()
 
-    # 3. 提取6个活动关节角 (ik_result[0]是base_link占位符)
-    active_joints = ik_result[1:7]
+    return pin.SE3(rot, t)
 
-    # 4. 可达性验证
-    # 4.1 关节限位检查 (双重验证)
-    in_limits = np.all((active_joints >= PIPER_JOINT_LIMITS[:, 0] - 1e-6) & 
-                      (active_joints <= PIPER_JOINT_LIMITS[:, 1] + 1e-6))
 
-    # 4.2 正向运动学验证位姿误差
-    fk_result = chain.forward_kinematics(ik_result)
-    pos_error = np.linalg.norm(fk_result[:3, 3] - target_pos) ## 计算位置误差
-    
-    # 旋转误差计算 (旋转矩阵夹角)
-    fk_rot = fk_result[:3, :3]
-    cos_angle = np.clip((np.trace(fk_rot.T @ target_rot) - 1) / 2, -1.0, 1.0)
-    rot_error = np.arccos(cos_angle)
+def se3_to_endpose(M):
+    """
+    Convert pin.SE3 to [x, y, z, rx, ry, rz].
 
-    # 综合判断
-    reachable = (pos_error < pos_tol) and (rot_error < rot_tol) and in_limits
+    x, y, z: mm
+    rx, ry, rz: degree
+    Euler order: scipy 'xyz'.
+    """
+    t_mm = M.translation * 1000.0
+    rpy_deg = R.from_matrix(M.rotation).as_euler("xyz", degrees=True)
+    return np.concatenate([t_mm, rpy_deg])
 
-    return {
-        "success": reachable,
-        "joint_angles": active_joints,  # 6维数组 (rad)
-        "position_error": pos_error,
-        "orientation_error": rot_error,
-        "within_limits": in_limits,
-        "fk_pose": fk_result  # 实际达到的位姿
+
+# ============================================================
+# Model utilities
+# ============================================================
+def reduce_to_arm_only(model):
+    """
+    Lock gripper joints and keep only the 6-DOF arm.
+
+    For Piper URDF:
+        joint1~joint6: arm joints
+        joint7/joint8: gripper prismatic joints
+    """
+    q_ref = pin.neutral(model)
+    lock_names = ["joint7", "joint8"]
+    lock_ids = []
+
+    for name in lock_names:
+        if model.existJointName(name):
+            lock_ids.append(model.getJointId(name))
+
+    if len(lock_ids) == 0:
+        return model
+
+    return pin.buildReducedModel(model, lock_ids, q_ref)
+
+
+def load_arm_model():
+    """
+    Load and cache reduced Piper arm model.
+    """
+    global _MODEL_CACHE
+
+    if _MODEL_CACHE is not None:
+        return _MODEL_CACHE
+
+    urdf_path = os.path.expanduser(DEFAULT_URDF)
+    if not os.path.exists(urdf_path):
+        raise FileNotFoundError(f"Cannot find Piper URDF: {urdf_path}")
+
+    model = pin.buildModelFromUrdf(urdf_path)
+    model = reduce_to_arm_only(model)
+    _MODEL_CACHE = model
+    return model
+
+
+def print_model_info():
+    """
+    Optional helper: print joint and frame names.
+    Call this only when you need to check DEFAULT_EE_FRAME.
+    """
+    model = load_arm_model()
+
+    print("\n========== Joints ==========")
+    for i, name in enumerate(model.names):
+        print(f"{i:2d}: {name}")
+
+    print("\n========== Frames ==========")
+    for i, frame in enumerate(model.frames):
+        print(f"{i:3d}: {frame.name}")
+
+
+def get_clean_bounds(model):
+    """
+    Clean joint lower/upper bounds.
+    Pinocchio may store huge/unbounded values; replace them with [-pi, pi].
+    """
+    lb = model.lowerPositionLimit.copy()
+    ub = model.upperPositionLimit.copy()
+
+    for i in range(model.nq):
+        if not np.isfinite(lb[i]) or not np.isfinite(ub[i]):
+            lb[i] = -np.pi
+            ub[i] = np.pi
+
+        if ub[i] - lb[i] > 100:
+            lb[i] = -np.pi
+            ub[i] = np.pi
+
+        if ub[i] - lb[i] < 1e-9:
+            lb[i] -= 1e-6
+            ub[i] += 1e-6
+
+    return lb, ub
+
+
+def frame_pose(model, data, q, frame_id):
+    pin.forwardKinematics(model, data, q)
+    pin.updateFramePlacements(model, data)
+    return data.oMf[frame_id]
+
+
+# ============================================================
+# IK and simple path check
+# ============================================================
+def solve_ik(model, target_M):
+    """
+    Solve IK for DEFAULT_EE_FRAME.
+    Returns best result dict.
+    """
+    data = model.createData()
+
+    if not model.existFrame(DEFAULT_EE_FRAME):
+        raise RuntimeError(
+            f"Cannot find EE frame '{DEFAULT_EE_FRAME}'. "
+            f"Call print_model_info() to check frame names."
+        )
+
+    frame_id = model.getFrameId(DEFAULT_EE_FRAME)
+    lb, ub = get_clean_bounds(model)
+
+    def residual(q):
+        M = frame_pose(model, data, q, frame_id)
+        pos_err = M.translation - target_M.translation
+        rot_err = pin.log3(target_M.rotation.T @ M.rotation)
+        return np.concatenate([
+            pos_err / POS_SCALE,
+            rot_err / ROT_SCALE,
+        ])
+
+    rng = np.random.default_rng(RANDOM_SEED)
+    q_neutral = np.clip(pin.neutral(model), lb, ub)
+    q_zero = np.clip(np.zeros(model.nq), lb, ub)
+
+    init_list = [q_neutral, q_zero]
+    for _ in range(N_RANDOM_INIT):
+        init_list.append(rng.uniform(lb, ub))
+
+    best = None
+
+    for q0 in init_list:
+        res = least_squares(
+            residual,
+            q0,
+            bounds=(lb, ub),
+            max_nfev=1000,
+            xtol=1e-10,
+            ftol=1e-10,
+            gtol=1e-10,
+        )
+
+        q = res.x
+        M = frame_pose(model, data, q, frame_id)
+
+        pos_err = np.linalg.norm(M.translation - target_M.translation)
+        rot_err = np.linalg.norm(pin.log3(target_M.rotation.T @ M.rotation))
+        score = pos_err + 0.05 * rot_err
+
+        if best is None or score < best["score"]:
+            best = {
+                "q": q,
+                "M": M.copy(),
+                "pos_err_m": float(pos_err),
+                "rot_err_rad": float(rot_err),
+                "score": float(score),
+                "least_squares_success": bool(res.success),
+                "least_squares_message": str(res.message),
+            }
+
+    return best
+
+
+def check_joint_path(model, q_start, q_goal, steps=PATH_CHECK_STEPS):
+    """
+    Check a simple joint-space interpolation path from q_start to q_goal.
+    This only checks joint limits.
+    It does NOT check self-collision or environment collision.
+    """
+    lb, ub = get_clean_bounds(model)
+
+    for s in np.linspace(0.0, 1.0, steps):
+        q = pin.interpolate(model, q_start, q_goal, s)
+        if np.any(q < lb - 1e-6) or np.any(q > ub + 1e-6):
+            return False
+
+    return True
+
+
+# ============================================================
+# Public API
+# ============================================================
+def reachability_test(endpose):
+    """
+    Test whether a target endpose is reachable by Piper arm.
+
+    Input:
+        endpose: [x, y, z, rx, ry, rz]
+            x, y, z in mm
+            rx, ry, rz in degree
+            Euler order: scipy 'xyz'
+
+    Returns:
+        result: dict
+            result["reachable"]: bool
+            result["path_ok"]: bool
+            result["q_solution_rad"]: np.ndarray, shape (6,)
+            result["q_solution_deg"]: np.ndarray, shape (6,)
+            result["achieved_endpose"]: np.ndarray, [mm, degree]
+            result["target_endpose"]: np.ndarray, [mm, degree]
+            result["pos_err_mm"]: float
+            result["rot_err_deg"]: float
+
+    Notes:
+        - This checks IK reachability and joint limit interpolation only.
+        - It does not check collision with table/environment/attached object.
+    """
+    target_endpose = np.asarray(endpose, dtype=float).reshape(6)
+
+    model = load_arm_model()
+    target_M = endpose_to_se3(target_endpose)
+
+    ik_result = solve_ik(model, target_M)
+
+    q_sol = ik_result["q"]
+    M_sol = ik_result["M"]
+
+    pos_err_mm = ik_result["pos_err_m"] * 1000.0
+    rot_err_deg = np.rad2deg(ik_result["rot_err_rad"])
+
+    reachable = (pos_err_mm < POS_TOL_MM) and (rot_err_deg < ROT_TOL_DEG)
+
+    lb, ub = get_clean_bounds(model)
+    q_home = np.clip(pin.neutral(model), lb, ub)
+    path_ok = check_joint_path(model, q_home, q_sol, steps=PATH_CHECK_STEPS)
+
+    result = {
+        "reachable": bool(reachable),
+        "path_ok": bool(path_ok),
+        "q_solution_rad": q_sol,
+        "q_solution_deg": np.rad2deg(q_sol),
+        "achieved_endpose": se3_to_endpose(M_sol),
+        "target_endpose": target_endpose,
+        "pos_err_mm": float(pos_err_mm),
+        "rot_err_deg": float(rot_err_deg),
+        "ee_frame": DEFAULT_EE_FRAME,
+        "urdf_path": os.path.expanduser(DEFAULT_URDF),
+        "least_squares_success": ik_result["least_squares_success"],
+        "least_squares_message": ik_result["least_squares_message"],
     }
 
+    return result
+
+
+def print_reachability_result(result):
+    """
+    Optional helper for formatted terminal output.
+    """
+    print("\n========== IK Result ==========")
+    print("Reachable:", result["reachable"])
+    print(f"Position error: {result['pos_err_mm']:.4f} mm")
+    print(f"Rotation error: {result['rot_err_deg']:.4f} deg")
+
+    print("\nq solution [rad]:")
+    print(result["q_solution_rad"])
+
+    print("\nq solution [deg]:")
+    print(result["q_solution_deg"])
+
+    print("\nAchieved end pose [mm, deg]:")
+    print(result["achieved_endpose"])
+
+    print("\nTarget end pose [mm, deg]:")
+    print(result["target_endpose"])
+
+    print("\nSimple joint-space path from neutral:")
+    print("Path OK:", result["path_ok"])
+
+    if not result["reachable"]:
+        print("\n可能原因：")
+        print("1. 目标位姿确实不可达")
+        print("2. DEFAULT_EE_FRAME 选错，试试 link6 或 gripper_base")
+        print("3. 末端欧拉角顺序和控制器定义不一致")
+        print("4. 目标位姿其实是 TCP 位姿，但 URDF 里没有额外 TCP frame")
 
 
 if __name__ == "__main__":
-    print("🔧 Piper IK 验证模块加载完成")
-    
-    # 示例1: 验证工作空间内的位姿
-    print("\n=== 测试可达位姿 ===")
-    result = validate_and_solve_ik(
-        x=0.336, y=0.22, z=0.217,
-        rx=0.0, ry=np.pi/2, rz=0.0,  # xyz欧拉角顺序
-        current_joints=np.zeros(6)
-    )
-    
-    if result["success"]:
-        print("✅ 可达!")
-        print(f"关节角 (rad): {result['joint_angles']}")
-        print(f"关节角 (deg): {np.degrees(result['joint_angles'])}")
-        print(f"位置误差: {result['position_error']*1000:.3f} mm")
-        print(f"姿态误差: {np.degrees(result['orientation_error']):.3f} °")
-    else:
-        print("❌ 不可达")
-        print(f"  位置误差: {result['position_error']*1000:.3f} mm (阈值: 1mm)")
-        print(f"  姿态误差: {np.degrees(result['orientation_error']):.3f} ° (阈值: ~0.57°)")
-        print(f"  关节限位: {'✅' if result['within_limits'] else '❌ 超限'}")
-    
-    # # 示例2: 验证超出工作空间的位姿
-    # print("\n=== 测试不可达位姿 (太远) ===")
-    # result2 = validate_and_solve_ik(
-    #     x=0.36, y=0.22, z=0.25,  # Piper臂长约0.7m, 此点大概率不可达
-    #     rx=0.0, ry=0.0, rz=0.0,
-    #     current_joints=np.zeros(6)
-    # )
-    # print(f"可达: {result2['success']}, 位置误差: {result2['position_error']*1000:.2f} mm")
+    # Minimal self-test template. Modify this target if you run this file directly.
+    test_endpose = [446.55, -14.29, 69.68, 88.23, 4.73, -139.73]
+    res = reachability_test(test_endpose)
+    print_reachability_result(res)
