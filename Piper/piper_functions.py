@@ -105,29 +105,28 @@ def get_arm_status(piper):
         else: break
     return arm_status
 
-def move_joint(piper,position =  [0,0,0,0,0,0,0] ):
+def move_joint(piper, joint1, joint2, joint3, joint4, joint5, joint6 , vel = 20):
     factor = 1000
     piper.GripperCtrl(0,1000,0x01, 0)
     count = 0
     while True:
         if count ==0:
             count  = count + 1
-            joint_0 = round(position[0]*factor)
-            joint_1 = round(position[1]*factor)
-            joint_2 = round(position[2]*factor)
-            joint_3 = round(position[3]*factor)
-            joint_4 = round(position[4]*factor)
-            joint_5 = round(position[5]*factor)
-            joint_6 = round(position[6]*1000*1000)
-            # piper.ModeCtrl( 0x01,0x01,30, 0x00)
-            piper.MotionCtrl_2(0x01, 0x01, 30, 0x00)
+            joint_0 = round(joint1 * factor)
+            joint_1 = round(joint2 *factor)
+            joint_2 = round(joint3 *factor)
+            joint_3 = round(joint4 *factor)
+            joint_4 = round(joint5 *factor)
+            joint_5 = round(joint6 *factor)
+
+            piper.MotionCtrl_2(0x01, 0x01, vel, 0x00)
             piper.JointCtrl(joint_0, joint_1, joint_2, joint_3, joint_4, joint_5)
-            piper.GripperCtrl(abs(joint_6), 1000, 0x01, 0)
-            print(piper.GetArmStatus())
-            print(position)
+            
             time.sleep(0.005)
             count +=1
-        else: break
+        else: 
+            print(piper.GetArmStatus())
+            break
     
     return
      
