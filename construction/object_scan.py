@@ -4,7 +4,7 @@ from scipy.spatial.transform import Rotation as R
 import numpy as np
 
 sys.path.append('E:/HKUSTGZ/AAM')
-from piper_motion.endpose_reachability import *
+from Piper.endpose_reachability import *
 
 
 # =========================
@@ -50,9 +50,9 @@ NUM_RADIUS = 4
 # Candidate angle grid in object coordinate.
 # yaw/pitch rotate the first-view direction around the object coordinate axes.
 # roll rotates camera around its optical axis while still looking at object_center.
-YAW_DEG_LIST = [ -90, -60, -30, 0, 30, 60, 90 ] #7
+YAW_DEG_LIST = [ -55, -45, -30, 0, 30, 42, 50 ] #7
 PITCH_DEG_LIST = [ -20, -10, 0, 15, 30, 45, 60 ] #7
-ROLL_DEG_LIST = [-150, -120, -90, -60, -45, -30, 0, 30, 45, 60, 90, 150 ] #3
+ROLL_DEG_LIST = [ -70, -55, -30, 0, 30, 55, 70 ] #3
 
 # If True, stop once enough reachable poses are found.
 # If False, test all candidates and save every reachable pose.
@@ -350,11 +350,6 @@ def generate_candidate_endposes(object_center, t_base_object, p_cam0, t_ee_cam, 
 
 
 def filter_reachable_candidates(candidate_records):
-    """
-    Keep the same reachability_test logic as your existing code:
-        result = reachability_test(endpose)
-        if result['reachable'] == True: save it
-    """
     reachable_records = []
 
     for cand in candidate_records:
@@ -368,9 +363,10 @@ def filter_reachable_candidates(candidate_records):
                 "pitch": cand["pitch"],
                 "roll": cand["roll"],
                 "endpose": cand["endpose"],
+                'joint_degrees':result['joint_degrees']
             }
             reachable_records.append(out_record)
-            print("reachable_endpose:", endpose)
+            print("reachable angles:", out_record['yaw'], out_record['pitch'], out_record['roll'] )
 
             if STOP_AFTER_MIN_REACHABLE and len(reachable_records) >= MIN_REACHABLE_TO_SAVE:
                 break

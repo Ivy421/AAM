@@ -249,30 +249,7 @@ def check_joint_path(model, q_start, q_goal, steps=PATH_CHECK_STEPS):
 # Public API
 # ============================================================
 def reachability_test(endpose):
-    """
-    Test whether a target endpose is reachable by Piper arm.
 
-    Input:
-        endpose: [x, y, z, rx, ry, rz]
-            x, y, z in mm
-            rx, ry, rz in degree
-            Euler order: scipy 'xyz'
-
-    Returns:
-        result: dict
-            result["reachable"]: bool
-            result["path_ok"]: bool
-            result["q_solution_rad"]: np.ndarray, shape (6,)
-            result["q_solution_deg"]: np.ndarray, shape (6,)
-            result["achieved_endpose"]: np.ndarray, [mm, degree]
-            result["target_endpose"]: np.ndarray, [mm, degree]
-            result["pos_err_mm"]: float
-            result["rot_err_deg"]: float
-
-    Notes:
-        - This checks IK reachability and joint limit interpolation only.
-        - It does not check collision with table/environment/attached object.
-    """
     target_endpose = np.asarray(endpose, dtype=float).reshape(6)
 
     model = load_arm_model()
@@ -282,6 +259,9 @@ def reachability_test(endpose):
 
     q_sol = ik_result["q"]
     M_sol = ik_result["M"]
+
+    joint_degrees = [float(v) for v in (np.rad2deg(q_sol)) ]
+    joint_degrees = [round(v, 3) for v in joint_degrees]
 
     pos_err_mm = ik_result["pos_err_m"] * 1000.0
     rot_err_deg = np.rad2deg(ik_result["rot_err_rad"])
@@ -297,6 +277,7 @@ def reachability_test(endpose):
         "path_ok": bool(path_ok),
         "q_solution_rad": q_sol,
         "q_solution_deg": np.rad2deg(q_sol),
+        'joint_degrees': joint_degrees,
         "achieved_endpose": se3_to_endpose(M_sol),
         "target_endpose": target_endpose,
         "pos_err_mm": float(pos_err_mm),
@@ -307,43 +288,6 @@ def reachability_test(endpose):
         "least_squares_message": ik_result["least_squares_message"],
     }
 
+
+
     return result
-
-
-def print_reachability_result(result):
-    """
-    Optional helper for formatted terminal output.
-    """
-    print("\n========== IK Result ==========")
-    print("Reachable:", result["reachable"])
-    print(f"Position error: {result['pos_err_mm']:.4f} mm")
-    print(f"Rotation error: {result['rot_err_deg']:.4f} deg")
-
-    print("\nq solution [rad]:")
-    print(result["q_solution_rad"])
-
-    print("\nq solution [deg]:")
-    print(result["q_solution_deg"])
-
-    print("\nAchieved end pose [mm, deg]:")
-    print(result["achieved_endpose"])
-
-    print("\nTarget end pose [mm, deg]:")
-    print(result["target_endpose"])
-
-    print("\nSimple joint-space path from neutral:")
-    print("Path OK:", result["path_ok"])
-
-    if not result["reachable"]:
-        print("\n可能原因：")
-        print("1. 目标位姿确实不可达")
-        print("2. DEFAULT_EE_FRAME 选错，试试 link6 或 gripper_base")
-        print("3. 末端欧拉角顺序和控制器定义不一致")
-        print("4. 目标位姿其实是 TCP 位姿，但 URDF 里没有额外 TCP frame")
-
-
-if __name__ == "__main__":
-    # Minimal self-test template. Modify this target if you run this file directly.
-    test_endpose = [446.55, -14.29, 69.68, 88.23, 4.73, -139.73]
-    res = reachability_test(test_endpose)
-    print_reachability_result(res)
