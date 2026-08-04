@@ -21,7 +21,7 @@ PROJECT_ROOT = Path(os.getenv("AAM_PROJECT_ROOT", Path(__file__).resolve().paren
 ROOT_DIR = PROJECT_ROOT / "perception" / "result" / "1st_capturing"
 PROMPT_PATH = PROJECT_ROOT / "config" / "prompt" / "screening.json"
 
-QWEN_MODEL_NAME = os.getenv("QWEN_SCREENING_MODEL", "qwen3-vl-235b-a22b-thinking")
+QWEN_MODEL_NAME = os.getenv("QWEN_SCREENING_MODEL", "qwen3.7-plus")
 QWEN_MAX_TOKENS = int(os.getenv("QWEN_SCREENING_MAX_TOKENS", "512"))
 
 

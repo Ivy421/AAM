@@ -18,7 +18,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from Piper import endpose_reachability_safe as ik
 
 
-DEFAULT_URDF = Path("E:/HKUSTGZ/AAM_MASTER/config/piper/piper_description.urdf")
+DEFAULT_URDF = Path("/home/smmg/AAM/config/piper/piper_description.urdf")
 
 TAG_P_BRUSH_CENTER_M = np.array([0.0, 0.0, -0.086], dtype=float)
 BRUSH_RADIUS_M = 0.018
@@ -774,9 +774,7 @@ def main():
             flange_T_tag,
         )
 
-        if contact_candidate is not None:
-            print(f"applicate pose:{contact_candidate['poses']}")
-        else:
+        if contact_candidate is None:
             skipped_segments.append(
                 {
                     "segment_id": segment_id,

@@ -113,6 +113,8 @@ def select_reachable_grab_yaw(grab_position_mm):
         ])
         reachable = reachability_test(grab_endpose)
         if reachable["reachable"]:
+            print(f"Selected grab yaw: {yaw_deg:.3f} deg")
+            print("Selected grab joint degrees:", reachable["joint_degrees"])
             return grab_endpose, reachable["joint_degrees"]
 
     raise RuntimeError("Yaw candidates were found, but none passed the final reachability test.")
@@ -349,6 +351,8 @@ def round_endpose(endpose):
     Keep each element of an endpose to 2 decimal places.
     endpose format: [x, y, z, rx, ry, rz]
     """
+    if endpose is None:
+        return None
     return np.round(np.asarray(endpose, dtype=float).reshape(-1), 2)
 
 
@@ -399,7 +403,7 @@ fix_points_path = args.fix_points.expanduser().resolve() if args.fix_points else
 fix_normal_path = args.fix_normal.expanduser().resolve() if args.fix_normal else depression_path / "n_fix_plane.json"
 
 
-arm_gripper_length_z = 148 # mm 末端Z轴朝前伸出方向  142.5
+arm_gripper_length_z = 148 # mm 末端Z轴朝前伸出方向
 arm_gripper_width_y = 164 # mm  ## 夹爪开合方向
 arm_gripper_thickness =75 # mm 
 arm_flange = 10.5+2 # mm
@@ -432,7 +436,7 @@ Rz = np.array([
     [np.sin(theta),  np.cos(theta), 0],
     [0,              0,             1]
 ])
-b_obj_grab_t = np.array([[printerx],[printery],[printerz ]])  ## 固定值代表打印盘中心相对base的位置
+b_obj_grab_t = np.array([[printerx],[printery],[printerz]])  ## 固定值代表打印盘中心相对base的位置
 b_obj_grab_T = np.column_stack([Rz, b_obj_grab_t])
 b_obj_grab_T = np.vstack([b_obj_grab_T,np.array([0,0,0,1])])
 
@@ -465,7 +469,14 @@ base_end_grab_T = base_end_grab_trans(grab_endpose)
 # object_grab 在 末端抓取时刻坐标系下的表示
 end_grab_obj_grab_T = np.linalg.inv(base_end_grab_T) @ b_obj_grab_T 
 
+#### 计算base_obj_fix_T
 base_obj_fix_T = orient_meta['base_T_full']
+base_obj_fix_T[0,-1] -= 0.1
+print(base_obj_fix_T)
+
+##########取逆
+base_obj_fix_T = np.linalg.inv(base_obj_fix_T)
+
 ### 计算最终的安装旋转矩阵
 base_end_fix_T =  base_obj_fix_T @ np.linalg.inv(end_grab_obj_grab_T)
 fix_endpose = trans_to_endpose(base_end_fix_T)
@@ -473,10 +484,29 @@ fix_endpose = trans_to_endpose(base_end_fix_T)
 #fix_endpose[1] -= 0.003
 
 fix_reachable = reachability_test(fix_endpose)
-if fix_reachable["reachable"]:
-    print('😍  fix enpose reachable! 😍 ')
+
+######### 这里如果希望做的更robust，可以加入条件语句，若true，若false则调动底盘移动计算
+############### 先默认都可达
+
+if fix_reachable['reachable'] == True:
+    print('😍 pick and fix enpose reachable! 😍 ')
+    #pregrab_endpose = round_endpose(define_pregrab_endpose(grab_endpose))
+    #prefix_endpose = round_endpose(
+    #    define_prefix_endpose(fix_endpose, fix_normal_path, fix_points_path)
+    #)
+    #grab_endpose = round_endpose(grab_endpose)
+    #fix_endpose = round_endpose(fix_endpose)
+    #pre_fix_reachable = reachability_test(prefix_endpose)
+    #fix_reachable_final = reachability_test(fix_endpose)
+    #if not pre_fix_reachable["reachable"]:
+    #    raise RuntimeError("pre_fix_endpose is not reachable")
+    #if not fix_reachable_final["reachable"]:
+    #    raise RuntimeError("fix_endpose is not reachable")
+#
+    #pre_fix_joint_degrees = pre_fix_reachable["joint_degrees"]
     fix_joint_degrees = fix_reachable["joint_degrees"]
 
+    #________________ save endpose data ______________#
     output_path.parent.mkdir(parents=True, exist_ok=True)
     np.savez(output_path,
     #pregrab_endpose = pregrab_endpose,

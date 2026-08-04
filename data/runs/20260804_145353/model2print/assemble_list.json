@@ -1,0 +1,30 @@
+{
+  "plates": [
+    {
+      "plate_index": 1,
+      "plate_name": "plate_1",
+      "need_arrange": false,
+      "objects": [
+        {
+          "path": "print_model.stl",
+          "count": 1,
+          "filaments": [
+            1
+          ],
+          "pos_x": [
+            90
+          ],
+          "pos_y": [
+            90
+          ],
+          "pos_z": [
+            14.026158012336087
+          ]
+        }
+      ],
+      "plate_params": {
+        "print_sequence": "by layer"
+      }
+    }
+  ]
+}

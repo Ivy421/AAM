@@ -16,7 +16,7 @@ COARSE_SCAN_DIR = PROJECT_ROOT / "construction" / "data" / "coarse_scan"
 ROUGH_CSV_PATH = PROJECT_ROOT / "perception" / "data" / "rough_screening" / "test_RoughInspection.csv"
 
 ROUGH_DEFECT_ID = int(os.getenv("ROUGH_DEFECT_ID", "1"))
-QWEN_MODEL_NAME = os.getenv("QWEN_CONFIRMATION_MODEL", "qwen3-vl-235b-a22b-thinking")
+QWEN_MODEL_NAME = os.getenv("QWEN_CONFIRMATION_MODEL", "qwen3.7-plus")
 QWEN_MAX_TOKENS = int(os.getenv("QWEN_CONFIRMATION_MAX_TOKENS", "512"))
 
 CONFIRMATION_IMAGE_NAMES = [

@@ -1,0 +1,11 @@
+{
+    "is_defect": "yes",
+    "defect_type": "depression",
+    "defect_object": "black rectangular block",
+    "defect_region": "chipped and irregular corner with missing volume and jagged edges",
+    "segmentation_text_prompt": {
+        "long_defect_prompt": "black rectangular block with a chipped corner showing missing volume and jagged edges",
+        "short_object_prompt": "black rectangular block",
+        "balanced_prompt": "black block with damaged chipped corner"
+    }
+}

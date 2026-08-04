@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"black rectangular block\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"black rectangular block resting on green table with a chipped and irregular broken corner at the bottom right end\",\n      \"short_object_prompt\": \"black rectangular block\",\n      \"balanced_prompt\": \"black block with damaged corner edge\"\n    },\n    \"description\": \"A black rectangular block lying on a green surface has a visible volume defect where the bottom-right corner is chipped off or broken, creating an irregular geometry suitable for repair via a 3D printed patch.\",\n    \"confidence\": 9\n  }\n]"
+]

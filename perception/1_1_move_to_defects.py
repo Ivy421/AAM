@@ -21,7 +21,7 @@ URDF_PATH = PROJECT_ROOT / "config" / "piper" / "piper_description.urdf"
 EE_FRAME = "link6"
 
 # Desired arm pose for final visual alignment.
-DESIRED_JOINT_DEG = np.array([ 0, 35, -30, 0, 30, 0], dtype=float)  # 0.0, 40.0, -25.0, 0.0, 10, 0.0
+DESIRED_JOINT_DEG = np.array([ 0, 35, -30, 0, 25, 0], dtype=float)  # 0.0, 40.0, -25.0, 0.0, 10, 0.0
 
 MAX_VX = 0.08
 MAX_VY = 0.06

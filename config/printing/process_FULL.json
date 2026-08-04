@@ -14,9 +14,9 @@
     "bridge_speed": [
         "50"
     ],
-    "brim_type":"auto",
+    "brim_type":"outer_only",
     "brim_object_gap": "0.1",
-    "brim_width": "2",
+    "brim_width": "3",
     "circle_compensation_manual_offset": "0",
     "default_acceleration": [
         "1000"

@@ -66,9 +66,6 @@ def qwen3_inference(
     from openai import OpenAI
 
     api_key = os.getenv("DASHSCOPE_API_KEY")
-    if not api_key:
-        raise RuntimeError("DASHSCOPE_API_KEY is not set.")
-
     base_url = os.getenv(
         "DASHSCOPE_BASE_URL",
         "https://dashscope.aliyuncs.com/compatible-mode/v1",

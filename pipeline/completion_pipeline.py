@@ -67,7 +67,7 @@ def run_depression_completion(run_dir, dry_run=False, printing=False):
     # depression_completion_twoFit.py writes both files below into completion_dir.
     # Pass those concrete outputs to the glue-dot stage; it contains no run-specific paths.
 
-    fix_points = completion_dir / "fix_points_curve.pcd"
+    fix_points = completion_dir / "fix_points.pcd"
     fix_mask = completion_dir / 'fix_mask.npz'
     print("\n \n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n glue applicate path working \n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  \n ")
     run_script(

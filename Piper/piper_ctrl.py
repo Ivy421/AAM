@@ -170,7 +170,7 @@ if __name__ == "__main__":
     r_piper.enable()
     r_piper.set_speed(5)
     
-    r_piper.move_joint(  90, 30, -30, 0, 55, 0  )
+    r_piper.move_joint(  90, 35, -30, 0, 50, 0 )
 
 
     
