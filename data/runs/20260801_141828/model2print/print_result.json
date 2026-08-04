@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "finished": true,
+  "stopped": false,
+  "error": null,
+  "state": "FINISH",
+  "percentage": 100,
+  "message": "Bed temperature reached target: 34.47 <= 40.00 C.",
+  "cooldown_ready": true,
+  "bed_temperature": 34.46875,
+  "cooldown_elapsed_sec": 7.152557373046875e-07,
+  "cooldown_reason": "target_temperature_reached"
+}

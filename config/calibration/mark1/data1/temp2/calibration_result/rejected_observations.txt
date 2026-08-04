@@ -1,0 +1,13 @@
+1_Color.png: tag 99 too small, area=371.0
+4_Color.png: tag 392 too small, area=389.1
+5_Color.png: tag 853 too small, area=329.5
+5_Color.png: tag 113 too small, area=329.4
+5_Color.png: tag 771 too small, area=322.7
+6_Color.png: tag 347 too small, area=253.9
+7_Color.png: tag 392 too small, area=376.7
+12_Color.png: no ArUco marker detected
+19_Color.png: tag 99 too small, area=395.8
+20_Color.png: tag 563 too small, area=302.3
+20_Color.png: tag 127 too small, area=311.4
+20_Color.png: tag 38 too small, area=287.2
+20_Color.png: tag 963 too small, area=274.7

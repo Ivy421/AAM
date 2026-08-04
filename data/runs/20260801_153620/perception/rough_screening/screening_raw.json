@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"rectangular block\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"dark rectangular 3D-printed block with irregular broken end on the right side of the green table\",\n      \"short_object_prompt\": \"dark rectangular block\",\n      \"balanced_prompt\": \"dark rectangular block with broken end on green table\"\n    },\n    \"description\": \"dark rectangular block with an irregular broken end indicating a missing volume on the right side\",\n    \"confidence\": 8\n  }\n]"
+]

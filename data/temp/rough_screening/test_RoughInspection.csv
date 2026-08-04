@@ -1,0 +1,2 @@
+time,scene_image,object_name,segmentation_text_prompt,description,confidence,box,mask_path,score,reference file
+test,/home/smmg/AAM/perception/data/rough_screening/test.png,wooden block,dark wooden block with uneven bottom edge on the white desk,"A dark wooden block with a visibly uneven and irregular bottom edge, suggesting a manufacturing defect or breakage.",9,"[288.85699462890625, 213.62648010253906, 418.52801513671875, 430.50555419921875]",/home/smmg/AAM/perception/data/rough_screening/test_mask_1.npy,0.7421875,

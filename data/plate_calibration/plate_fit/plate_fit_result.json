@@ -1,0 +1,65 @@
+{
+  "coordinate_frame": "arm_base",
+  "source_clouds": [
+    "/home/smmg/AAM/data/plate_calibration/plate4_plate_base.pcd"
+  ],
+  "plate_size_m": 0.18,
+  "plane_threshold_m": 0.003,
+  "plane_inliers": 28559,
+  "plane_normal": [
+    -0.014984975039162308,
+    -0.0058570717929306414,
+    0.9998705642397361
+  ],
+  "plane_equation": [
+    -0.014984975039162308,
+    -0.0058570717929306414,
+    0.9998705642397361,
+    -0.03898187310152885
+  ],
+  "robust_trim_percent_each_side": 2.0,
+  "measured_robust_spans_m": [
+    0.17670525816477717,
+    0.18392102201520083
+  ],
+  "search_angle_deg": 81.0,
+  "fit_score": 0.0004899599127399378,
+  "arm_base_T_plate": [
+    [
+      0.9875774419191059,
+      0.1564169004154949,
+      -0.014984975039162308,
+      -0.25271839344013214
+    ],
+    [
+      -0.15651847838813757,
+      0.9876576636836647,
+      -0.0058570717929306414,
+      0.2542763853678652
+    ],
+    [
+      0.013883880422175839,
+      0.008129737470212901,
+      0.9998705642397361,
+      0.03668895819143455
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "arm_base_P_plate_center": [
+    -0.25271839344013214,
+    0.2542763853678652,
+    0.03668895819143455
+  ],
+  "validation_height_m": 0.05,
+  "arm_base_P_plate_validation": [
+    -0.2534676421920903,
+    0.25398353177821864,
+    0.08668248640342135
+  ],
+  "axis_ambiguity_note": "Square geometry cannot identify the physical +X/+Y corner. X is selected deterministically toward arm-base +X."
+}

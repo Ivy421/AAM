@@ -1,0 +1,3 @@
+[
+    "{\n  \"is_defect\": \"yes\",\n  \"defect_type\": \"depression\",\n  \"defect_object\": \"dark rectangular 3D-printed block\",\n  \"defect_region\": \"irregular broken right end with jagged edges and missing corner volume\",\n  \"segmentation_text_prompt\": {\n    \"long_defect_prompt\": \"Dark rectangular 3D-printed block with a jagged, chipped right end showing missing material and uneven edges\",\n    \"short_object_prompt\": \"dark rectangular block\",\n    \"balanced_prompt\": \"Dark rectangular block with irregular broken corner on the right side\"\n  }\n}"
+]

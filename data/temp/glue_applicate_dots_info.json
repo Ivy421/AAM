@@ -1,0 +1,20 @@
+[
+  {
+    "type": "depth_barrier_dots",
+    "layer_id": 11,
+    "z": 0.012000000000000004,
+    "point_num": 4
+  },
+  {
+    "type": "depth_barrier_dots",
+    "layer_id": 6,
+    "z": 0.007,
+    "point_num": 4
+  },
+  {
+    "type": "depth_barrier_dots",
+    "layer_id": 2,
+    "z": 0.003,
+    "point_num": 4
+  }
+]

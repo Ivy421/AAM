@@ -1,0 +1,12 @@
+{
+    "run_id": "test_printing_dryrun",
+    "created_at": "2026-08-03T10:05:12",
+    "project_root": "E:\\HKUSTGZ\\AAM_MASTER",
+    "initial_frame": {
+        "image_path": "E:\\HKUSTGZ\\AAM_MASTER\\data\\runs\\test_printing_dryrun\\start.png",
+        "depth_path": "E:\\HKUSTGZ\\AAM_MASTER\\data\\runs\\test_printing_dryrun\\start.npy",
+        "endpose_path": "E:\\HKUSTGZ\\AAM_MASTER\\data\\runs\\test_printing_dryrun\\start.json",
+        "camera_config_path": "E:\\HKUSTGZ\\AAM_MASTER\\data\\runs\\test_printing_dryrun\\camera_config.npy"
+    },
+    "status": "initialized"
+}

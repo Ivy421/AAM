@@ -1,0 +1,1 @@
+coarse_scan_center -> coarse_scan -> coase_point_extraction -> coarse_icp -> depression_fine_scan_center ->fine_scan ->fine_point_extraction -> fine_icp

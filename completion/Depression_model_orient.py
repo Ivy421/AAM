@@ -1,0 +1,574 @@
+import argparse
+import os
+import glob
+import numpy as np
+import open3d as o3d
+
+"""
+model_orientation.py
+
+New STL coordinate definition:
+    +Z axis  <-  top plane normal = -n_axis
+    +Y axis  <-  u-side inward normal = -max_u_outward
+    +X axis  <-  v-side inward normal = -max_v_outward
+
+Position definition:
+    STL origin = full model (repair + gripper) bounding-box center after orientation.
+
+Additional frame saved:
+    {full}:   bbox frame of model_with_gripper after applying R and shifting full bbox center to origin.
+    {repair}: bbox frame of repair-only model after applying the same R.
+    full_T_repair: transform from repair-only bbox frame to full-with-gripper bbox frame.
+                   Because both frames use the same axes, its rotation is identity and its
+                   translation is repair_bbox_center_in_full.
+
+Important:
+    STL has no unit metadata. If your input STL/PCD/meta are in meters and you want
+    Bambu Studio to read the STL in millimeters, keep UNIT_SCALE = 1000.0.
+    If your input STL is already in millimeters, set UNIT_SCALE = 1.0.
+"""
+
+# =========================================================
+# User config
+# =========================================================
+COMPLETION_DIR = r"E:\HKUSTGZ\AAM\construction\data\completion_result\depression"
+UNIT_SCALE = 1.0  # m -> mm. If input STL already uses mm, change to 1.0.
+
+# If the three requested axes form a left-handed frame, a pure rotation cannot
+# satisfy all three simultaneously. In that case:
+#   "strict"      -> raise error
+#   "keep_z_y"    -> enforce +Z=-n_axis and +Y=-max_u_outward, compute +X by right-hand rule
+#   "keep_z_x"    -> enforce +Z=-n_axis and +X=-max_v_outward, compute +Y by right-hand rule
+HANDEDNESS_MODE = "keep_z_y"
+
+
+# =========================================================
+# Basic geometry utils
+# =========================================================
+def normalize(v: np.ndarray) -> np.ndarray:
+    v = np.asarray(v, dtype=float).reshape(3)
+    n = np.linalg.norm(v)
+    if n < 1e-12:
+        raise ValueError(f"zero-length vector: {v}")
+    return v / n
+
+
+def unwrap_np_value(x):
+    if isinstance(x, np.ndarray):
+        if x.shape == ():
+            return x.item()
+        return x
+    return x
+
+
+def transform_points(points: np.ndarray, R: np.ndarray, t: np.ndarray) -> np.ndarray:
+    points = np.asarray(points, dtype=float)
+    return (R @ points.T).T + t.reshape(1, 3)
+
+
+def bbox_from_points(points: np.ndarray):
+    """Return axis-aligned bbox min, max, center for points in the current coordinate frame."""
+    points = np.asarray(points, dtype=float)
+    if points.ndim != 2 or points.shape[1] != 3 or len(points) == 0:
+        raise ValueError("points must be a non-empty (N, 3) array")
+    bbox_min = points.min(axis=0)
+    bbox_max = points.max(axis=0)
+    bbox_center = 0.5 * (bbox_min + bbox_max)
+    bbox_size = bbox_max - bbox_min
+
+    bbox_x = bbox_size[0]
+    bbox_y = bbox_size[1]
+    bbox_z = bbox_size[2]
+    return bbox_min, bbox_max, bbox_center, bbox_x, bbox_y , bbox_z
+
+
+def find_default_repair_only_geometry(completion_dir: str = COMPLETION_DIR):
+    """
+    Find repair-only geometry. Prefer model.stl generated before gripper is attached.
+    Fallback to model.pcd if the STL does not exist.
+    """
+    stl_candidates = [
+        os.path.join(completion_dir, "model.stl"),
+        os.path.join(completion_dir, "model_processed.stl"),
+        os.path.join(completion_dir, "repair_model.stl"),
+        os.path.join(completion_dir, "depression_repair_model.stl"),
+    ]
+    for p in stl_candidates:
+        if os.path.exists(p):
+            return p, "stl"
+
+    pcd_candidates = [
+        os.path.join(completion_dir, "model.pcd"),
+        os.path.join(completion_dir, "repair_model.pcd"),
+    ]
+    for p in pcd_candidates:
+        if os.path.exists(p):
+            return p, "pcd"
+
+    return "", ""
+
+
+def load_geometry_points(path: str, geometry_type: str, unit_scale: float):
+    """Load vertices/points and convert them to the same unit as the output STL."""
+    if geometry_type == "stl":
+        mesh = o3d.io.read_triangle_mesh(path)
+        points = np.asarray(mesh.vertices, dtype=float)
+        if len(points) == 0:
+            raise RuntimeError(f"Empty repair-only STL: {path}")
+        return points * unit_scale
+
+    if geometry_type == "pcd":
+        pcd = o3d.io.read_point_cloud(path)
+        points = np.asarray(pcd.points, dtype=float)
+        if len(points) == 0:
+            raise RuntimeError(f"Empty repair-only PCD: {path}")
+        return points * unit_scale
+
+    raise ValueError(f"Unknown geometry_type: {geometry_type}")
+
+
+def make_transform(rotation: np.ndarray, translation: np.ndarray):
+    T = np.eye(4)
+    T[:3, :3] = np.asarray(rotation, dtype=float).reshape(3, 3)
+    T[:3, 3] = np.asarray(translation, dtype=float).reshape(3)
+    return T
+
+
+def load_meta(meta_path: str | None = None, completion_dir: str = COMPLETION_DIR):
+    """
+    Load meta.npz generated by Depression_Completion.py.
+    Required fields:
+        side_n_mark: dict, should contain max_u_outward and one v-side outward
+            normal: max_v_outward or min_v_outward.
+        n_axis
+    Optional fields are preserved if present.
+    """
+    candidates = []
+    if meta_path is not None:
+        candidates.append(meta_path)
+
+    candidates.extend([
+        os.path.join(completion_dir, "meta.npz"),
+        completion_dir + "meta.npz",
+        os.path.join(os.path.dirname(completion_dir), "depressionmeta.npz"),
+    ])
+
+    meta_path_found = None
+    for p in candidates:
+        if p and os.path.exists(p):
+            meta_path_found = p
+            break
+    data = np.load(meta_path_found, allow_pickle=True)
+
+    side_n_mark = unwrap_np_value(data["side_n_mark"])
+    side_n_mark = {
+        str(k): normalize(np.asarray(v, dtype=float))
+        for k, v in side_n_mark.items()
+    }
+
+    if "max_v_outward" in side_n_mark:
+        v_side_name = "max_v_outward"
+    elif "min_v_outward" in side_n_mark:
+        v_side_name = "min_v_outward"
+
+    meta = {
+        "meta_path": meta_path_found,
+        "side_n_mark": side_n_mark,
+        "v_side_name": v_side_name,
+        "v_side_outward": side_n_mark[v_side_name],
+        "n_axis": data["n_axis"],
+    }
+
+    for k in data.files:
+        if k not in meta:
+            try:
+                meta[k] = unwrap_np_value(data[k])
+            except Exception:
+                pass
+
+    return meta
+
+
+def find_default_stl(completion_dir: str = COMPLETION_DIR):
+    candidates = [
+        os.path.join(completion_dir, "model_processed.stl"),
+        os.path.join(completion_dir, "repair_model.stl"),
+        os.path.join(completion_dir, "depression_repair_model.stl"),
+        os.path.join(os.path.dirname(completion_dir), "depression_repair_model.stl"),
+    ]
+
+    for p in candidates:
+        if os.path.exists(p):
+            return p
+
+    extra = glob.glob(os.path.join(completion_dir, "*.stl"))
+    if extra:
+        return extra[0]
+
+    raise FileNotFoundError("Cannot find input STL. Tried:\n" + "\n".join(candidates))
+
+
+# =========================================================
+# Rotation construction
+# =========================================================
+def make_right_handed_basis_from_requested_axes(
+    x_src_requested: np.ndarray,
+    y_src_requested: np.ndarray,
+    z_src_requested: np.ndarray,
+    handedness_mode: str = HANDEDNESS_MODE,
+):
+    """
+    Construct source basis S whose columns are the directions in the original
+    model that should become STL +X, +Y, +Z.
+
+    A proper rotation can only map right-handed basis to right-handed basis.
+    If requested axes are left-handed, we use the selected fallback mode.
+    """
+    x_req = x_src_requested
+    y_req = y_src_requested
+    z_req = z_src_requested
+
+    S_req = np.column_stack([x_req, y_req, z_req])
+    det_req = np.linalg.det(S_req)
+
+    if det_req > 0.2:
+        # Orthogonalize to the closest rotation basis.
+        U, _, Vt = np.linalg.svd(S_req)
+        S = U @ Vt
+        if np.linalg.det(S) < 0:
+            U[:, -1] *= -1
+            S = U @ Vt
+        return S, "all_axes_best_fit_right_handed"
+
+    msg = ("+X=-max_v_outward, +Y=-max_u_outward, +Z=-n_axis exactly at the same time.")
+
+    if handedness_mode == "strict":
+        raise ValueError(msg)
+
+    print("[Warning]", msg)
+    print("[Warning] handedness_mode =", handedness_mode)
+
+    if handedness_mode == "keep_z_y":
+        # Enforce Z and Y, compute X = Y x Z.
+        z = z_req
+        y = y_req - np.dot(y_req, z) * z
+        y = normalize(y)
+        x = normalize(np.cross(y, z))
+        S = np.column_stack([x, y, z])
+        #print("actual x dot requested x:", float(np.dot(x, x_req)))
+        return S, "keep_z_y_right_hand_fixed"
+
+    if handedness_mode == "keep_z_x":
+        # Enforce Z and X, compute Y = Z x X.
+        z = z_req
+        x = x_req - np.dot(x_req, z) * z
+        x = normalize(x)
+        y = normalize(np.cross(z, x))
+        S = np.column_stack([x, y, z])
+        #print("actual y dot requested y:", float(np.dot(y, y_req)))
+        return S, "keep_z_x_right_hand_fixed"
+
+    raise ValueError(f"Unknown handedness_mode: {handedness_mode}")
+
+
+def rotation_from_requested_model_axes(
+    n_axis: np.ndarray,
+    max_u_outward: np.ndarray,
+    max_v_outward: np.ndarray,
+    handedness_mode: str = HANDEDNESS_MODE,
+):
+    """
+    Desired mapping:
+        -max_v_outward -> STL +X
+        -max_u_outward -> STL +Y
+        -n_axis        -> STL +Z
+    """
+    x_src = -max_v_outward
+    y_src = -max_u_outward
+    z_src = -n_axis
+
+    S, basis_mode = make_right_handed_basis_from_requested_axes(
+        x_src, y_src, z_src, handedness_mode=handedness_mode
+    )
+
+    # S columns are source directions that should become target +X/+Y/+Z.
+    # Therefore R @ S = I, so R = S.T for an orthonormal S.
+    R = S.T
+
+    # Numerical cleanup to guarantee proper rotation.
+    U, _, Vt = np.linalg.svd(R)
+    R = U @ Vt
+    if np.linalg.det(R) < 0:
+        U[:, -1] *= -1
+        R = U @ Vt
+
+    return R, basis_mode, S
+
+
+# =========================================================
+# Main API
+# =========================================================
+def orient_stl(
+    input_stl_path: str | None = None,
+    output_stl_path: str | None = None,
+    meta_path: str | None = None,
+    gripper_meta_path: str| None = None,
+    completion_dir: str = COMPLETION_DIR,
+    unit_scale: float = UNIT_SCALE,
+    handedness_mode: str = HANDEDNESS_MODE,
+    repair_only_geometry_path: str | None = None,
+    repair_only_geometry_type: str | None = None,
+    visualize: bool = False,
+):
+    """
+    Orient repair model STL.
+
+    Coordinate definition after orientation:
+        +Z <- -n_axis
+        +Y <- -max_u_outward, unless handedness fallback is needed
+        +X <- -v_side_outward, unless handedness fallback is needed
+        origin <- oriented full model bounding-box center
+
+    Returns:
+        output_stl_path, orientation_info
+    """
+    meta = load_meta(meta_path=meta_path, completion_dir=completion_dir)
+    #gripper_meta = load_meta(meta_path=gripper_meta_path, completion_dir=completion_dir)
+    side_n_mark = meta["side_n_mark"]
+
+    n_axis = meta["n_axis"]
+    max_u_outward = side_n_mark["max_u_outward"]
+    v_side_name = meta["v_side_name"]
+    v_side_outward = meta["v_side_outward"]
+
+    R, basis_mode, source_basis = rotation_from_requested_model_axes(
+        n_axis=n_axis,
+        max_u_outward=max_u_outward,
+        max_v_outward=v_side_outward,
+        handedness_mode=handedness_mode,
+    )
+
+    if input_stl_path is None:
+        input_stl_path = find_default_stl(completion_dir)
+    if output_stl_path is None:
+        output_stl_path = os.path.join(completion_dir, "model_oriented.stl")
+
+    mesh = o3d.io.read_triangle_mesh(input_stl_path)
+    if len(mesh.vertices) == 0:
+        raise RuntimeError(f"Empty STL mesh: {input_stl_path}")
+
+    # Convert model coordinates to STL printing unit, normally mm.
+    vertices = np.asarray(mesh.vertices, dtype=float) * unit_scale
+    vertices_rot = (R @ vertices.T).T
+
+    # Origin = full model bounding-box center after orientation.
+    # Here "full model" means repair block + gripper, because input_stl_path
+    # is normally model_with_gripper.stl.
+    full_bbox_min_rot, full_bbox_max_rot, full_bbox_center_rot, full_box_x, full_box_y, full_box_z = bbox_from_points(vertices_rot)
+
+    # 目标是把当前BBox中心移动到新坐标系原点，取负值就是把BBox中心从当前位置平移回原点
+    t = -full_bbox_center_rot
+
+    # ---------------------------------------------------------
+    # Compute full_T_repair.
+    # Both frames use the same axis directions defined by R.
+    # Only their bbox-center origins differ:
+    #   {full}:   bbox center of repair + gripper
+    #   {repair}: bbox center of repair-only model
+    # Therefore:
+    #   full_T_repair = [I, repair_bbox_center_in_full]
+    # ---------------------------------------------------------
+    if repair_only_geometry_path is None:
+        repair_only_geometry_path, repair_only_geometry_type_found = find_default_repair_only_geometry(completion_dir)
+    else:
+        repair_only_geometry_type_found = repair_only_geometry_type
+        if repair_only_geometry_type_found is None:
+            ext = os.path.splitext(repair_only_geometry_path)[1].lower()
+            if ext == ".stl":
+                repair_only_geometry_type_found = "stl"
+            elif ext == ".pcd":
+                repair_only_geometry_type_found = "pcd"
+
+    #repair_points = load_geometry_points(
+    #    repair_only_geometry_path,
+    #    repair_only_geometry_type_found,
+    #    unit_scale=unit_scale, )
+
+
+    #repair_points_rot = (R @ repair_points.T).T
+    #repair_bbox_min_rot, repair_bbox_max_rot, repair_bbox_center_rot, repai_bbox_x, repair_bbox_y, repair_bbox_z = bbox_from_points(repair_points_rot)
+
+    #repair_bbox_min_after = repair_bbox_min_rot + t
+    #repair_bbox_max_after = repair_bbox_max_rot + t
+    #repair_bbox_center_after = repair_bbox_center_rot + t
+
+    #full_T_repair = np.eye(4)
+    #full_T_repair[:3, 3] = repair_bbox_center_after
+    #repair_T_full = np.linalg.inv(full_T_repair)
+
+    full_T_base = make_transform(R, t)
+    base_T_full = np.linalg.inv(full_T_base)
+
+    vertices_out = vertices_rot + t.reshape(1, 3)
+    mesh.vertices = o3d.utility.Vector3dVector(vertices_out)
+    mesh.compute_vertex_normals()
+
+    os.makedirs(os.path.dirname(output_stl_path), exist_ok=True)
+    ok = o3d.io.write_triangle_mesh(output_stl_path, mesh)
+    if not ok:
+        raise RuntimeError(f"Failed to write orient STL: {output_stl_path}")
+
+    # Save oriented point cloud and debug side/top pcds in the same unit as STL.
+    o3d.visualization.draw_geometries([mesh])
+    oriented_pcd_paths = {}
+    for name in ["model", "u_side_plane", "v_side_plane", "top_plane", "top_defect_margin"]:
+        in_path = os.path.join(completion_dir, f"{name}.pcd")
+        out_path = os.path.join(completion_dir, f"{name}_oriented.pcd")
+        if os.path.exists(in_path):
+            pcd = o3d.io.read_point_cloud(in_path)
+            pts = np.asarray(pcd.points, dtype=float)
+            if len(pts) > 0:
+                pts_out = transform_points(pts * unit_scale, R, t)
+                pcd.points = o3d.utility.Vector3dVector(pts_out)
+                o3d.io.write_point_cloud(out_path, pcd)
+                oriented_pcd_paths[name] = out_path
+
+
+    
+    gripper_meta = np.load(gripper_meta_path, allow_pickle=True)
+    attach_center = np.asarray(gripper_meta["attach_center"], dtype=float).reshape(3)
+    attach_center_oriented = R @ (attach_center * unit_scale) + t
+    #print('attach_center:', attach_center)
+    #print('attach_center_oriented:', attach_center_oriented)
+
+    orientation_meta_path = os.path.join(completion_dir, "orientation_meta.npz")
+    np.savez(
+        orientation_meta_path,
+        R=R,
+        t=t,
+        unit_scale=float(unit_scale),
+        basis_mode=basis_mode,
+        input_stl_path=input_stl_path,
+        output_stl_path=output_stl_path,
+        repair_only_geometry_path=repair_only_geometry_path,
+        repair_only_geometry_type=repair_only_geometry_type_found,
+        meta_path=meta["meta_path"],
+        attach_center_oriented = attach_center_oriented,
+        full_T_base=full_T_base,
+        base_T_full=base_T_full,
+        #full_T_repair=full_T_repair,
+        #repair_T_full=repair_T_full,
+        full_bbox_min_rot=full_bbox_min_rot,
+        full_bbox_max_rot=full_bbox_max_rot,
+        full_bbox_center_rot=full_bbox_center_rot,
+        #repair_bbox_min_rot=repair_bbox_min_rot,
+        #repair_bbox_max_rot=repair_bbox_max_rot,
+        #repair_bbox_center_rot=repair_bbox_center_rot,
+        #repair_bbox_min_after=repair_bbox_min_after,
+        #repair_bbox_max_after=repair_bbox_max_after,
+        #repair_bbox_center_after=repair_bbox_center_after,
+        n_axis=n_axis,
+        max_u_outward=max_u_outward,
+        max_v_outward=v_side_outward,
+        v_side_name=v_side_name,
+        v_side_outward=v_side_outward,
+        requested_x_src=-normalize(v_side_outward),
+        requested_y_src=-normalize(max_u_outward),
+        requested_z_src=-normalize(n_axis),
+        actual_x_src=source_basis[:, 0],
+        actual_y_src=source_basis[:, 1],
+        actual_z_src=source_basis[:, 2],
+        requested_x_after=R @ (-normalize(v_side_outward)),
+        requested_y_after=R @ (-normalize(max_u_outward)),
+        requested_z_after=R @ (-normalize(n_axis)),
+        bbox_min_after=vertices_out.min(axis=0),
+        bbox_max_after=vertices_out.max(axis=0),
+        bbox_center_after=0.5 * (vertices_out.min(axis=0) + vertices_out.max(axis=0)),
+        full_bbox_min_after=vertices_out.min(axis=0),
+        full_bbox_max_after=vertices_out.max(axis=0),
+        full_bbox_center_after=0.5 * (vertices_out.min(axis=0) + vertices_out.max(axis=0)),
+        full_box_z_height = full_box_z,  ## 包围盒高度，后续修改assemble_list 为1/2 value
+        oriented_model_pcd_path=oriented_pcd_paths.get("model", ""),
+    )
+
+    print("\n========== STL orientation done ==========")
+    #print("input full STL:", input_stl_path)
+    #print("repair-only geometry:", repair_only_geometry_path, f"({repair_only_geometry_type_found})")
+    #print("output STL:", output_stl_path)
+    #print("unit_scale:", unit_scale)
+    #print("basis_mode:", basis_mode)
+    #print("full bbox center before shift:", full_bbox_center_rot)
+    #print("repair bbox center before shift:", repair_bbox_center_rot)
+    #print("full_T_repair translation:", full_T_repair[:3, 3])
+    #print("orientation meta:", orientation_meta_path)
+
+    # print("\n========== STL orientation done ==========")
+    # print("input STL:", input_stl_path)
+    # print("output STL:", output_stl_path)
+    # print("meta:", meta["meta_path"])
+    # print("unit_scale:", unit_scale)
+    # print("basis_mode:", basis_mode)
+    # print("R:\n", R)
+    # print("t:", t)
+    # print("requested -max_v_outward after:", R @ (-normalize(max_v_outward)), "target +X")
+    # print("requested -max_u_outward after:", R @ (-normalize(max_u_outward)), "target +Y")
+    # print("requested -n_axis after:", R @ (-normalize(n_axis)), "target +Z")
+    # print("bbox center after:", 0.5 * (vertices_out.min(axis=0) + vertices_out.max(axis=0)))
+    # print("bbox min after:", vertices_out.min(axis=0))
+    # print("bbox max after:", vertices_out.max(axis=0))
+    # print("orientation meta:", orientation_meta_path)
+
+    if visualize:
+        mesh_show = o3d.geometry.TriangleMesh(mesh)
+        mesh_show.paint_uniform_color([0.7, 0.7, 0.7])
+        #frame_size = max(10.0, 0.2 * np.linalg.norm(vertices_out.max(axis=0) - vertices_out.min(axis=0)))
+        frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.03)
+        o3d.visualization.draw_geometries([mesh_show, frame])
+
+    orientation_info = {
+        "R": R,
+        "t": t,
+        "unit_scale": unit_scale,
+        "basis_mode": basis_mode,
+        "output_stl_path": output_stl_path,
+        "orientation_meta_path": orientation_meta_path,
+        #"full_T_repair": full_T_repair,
+        #"repair_bbox_center_after": repair_bbox_center_after,
+    }
+    return output_stl_path, orientation_info
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Orient depression repair STL for printing.")
+    parser.add_argument("--completion-dir", type=str, default=COMPLETION_DIR, help="Completion output directory.")
+    parser.add_argument("--input-stl", type=str, default=None, help="Input full model STL.")
+    parser.add_argument("--output-stl", type=str, default=None, help="Output oriented STL.")
+    parser.add_argument("--meta", type=str, default=None, help="Input completion meta.npz.")
+    parser.add_argument("--gripper-meta", type=str, default=None, help="Input gripper_meta.npz.")
+    parser.add_argument("--repair-only-geometry", type=str, default=None, help="Repair-only model STL/PCD.")
+    parser.add_argument("--repair-only-geometry-type", type=str, default=None, choices=["stl", "pcd"], help="Repair-only geometry type.")
+    parser.add_argument("--unit-scale", type=float, default=UNIT_SCALE, help="Scale applied before writing STL.")
+    parser.add_argument("--handedness-mode", type=str, default=HANDEDNESS_MODE, choices=["strict", "keep_z_y", "keep_z_x"], help="Basis handedness handling.")
+    parser.add_argument("--visualize", action="store_true", help="Show Open3D visualization.")
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    depression_dir = args.completion_dir
+    input_stl_path = args.input_stl or os.path.join(depression_dir, "model_with_gripper.stl")
+    output_stl_path = args.output_stl or os.path.join(depression_dir, "model_oriented.stl")
+    meta_path = args.meta or os.path.join(depression_dir, "meta.npz")
+    gripper_meta_path = args.gripper_meta or os.path.join(depression_dir, "gripper_meta.npz")
+    orient_stl(
+        input_stl_path=input_stl_path,
+        output_stl_path=output_stl_path,
+        meta_path=meta_path,
+        gripper_meta_path=gripper_meta_path,
+        completion_dir=depression_dir,
+        unit_scale=args.unit_scale,
+        handedness_mode=args.handedness_mode,
+        repair_only_geometry_path=args.repair_only_geometry or os.path.join(depression_dir, "model.stl"),
+        repair_only_geometry_type=args.repair_only_geometry_type or "stl",
+        visualize=args.visualize,
+    )

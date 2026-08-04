@@ -1,0 +1,176 @@
+{
+  "defect_roi_center_world_m": [
+    0.503095,
+    0.045205,
+    -0.044647
+  ],
+  "object_center_world_m": [
+    0.659213,
+    0.023892,
+    -0.043065
+  ],
+  "safe_prompt_world_m": [
+    0.581154,
+    0.034549,
+    -0.043856
+  ],
+  "safe_prompt_alpha": 0.5,
+  "valid_png_names": [
+    "fine_scan_1",
+    "fine_scan_2",
+    "fine_scan_3",
+    "fine_scan_4",
+    "fine_scan_5",
+    "fine_scan_6",
+    "fine_scan_7"
+  ],
+  "records": [
+    {
+      "name": "fine_scan_1",
+      "success": true,
+      "text_prompt": "a black object",
+      "point_prompts_xy": [
+        [
+          412.11,
+          233.47
+        ]
+      ],
+      "selected_mask_idx": 10,
+      "selected_score": 0.9009,
+      "selected_box_xyxy": [
+        296.94,
+        108.98,
+        549.58,
+        360.66
+      ],
+      "raw_points_count": 36594,
+      "filtered_points_count": 22913
+    },
+    {
+      "name": "fine_scan_2",
+      "success": true,
+      "text_prompt": "a black object",
+      "point_prompts_xy": [
+        [
+          317.41,
+          152.6
+        ]
+      ],
+      "selected_mask_idx": 6,
+      "selected_score": 0.9722,
+      "selected_box_xyxy": [
+        148.17,
+        -0.98,
+        406.4,
+        258.54
+      ],
+      "raw_points_count": 41030,
+      "filtered_points_count": 23354
+    },
+    {
+      "name": "fine_scan_3",
+      "success": true,
+      "text_prompt": "a black object",
+      "point_prompts_xy": [
+        [
+          222.37,
+          209.79
+        ]
+      ],
+      "selected_mask_idx": 14,
+      "selected_score": 0.8884,
+      "selected_box_xyxy": [
+        -1.38,
+        145.69,
+        266.35,
+        325.52
+      ],
+      "raw_points_count": 37288,
+      "filtered_points_count": 20633
+    },
+    {
+      "name": "fine_scan_4",
+      "success": true,
+      "text_prompt": "a black object",
+      "point_prompts_xy": [
+        [
+          388.15,
+          226.33
+        ]
+      ],
+      "selected_mask_idx": 7,
+      "selected_score": 0.962,
+      "selected_box_xyxy": [
+        307.09,
+        89.03,
+        501.14,
+        370.17
+      ],
+      "raw_points_count": 30463,
+      "filtered_points_count": 21011
+    },
+    {
+      "name": "fine_scan_5",
+      "success": true,
+      "text_prompt": "a black object",
+      "point_prompts_xy": [
+        [
+          237.46,
+          144.83
+        ]
+      ],
+      "selected_mask_idx": 12,
+      "selected_score": 0.9466,
+      "selected_box_xyxy": [
+        -0.47,
+        -0.1,
+        281.25,
+        302.69
+      ],
+      "raw_points_count": 43060,
+      "filtered_points_count": 18215
+    },
+    {
+      "name": "fine_scan_6",
+      "success": true,
+      "text_prompt": "a black object",
+      "point_prompts_xy": [
+        [
+          420.57,
+          247.74
+        ]
+      ],
+      "selected_mask_idx": 10,
+      "selected_score": 0.9686,
+      "selected_box_xyxy": [
+        317.91,
+        116.92,
+        612.43,
+        423.34
+      ],
+      "raw_points_count": 42754,
+      "filtered_points_count": 25258
+    },
+    {
+      "name": "fine_scan_7",
+      "success": true,
+      "text_prompt": "a black object",
+      "point_prompts_xy": [
+        [
+          331.67,
+          134.97
+        ]
+      ],
+      "selected_mask_idx": 5,
+      "selected_score": 0.9712,
+      "selected_box_xyxy": [
+        173.35,
+        0.06,
+        429.7,
+        259.5
+      ],
+      "raw_points_count": 46066,
+      "filtered_points_count": 18825
+    }
+  ]
+}

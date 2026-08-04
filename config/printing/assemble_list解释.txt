@@ -1,0 +1,2 @@
+输入的pos_x, pos_y, pos_z是STL坐标系原点相对打印平台中心的位置，默认无旋转
+平台定义的xyz坐标轴如bambu studio GUI所示

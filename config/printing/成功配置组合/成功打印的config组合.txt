@@ -1,0 +1,8 @@
+filament: Bambu PLA Basic @BBL A1M - depression_grip
+process: 0.16mm Optimal @BBL A1M - test1
+
+最好的：
+filament: PLA Basic - test2
+process: 0.16mm High Quality @BBL A1M - test2
+
+注意！！！ printer config需要把printer_setting_id 置空，from:"system"

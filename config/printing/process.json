@@ -1,0 +1,52 @@
+{
+    "bottom_surface_pattern": "archimedeanchords",
+    "bridge_speed": [
+        "30"
+    ],
+    "default_acceleration": [
+        "3000"
+    ],
+    "detect_thin_wall": "1",
+    "from": "User",
+    "inherits": "0.16mm Optimal @BBL A1M",
+    "initial_layer_infill_speed": [
+        "90"
+    ],
+    "initial_layer_speed": [
+        "40"
+    ],
+    "inner_wall_speed": [
+        "100"
+    ],
+    "internal_solid_infill_pattern": "archimedeanchords",
+    "internal_solid_infill_speed": [
+        "130"
+    ],
+    "name": "0.16mm Optimal @BBL A1M",
+    "outer_wall_acceleration": [
+        "1000"
+    ],
+    "outer_wall_speed": [
+        "60"
+    ],
+    "print_extruder_id": [
+        "1"
+    ],
+    "print_extruder_variant": [
+        "Direct Drive Standard"
+    ],
+    "print_settings_id": "0.16mm Optimal @BBL A1M",
+    "small_perimeter_speed": [
+        "30%"
+    ],
+    "sparse_infill_pattern": "gyroid",
+    "sparse_infill_speed": [
+        "130"
+    ],
+    "top_shell_thickness": "2",
+    "travel_speed": [
+        "400"
+    ],
+    "version": "2.6.0.5",
+    "wall_loops": "3"
+}

@@ -1,0 +1,26 @@
+1_Color.png: tag 113 marker area too small (385.6px^2)
+1_Color.png: detected tags but none passed filters
+2_Color.png: tag 132 marker area too small (581.0px^2)
+2_Color.png: tag 966 marker area too small (527.3px^2)
+2_Color.png: detected tags but none passed filters
+9_Color.png: tag 113 marker area too small (740.3px^2)
+10_Color.png: tag 99 marker area too small (645.2px^2)
+10_Color.png: detected tags but none passed filters
+11_Color.png: no AprilTag detected
+12_Color.png: tag 113 marker area too small (530.0px^2)
+12_Color.png: detected tags but none passed filters
+13_Color.png: tag 113 marker area too small (688.7px^2)
+3_Color.png: tag 404 observed only 1 time(s), ignored
+3_Color.png: tag 960 observed only 1 time(s), ignored
+3_Color.png: tag 113 observed only 1 time(s), ignored
+4_Color.png: tag 108 observed only 1 time(s), ignored
+4_Color.png: tag 147 observed only 1 time(s), ignored
+5_Color.png: tag 17 observed only 1 time(s), ignored
+5_Color.png: tag 44 observed only 1 time(s), ignored
+6_Color.png: tag 246 observed only 1 time(s), ignored
+6_Color.png: tag 221 observed only 1 time(s), ignored
+6_Color.png: tag 229 observed only 1 time(s), ignored
+7_Color.png: tag 370 observed only 1 time(s), ignored
+7_Color.png: tag 515 observed only 1 time(s), ignored
+9_Color.png: tag 127 observed only 1 time(s), ignored
+14_Color.png: tag 516 observed only 1 time(s), ignored
