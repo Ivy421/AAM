@@ -52,7 +52,7 @@ class CompletionConfig:
     corner_mode: Optional[str] = "max_u_max_v"
 
     # Plane extraction.
-    plane_voxel_size: float = 0.001
+    plane_voxel_size: float = 0.0008
     plane_distance_threshold: float = 0.002
     plane_num_iterations: int = 3000
 
@@ -111,11 +111,10 @@ class CompletionConfig:
     band_width: float = 0.0007
     thres_points_num: int = 20
     max_bad_layers: int = 5
-    barrier_dilate_iter: int = 2
-    barrier_close_iter: int = 2
     max_area_ratio: float = 0.70
     min_area_pixels: int = 20
     max_search_depth: float = 0.20
+    wall_endpoint_extend_pixels: int = 8
 
     # Column depth post-filter.
     enable_column_depth_filter: bool = False
@@ -198,7 +197,6 @@ class CompletionData:
     side_n_mark: Dict[str, np.ndarray]
     defect_surface_points: np.ndarray
     fix_points: np.ndarray
-    raw_fix_surface_points: np.ndarray
     fix_points_curve: np.ndarray
     fix_npz_data: Dict[str, np.ndarray]
     debug_records: List[dict]
@@ -874,23 +872,6 @@ def estimate_roi_from_boundary(cfg: CompletionConfig, plane: PlaneData, corner_m
         max_frac=cfg.roi_max_frac,
     )
 
-    print("\n========== ROI from boundary turns ==========")
-    print("corner_mode:", corner_mode)
-    print("target sides:", u_side, v_side)
-    print("boundary support uv count:", len(boundary_support_uv))
-    print("near-top rest support count:", len(near_top_rest_uv))
-    print("support z range:", (cfg.boundary_support_z_min, cfg.boundary_support_z_max))
-    print("side support counts:", len(u_side_support_uv), len(v_side_support_uv))
-    print("side candidate counts:", len(u_candidates), len(v_candidates))
-    print("top reference candidate counts:", len(u_top_candidates), len(v_top_candidates))
-    print("turn search tail range:", (cfg.turn_search_tail_min_ratio, cfg.turn_search_tail_max_ratio))
-    print("twofit min segment/angle/offset:", cfg.twofit_min_segment_points, cfg.twofit_min_angle_deg, cfg.twofit_min_inward_offset)
-    print("u_line raw/clean:", len(u_line_raw), len(u_line), "turn_idx:", turn_idx_u)
-    print("v_line raw/clean:", len(v_line_raw), len(v_line), "turn_idx:", turn_idx_v)
-    print("turn_point_u:", u_line[turn_idx_u])
-    print("turn_point_v:", v_line[turn_idx_v])
-    print("roi_frac_u, roi_frac_v:", roi_frac_u, roi_frac_v)
-
     return RoiData(
         u_side=u_side,
         v_side=v_side,
@@ -948,6 +929,339 @@ def keep_largest_component(mask: np.ndarray, min_area: int = 1) -> np.ndarray:
     return label_mask == best_label
 
 
+def skeletonize_zhang_suen(mask: np.ndarray, max_iter: int = 200) -> np.ndarray:
+    """
+    Thin a 2D binary mask to a one-pixel skeleton.
+
+    This local implementation avoids adding a skimage dependency.
+    """
+    img = np.asarray(mask, dtype=bool).copy()
+    if img.sum() == 0:
+        return img
+
+    for _ in range(max_iter):
+        changed = False
+        for step in (0, 1):
+            padded = np.pad(img, 1, mode="constant", constant_values=False)
+            p2 = padded[:-2, 1:-1]
+            p3 = padded[:-2, 2:]
+            p4 = padded[1:-1, 2:]
+            p5 = padded[2:, 2:]
+            p6 = padded[2:, 1:-1]
+            p7 = padded[2:, :-2]
+            p8 = padded[1:-1, :-2]
+            p9 = padded[:-2, :-2]
+
+            neighbors = [p2, p3, p4, p5, p6, p7, p8, p9]
+            neighbor_count = sum(neighbors)
+            transitions = np.zeros_like(img, dtype=np.int16)
+            for a, b in zip(neighbors, neighbors[1:] + neighbors[:1]):
+                transitions += (~a & b)
+
+            if step == 0:
+                side_rule = ~(p2 & p4 & p6) & ~(p4 & p6 & p8)
+            else:
+                side_rule = ~(p2 & p4 & p8) & ~(p2 & p6 & p8)
+
+            remove = (
+                img
+                & (neighbor_count >= 2)
+                & (neighbor_count <= 6)
+                & (transitions == 1)
+                & side_rule
+            )
+            if np.any(remove):
+                img[remove] = False
+                changed = True
+
+        if not changed:
+            break
+    return img
+
+
+def draw_grid_line(mask: np.ndarray, p0: np.ndarray, p1: np.ndarray):
+    p0 = np.asarray(p0, dtype=float)
+    p1 = np.asarray(p1, dtype=float)
+    dist = np.abs(p1 - p0)
+    n = int(max(dist[0], dist[1])) + 1
+    if n <= 1:
+        y, x = np.round(p0).astype(int)
+        if 0 <= y < mask.shape[0] and 0 <= x < mask.shape[1]:
+            mask[y, x] = True
+        return
+
+    ys = np.round(np.linspace(p0[0], p1[0], n)).astype(int)
+    xs = np.round(np.linspace(p0[1], p1[1], n)).astype(int)
+    valid = (ys >= 0) & (ys < mask.shape[0]) & (xs >= 0) & (xs < mask.shape[1])
+    mask[ys[valid], xs[valid]] = True
+
+
+def bridge_wall_components(
+    mask: np.ndarray,
+    domain_mask: np.ndarray,
+    min_area: int = 2,
+    max_bridge_pixels: int = 18,
+) -> np.ndarray:
+    """
+    Keep the main broken wall chain and bridge nearby connected components.
+
+    Raw wall slices are often broken into many small components. Keeping only
+    the largest one loses most of the wall, so this starts from the largest
+    component and repeatedly connects the nearest component within a limited
+    pixel gap.
+    """
+    mask = np.asarray(mask, dtype=bool) & np.asarray(domain_mask, dtype=bool)
+    label_mask, num = ndimage.label(mask)
+    if num == 0:
+        return np.zeros_like(mask, dtype=bool)
+
+    labels = np.arange(1, num + 1)
+    areas = np.asarray(ndimage.sum(mask, label_mask, index=labels))
+    keep_labels = labels[areas >= min_area]
+    if len(keep_labels) == 0:
+        keep_labels = np.asarray([labels[int(np.argmax(areas))]])
+
+    start_label = keep_labels[int(np.argmax(areas[keep_labels - 1]))]
+    connected = label_mask == start_label
+    remaining = set(int(label) for label in keep_labels if label != start_label)
+
+    while len(remaining) > 0:
+        _, nearest = ndimage.distance_transform_edt(~connected, return_indices=True)
+        best_label = None
+        best_point = None
+        best_target = None
+        best_dist = np.inf
+
+        for label in list(remaining):
+            coords = np.column_stack(np.where(label_mask == label))
+            if len(coords) == 0:
+                remaining.remove(label)
+                continue
+
+            d2 = np.sum((coords - nearest[:, coords[:, 0], coords[:, 1]].T) ** 2, axis=1)
+            idx = int(np.argmin(d2))
+            dist = float(np.sqrt(d2[idx]))
+            if dist < best_dist:
+                best_dist = dist
+                best_label = label
+                best_point = coords[idx]
+                best_target = nearest[:, best_point[0], best_point[1]]
+
+        if best_label is None or best_dist > max_bridge_pixels:
+            break
+
+        draw_grid_line(connected, best_point, best_target)
+        connected |= label_mask == best_label
+        remaining.remove(best_label)
+
+    return connected & domain_mask
+
+
+def select_curve_endpoints(curve_mask: np.ndarray) -> np.ndarray:
+    coords = np.column_stack(np.where(curve_mask))
+    if len(coords) <= 2:
+        return coords
+
+    padded = np.pad(curve_mask, 1, mode="constant", constant_values=False)
+    neighbor_count = np.zeros_like(curve_mask, dtype=np.int16)
+    for dy in (-1, 0, 1):
+        for dx in (-1, 0, 1):
+            if dy == 0 and dx == 0:
+                continue
+            neighbor_count += padded[1 + dy:1 + dy + curve_mask.shape[0], 1 + dx:1 + dx + curve_mask.shape[1]]
+
+    endpoint_mask = curve_mask & (neighbor_count <= 1)
+    endpoints = np.column_stack(np.where(endpoint_mask))
+    if len(endpoints) >= 2:
+        coords = endpoints
+
+    d2 = np.sum((coords[:, None, :] - coords[None, :, :]) ** 2, axis=2)
+    i, j = np.unravel_index(np.argmax(d2), d2.shape)
+    return np.asarray([coords[i], coords[j]], dtype=int)
+
+
+def get_domain_side_coords(domain_mask: np.ndarray, side: str) -> np.ndarray:
+    ys, xs = np.where(domain_mask)
+    if len(xs) == 0:
+        return np.empty((0, 2), dtype=int)
+
+    if side == "min_u":
+        side_mask = xs == xs.min()
+    elif side == "max_u":
+        side_mask = xs == xs.max()
+    elif side == "min_v":
+        side_mask = ys == ys.min()
+    elif side == "max_v":
+        side_mask = ys == ys.max()
+    else:
+        raise ValueError(f"Unknown domain side: {side}")
+
+    return np.column_stack([ys[side_mask], xs[side_mask]])
+
+
+def closest_side_point(point: np.ndarray, side_coords: np.ndarray) -> np.ndarray:
+    d2 = np.sum((side_coords - point[None, :]) ** 2, axis=1)
+    return side_coords[int(np.argmin(d2))]
+
+
+def seal_curve_to_domain_border(
+    curve_mask: np.ndarray,
+    domain_mask: np.ndarray,
+    corner_mode: str,
+) -> np.ndarray:
+    curve = np.asarray(curve_mask, dtype=bool) & np.asarray(domain_mask, dtype=bool)
+    if curve.sum() == 0:
+        return curve
+
+    if corner_mode == "max_u_max_v":
+        target_sides = ("min_u", "min_v")
+    elif corner_mode == "max_u_min_v":
+        target_sides = ("min_u", "max_v")
+    else:
+        raise ValueError(f"Unsupported corner_mode: {corner_mode}")
+
+    side_a = get_domain_side_coords(domain_mask, target_sides[0])
+    side_b = get_domain_side_coords(domain_mask, target_sides[1])
+    if len(side_a) == 0 or len(side_b) == 0:
+        return curve
+
+    sealed = curve.copy()
+    endpoints = select_curve_endpoints(curve)
+    if len(endpoints) == 1:
+        target = closest_side_point(endpoints[0], side_a)
+        draw_grid_line(sealed, endpoints[0], target)
+        return sealed & domain_mask
+
+    e0, e1 = endpoints[0], endpoints[1]
+    e0_a = closest_side_point(e0, side_a)
+    e0_b = closest_side_point(e0, side_b)
+    e1_a = closest_side_point(e1, side_a)
+    e1_b = closest_side_point(e1, side_b)
+
+    cost_ab = np.sum((e0 - e0_a) ** 2) + np.sum((e1 - e1_b) ** 2)
+    cost_ba = np.sum((e0 - e0_b) ** 2) + np.sum((e1 - e1_a) ** 2)
+    if cost_ab <= cost_ba:
+        draw_grid_line(sealed, e0, e0_a)
+        draw_grid_line(sealed, e1, e1_b)
+    else:
+        draw_grid_line(sealed, e0, e0_b)
+        draw_grid_line(sealed, e1, e1_a)
+
+    return sealed & domain_mask
+
+
+def estimate_endpoint_tangent(curve_mask: np.ndarray, endpoint: np.ndarray, k: int = 9) -> np.ndarray:
+    coords = np.column_stack(np.where(curve_mask))
+    if len(coords) < 2:
+        return np.array([0.0, 1.0])
+
+    endpoint = np.asarray(endpoint, dtype=float)
+    d2 = np.sum((coords - endpoint[None, :]) ** 2, axis=1)
+    nearest = coords[np.argsort(d2)[:min(k, len(coords))]].astype(float)
+    centered = nearest - nearest.mean(axis=0)
+    if len(nearest) < 2 or np.linalg.norm(centered) < 1e-12:
+        farthest = coords[int(np.argmax(d2))].astype(float)
+        tangent = farthest - endpoint
+    else:
+        _, _, vh = np.linalg.svd(centered, full_matrices=False)
+        tangent = vh[0]
+
+    norm = np.linalg.norm(tangent)
+    if norm < 1e-12:
+        return np.array([0.0, 1.0])
+    return tangent / norm
+
+
+def desired_endpoint_normal(tangent: np.ndarray, corner_mode: str) -> np.ndarray:
+    tangent = np.asarray(tangent, dtype=float)
+    horizontal = abs(tangent[1]) >= abs(tangent[0])
+
+    if horizontal:
+        if corner_mode == "max_u_max_v":
+            desired = np.array([1.0, 0.0])   # max_v in grid row direction.
+        elif corner_mode == "max_u_min_v":
+            desired = np.array([-1.0, 0.0])  # min_v in grid row direction.
+        else:
+            raise ValueError(f"Unsupported corner_mode: {corner_mode}")
+    else:
+        if corner_mode in ["max_u_max_v", "max_u_min_v"]:
+            desired = np.array([0.0, 1.0])   # max_u in grid col direction.
+        else:
+            raise ValueError(f"Unsupported corner_mode: {corner_mode}")
+
+    n1 = np.array([-tangent[1], tangent[0]])
+    n2 = -n1
+    normal = n1 if np.dot(n1, desired) >= np.dot(n2, desired) else n2
+    return normal / (np.linalg.norm(normal) + 1e-12)
+
+
+def extend_skeleton_endpoints_by_normal(
+    curve_mask: np.ndarray,
+    domain_mask: np.ndarray,
+    corner_mode: str,
+    extend_pixels: int,
+) -> np.ndarray:
+    curve = np.asarray(curve_mask, dtype=bool) & np.asarray(domain_mask, dtype=bool)
+    if curve.sum() == 0 or extend_pixels <= 0:
+        return curve
+
+    extended = curve.copy()
+    endpoints = select_curve_endpoints(curve)
+    for endpoint in endpoints:
+        tangent = estimate_endpoint_tangent(curve, endpoint)
+        normal = desired_endpoint_normal(tangent, corner_mode)
+        target = np.asarray(endpoint, dtype=float) + normal * float(extend_pixels)
+        draw_grid_line(extended, endpoint, target)
+
+    return extended & domain_mask
+
+
+def build_skeleton_barrier_from_raw(
+    raw_barrier_mask: np.ndarray,
+    domain_mask: np.ndarray,
+    corner_mode: str,
+    endpoint_extend_pixels: int,
+):
+    """
+    Convert a thick/noisy per-layer wall point mask into a curve barrier.
+
+    Returns:
+        barrier_mask: a thin blocking wall used by flood fill.
+        curve_mask: one-pixel skeleton curve saved for debugging/inspection.
+        fix_wall_mask: original skeleton wall used for fix point extraction.
+    """
+    raw = np.asarray(raw_barrier_mask, dtype=bool) & np.asarray(domain_mask, dtype=bool)
+    if raw.sum() == 0:
+        empty = np.zeros_like(raw, dtype=bool)
+        return empty, empty, empty
+
+    structure = np.ones((3, 3), dtype=bool)
+    wall_band = ndimage.binary_closing(raw, structure=structure, iterations=1)
+    wall_band = bridge_wall_components(wall_band, domain_mask)
+    wall_band = ndimage.binary_closing(wall_band, structure=structure, iterations=1)
+    wall_band = wall_band & domain_mask
+    if wall_band.sum() == 0:
+        wall_band = keep_largest_component(raw, min_area=1)
+
+    curve_mask = skeletonize_zhang_suen(wall_band)
+    curve_mask = curve_mask & domain_mask
+    if curve_mask.sum() == 0:
+        curve_mask = wall_band
+
+    skeleton_mask = curve_mask.copy()
+    extended_skeleton_mask = extend_skeleton_endpoints_by_normal(
+        skeleton_mask,
+        domain_mask,
+        corner_mode,
+        endpoint_extend_pixels,
+    )
+    barrier_mask = ndimage.binary_dilation(extended_skeleton_mask, structure=structure, iterations=1)
+    barrier_mask = barrier_mask & domain_mask
+    fix_wall_mask = ndimage.binary_dilation(skeleton_mask, structure=structure, iterations=1)
+    fix_wall_mask = fix_wall_mask & domain_mask
+    return barrier_mask, skeleton_mask, fix_wall_mask
+
+
 def extract_first_contact_curve_mask(
     repair_mask: np.ndarray,
     barrier_mask: np.ndarray,
@@ -977,8 +1291,6 @@ def get_seed_cell(corner_mode: str, H: int, W: int, domain_mask: np.ndarray):
         return tuple(target)
 
     ys, xs = np.where(domain_mask)
-    if len(xs) == 0:
-        raise RuntimeError("domain_mask is empty, cannot choose flood-fill seed.")
     coords = np.column_stack([ys, xs])
     d = np.linalg.norm(coords - target[None, :], axis=1)
     return tuple(coords[np.argmin(d)])
@@ -1095,11 +1407,6 @@ def filter_repair_layers_by_column_depth(repair_layers: List[dict], min_column_l
         if new_mask.sum() > 0:
             filtered_layers.append(new_layer)
 
-    print("\n========== Column depth filter ==========")
-    print("min_column_layers:", min_column_layers)
-    print("repair points before filter:", before_points)
-    print("repair points after filter:", after_points)
-    print("kept columns:", int(column_keep_mask.sum()))
     return filtered_layers, column_keep_mask, column_count_map
 
 
@@ -1112,9 +1419,6 @@ def filter_repair_layers_by_planar_width(repair_layers: List[dict], min_width_pi
     per 2D layer: a small opening removes strips narrower than min_width_pixels,
     then the largest remaining connected region is kept.
     """
-    if len(repair_layers) == 0:
-        return repair_layers
-
     min_width_pixels = int(max(1, min_width_pixels))
     structure = np.ones((min_width_pixels, min_width_pixels), dtype=bool)
 
@@ -1137,11 +1441,6 @@ def filter_repair_layers_by_planar_width(repair_layers: List[dict], min_width_pi
         if new_mask.sum() > 0:
             filtered_layers.append(new_layer)
 
-    print("\n========== Planar thin-tail filter ==========")
-    print("min_width_pixels:", min_width_pixels)
-    print("repair points before filter:", before_points)
-    print("repair points after filter:", after_points)
-    print("kept layers:", len(filtered_layers))
 
     return filtered_layers
 
@@ -1372,13 +1671,14 @@ def run_layered_flood_fill(
     debug_records = []
 
     barrier_raw_masks = []
+    barrier_curve_masks = []
+    barrier_processed_masks = []
     fix_surface_masks = []
     barrier_z_values = []
     barrier_valid_flags = []
     barrier_area_ratios = []
     barrier_slice_nums = []
     fix_points_all = []
-    raw_fix_surface_points_all = []
     fix_points_curve_all = []
     fix_surface_curve_masks = []
 
@@ -1413,25 +1713,24 @@ def run_layered_flood_fill(
             raw_barrier_mask[sy[svalid], sx[svalid]] = True
             raw_barrier_mask = raw_barrier_mask & domain_mask
 
-            barrier_mask = ndimage.binary_dilation(raw_barrier_mask, iterations=cfg.barrier_dilate_iter)
-            barrier_mask = ndimage.binary_closing(barrier_mask, iterations=cfg.barrier_close_iter)
-            barrier_mask = barrier_mask & domain_mask
+            barrier_mask, barrier_curve_mask, fix_wall_mask = build_skeleton_barrier_from_raw(
+                raw_barrier_mask,
+                domain_mask,
+                corner_mode,
+                cfg.wall_endpoint_extend_pixels,
+            )
 
             repair_mask_z = flood_fill_from_corner(barrier_mask, domain_mask, seed)
             repair_area = repair_mask_z.sum()
             area_ratio = repair_area / (domain_area + 1e-12)
             valid_barrier = (repair_area >= cfg.min_area_pixels) and (area_ratio < cfg.max_area_ratio)
 
-            fix_surface_mask = barrier_mask & ndimage.binary_dilation(repair_mask_z, iterations=2)
-            #fix_surface_mask = raw_barrier_mask & repair_mask_z
+            fix_surface_mask = fix_wall_mask & ndimage.binary_dilation(repair_mask_z, iterations=2)
             fix_surface_mask = fix_surface_mask & domain_mask
 
-            raw_fix_valid = np.zeros(len(slice_points), dtype=bool)
-            raw_fix_valid[svalid] = fix_surface_mask[sy[svalid], sx[svalid]]
-            if np.any(raw_fix_valid):
-                raw_fix_surface_points_all.append(slice_points[raw_fix_valid])
-
             barrier_raw_masks.append(raw_barrier_mask.copy())
+            barrier_curve_masks.append(barrier_curve_mask.copy())
+            barrier_processed_masks.append(barrier_mask.copy())
             fix_surface_masks.append(fix_surface_mask.copy())
             barrier_z_values.append(z)
             barrier_valid_flags.append(valid_barrier)
@@ -1448,7 +1747,7 @@ def run_layered_flood_fill(
             bad_barrier_count = 0
             fix_surface_curve_mask = extract_first_contact_curve_mask(
                 repair_mask_z,
-                barrier_mask,
+                fix_wall_mask,
                 corner_mode,
             )
             fix_surface_curve_masks.append(fix_surface_curve_mask.copy())
@@ -1482,8 +1781,7 @@ def run_layered_flood_fill(
             "low_points": low_points,
             "valid_barrier": valid_barrier,
             "area_ratio": area_ratio,
-            "bad_barrier_count": bad_barrier_count,
-            "low_points_count": low_points_count,
+
         })
 
         if bad_barrier_count >= cfg.max_bad_layers:
@@ -1543,17 +1841,16 @@ def run_layered_flood_fill(
     side_n_mark = get_side_normal(corner_mode, plane.u_axis, plane.v_axis)
 
     fix_points = np.vstack(fix_points_all) if len(fix_points_all) > 0 else np.empty((0, 3))
-    raw_fix_surface_points = (
-        np.unique(np.vstack(raw_fix_surface_points_all), axis=0)
-        if len(raw_fix_surface_points_all) > 0
-        else np.empty((0, 3))
-    )
 
     if len(fix_surface_masks) > 0:
         barrier_raw_masks_arr = np.asarray(barrier_raw_masks, dtype=bool)
+        barrier_curve_masks_arr = np.asarray(barrier_curve_masks, dtype=bool)
+        barrier_processed_masks_arr = np.asarray(barrier_processed_masks, dtype=bool)
         fix_surface_masks_arr = np.asarray(fix_surface_masks, dtype=bool)
     else:
         barrier_raw_masks_arr = np.zeros((0, grid.H, grid.W), dtype=bool)
+        barrier_curve_masks_arr = np.zeros((0, grid.H, grid.W), dtype=bool)
+        barrier_processed_masks_arr = np.zeros((0, grid.H, grid.W), dtype=bool)
         fix_surface_masks_arr = np.zeros((0, grid.H, grid.W), dtype=bool)
     if len(fix_surface_curve_masks) > 0:
         fix_surface_curve_masks_arr = np.asarray(fix_surface_curve_masks, dtype=bool)
@@ -1568,9 +1865,10 @@ def run_layered_flood_fill(
 
     fix_npz_data = {
         "barrier_raw_masks": barrier_raw_masks_arr,
+        "barrier_curve_masks": barrier_curve_masks_arr,
+        "barrier_processed_masks": barrier_processed_masks_arr,
         "fix_surface_masks": fix_surface_masks_arr,
         "fix_surface_curve_masks": fix_surface_curve_masks_arr,
-        "barrier_processed_masks": fix_surface_masks_arr,
         "barrier_z_values": np.asarray(barrier_z_values),
         "barrier_valid_flags": np.asarray(barrier_valid_flags, dtype=bool),
         "barrier_area_ratios": np.asarray(barrier_area_ratios),
@@ -1595,6 +1893,7 @@ def run_layered_flood_fill(
         "uv_column_min_points_per_line": np.asarray(3),
         "uv_column_u_keep": np.asarray(uv_column_u_keep, dtype=bool),
         "uv_column_v_keep": np.asarray(uv_column_v_keep, dtype=bool),
+        "wall_endpoint_extend_pixels": np.asarray(cfg.wall_endpoint_extend_pixels),
     }
 
     print("\n有效层数:", len(repair_layers))
@@ -1610,7 +1909,6 @@ def run_layered_flood_fill(
         side_n_mark=side_n_mark,
         defect_surface_points=defect_surface_points,
         fix_points=fix_points,
-        raw_fix_surface_points=raw_fix_surface_points,
         fix_points_curve=fix_points_curve,
         fix_npz_data=fix_npz_data,
         debug_records=debug_records,
@@ -1618,8 +1916,6 @@ def run_layered_flood_fill(
 
 
 def estimate_defect_world_y(top_defect_margin_points: np.ndarray) -> str:
-    if len(top_defect_margin_points) == 0:
-        return "unknown"
     left_count = np.sum(top_defect_margin_points[:, 1] > 0)
     right_count = np.sum(top_defect_margin_points[:, 1] < 0)
     return "left" if left_count > right_count else "right"
@@ -1640,7 +1936,6 @@ def save_results(
     top_plane_pcd.paint_uniform_color([0.6, 0.6, 0.6])
     top_margin_pcd = make_colored_pcd(grid.top_defect_margin_points, [1.0, 0.0, 0.0])
     fix_pcd = make_colored_pcd(completion.fix_points, [1.0, 0.5, 0.0])
-    raw_fix_surface_pcd = make_colored_pcd(completion.raw_fix_surface_points, [1.0, 0.0, 1.0])
     fix_curve_pcd = make_colored_pcd(completion.fix_points_curve, [1.0, 0.0, 0.0])
 
     u_side_name, v_side_name = get_target_sides_from_corner_mode(corner_mode)
@@ -1653,7 +1948,6 @@ def save_results(
     o3d.io.write_point_cloud(os.path.join(cfg.output_dir, "top_plane.pcd"), top_plane_pcd)
     o3d.io.write_point_cloud(os.path.join(cfg.output_dir, "top_defect_margin.pcd"), top_margin_pcd)
     o3d.io.write_point_cloud(os.path.join(cfg.output_dir, "fix_points.pcd"), fix_pcd)
-    o3d.io.write_point_cloud(os.path.join(cfg.output_dir, "raw_fix_surface_points.pcd"), raw_fix_surface_pcd)
     o3d.io.write_point_cloud(os.path.join(cfg.output_dir, "fix_points_curve.pcd"), fix_curve_pcd)
 
     defect_world_y = estimate_defect_world_y(grid.top_defect_margin_points)
@@ -1722,49 +2016,6 @@ def save_results(
     print("saved: fix_mask.npz, fix_points.pcd, debug_masks.npz")
 
 
-def visualize_roi_boundary(cfg: CompletionConfig, plane: PlaneData, roi: RoiData):
-    if not cfg.visualize:
-        return
-
-    top_pcd = o3d.geometry.PointCloud(plane.plane_pcd)
-    top_pcd.paint_uniform_color([0.65, 0.65, 0.65])
-
-    near_top_rest_pcd = make_colored_pcd(roi.near_top_rest_points, [0.7, 0.0, 1.0])
-    u_side_support_pcd = make_colored_pcd(uv_to_3d(roi.u_side_support_uv, plane.origin, plane.u_axis, plane.v_axis), [0.45, 0.25, 0.0])
-    v_side_support_pcd = make_colored_pcd(uv_to_3d(roi.v_side_support_uv, plane.origin, plane.u_axis, plane.v_axis), [0.0, 0.35, 0.45])
-    u_line_raw_pcd = make_colored_pcd(uv_to_3d(roi.u_line_raw, plane.origin, plane.u_axis, plane.v_axis), [1.0, 0.55, 0.0])
-    v_line_raw_pcd = make_colored_pcd(uv_to_3d(roi.v_line_raw, plane.origin, plane.u_axis, plane.v_axis), [0.0, 0.75, 1.0])
-    u_line_pcd = make_colored_pcd(uv_to_3d(roi.u_line, plane.origin, plane.u_axis, plane.v_axis), [1.0, 0.0, 0.0])
-    v_line_pcd = make_colored_pcd(uv_to_3d(roi.v_line, plane.origin, plane.u_axis, plane.v_axis), [0.0, 0.0, 1.0])
-
-    turn_u_xyz = uv_to_3d(roi.turn_point_u.reshape(1, 2), plane.origin, plane.u_axis, plane.v_axis)[0]
-    turn_v_xyz = uv_to_3d(roi.turn_point_v.reshape(1, 2), plane.origin, plane.u_axis, plane.v_axis)[0]
-    turn_u_sphere = make_sphere(turn_u_xyz, radius=0.003, color=[1.0, 1.0, 0.0])
-    turn_v_sphere = make_sphere(turn_v_xyz, radius=0.003, color=[0.0, 1.0, 1.0])
-    frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.03)
-
-    print("\n========== Visualize ROI boundary turns ==========")
-    print("gray: top plane")
-    print("purple: near-top rest/sloped support points used for boundary extraction")
-    print("brown/dark cyan: side-specific support corridors for u/v boundary extraction")
-    print("orange/cyan dots: supported raw boundary points used before denoise/smooth")
-    print("red/blue: supported boundary after denoise/smooth")
-    print("yellow/cyan spheres: ROI frac turn points")
-    o3d.visualization.draw_geometries([
-        #top_pcd,
-        #near_top_rest_pcd,
-        u_side_support_pcd,
-        v_side_support_pcd,
-        u_line_raw_pcd,
-        v_line_raw_pcd,
-        u_line_pcd,
-        v_line_pcd,
-        turn_u_sphere,
-        turn_v_sphere,
-        frame,
-    ], window_name="ROI boundary turn detection")
-
-
 def visualize_results(cfg: CompletionConfig, plane: PlaneData, completion: CompletionData):
     if not cfg.visualize:
         return
@@ -1779,7 +2030,6 @@ def run_completion(cfg: CompletionConfig):
     corner_mode = resolve_corner_mode(cfg)
     plane = load_and_prepare_plane(cfg)
     roi = estimate_roi_from_boundary(cfg, plane, corner_mode)
-    visualize_roi_boundary(cfg, plane, roi)
     grid = build_grid_and_defect_masks(cfg, plane, roi, corner_mode)
     completion = run_layered_flood_fill(cfg, plane, grid, corner_mode)
     save_results(cfg, plane, roi, grid, completion, corner_mode)
@@ -1807,6 +2057,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--no-rest-boundary", action="store_true", help="Use only top plane points for ROI boundary extraction.")
     parser.add_argument("--enable-column-filter", action="store_true", help="Enable column depth post-filter.")
     parser.add_argument("--min-column-layers", type=int, default=None, help="Min layers for column depth filter.")
+    parser.add_argument("--wall-endpoint-extend-pixels", type=int, default=None, help="Short normal extension length for skeleton wall endpoints.")
     parser.add_argument("--no-vis", action="store_true", help="Disable Open3D visualization.")
     return parser.parse_args()
 
@@ -1847,6 +2098,8 @@ def config_from_args(args: argparse.Namespace) -> CompletionConfig:
         cfg.enable_column_depth_filter = True
     if args.min_column_layers is not None:
         cfg.min_column_layers = args.min_column_layers
+    if args.wall_endpoint_extend_pixels is not None:
+        cfg.wall_endpoint_extend_pixels = args.wall_endpoint_extend_pixels
     if args.no_vis:
         cfg.visualize = False
     return cfg

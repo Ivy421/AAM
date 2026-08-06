@@ -17,15 +17,16 @@ NORMAL_RADII = np.arange(0.008, 0.041, 0.004)
 MIN_NORMAL_NEIGHBORS = 10
 
 POINT_CONNECT_RADIUS = 0.0050  # 0.003
-REGION_NEIGHBOR_ANGLE_DEG = 15.0 # 10
-REGION_CURVATURE_JUMP = 0.02 # 0.015
-MAX_REGION_NORMAL_SPAN_DEG = 20.0 # 16
-MAX_REGION_PLANE_RESIDUAL_M = 0.0025 # 0.0018
+REGION_NEIGHBOR_ANGLE_DEG = 20.0 # 10
+REGION_CURVATURE_JUMP = 0.03 # 0.015
+MAX_REGION_NORMAL_SPAN_DEG = 25.0 # 16
+MAX_REGION_PLANE_RESIDUAL_M = 0.003 # 0.0018
 
-MERGE_DISTANCE_M = 0.006  # 0.0045
-MERGE_NORMAL_ANGLE_DEG = 15.0  #7
-MERGE_CURVATURE_JUMP = 0.015 # 0.010 
-MIN_SEGMENT_POINTS = 10
+MERGE_DISTANCE_M = 0.008  # 0.0045
+MERGE_NORMAL_ANGLE_DEG = 20.0  #7
+MERGE_CURVATURE_JUMP = 0.025 # 0.010 
+MIN_SEGMENT_POINTS = 20
+DOT_SPACING = 0.025
 
 
 def parse_args():
@@ -402,6 +403,72 @@ def build_segments(regions, points, features):
     return segments
 
 
+def order_segment_indices_by_nearest_neighbor(segments):
+    centers = np.asarray(
+        [segment["center_point_base_m"][:2] for segment in segments],
+        dtype=float,
+    )
+    if len(centers) <= 1:
+        return np.arange(len(centers), dtype=int)
+
+    start = int(np.argmin(centers[:, 0] + centers[:, 1]))
+    ordered = [start]
+    remaining = np.ones(len(centers), dtype=bool)
+    remaining[start] = False
+    current = centers[start]
+
+    for _ in range(len(centers) - 1):
+        ids = np.where(remaining)[0]
+        next_id = ids[int(np.argmin(np.linalg.norm(centers[ids] - current, axis=1)))]
+        ordered.append(int(next_id))
+        remaining[next_id] = False
+        current = centers[next_id]
+
+    return np.asarray(ordered, dtype=int)
+
+
+def filter_segments_by_arc_spacing(segments, spacing):
+    if len(segments) <= 1 or spacing <= 0.0:
+        return segments
+
+    order = order_segment_indices_by_nearest_neighbor(segments)
+    centers = np.asarray(
+        [segments[idx]["center_point_base_m"][:2] for idx in order],
+        dtype=float,
+    )
+    step = np.linalg.norm(np.diff(centers, axis=0), axis=1)
+    arc = np.concatenate([[0.0], np.cumsum(step)])
+
+    bin_ids = np.floor(arc / spacing).astype(int)
+    selected = []
+    for bin_id in np.unique(bin_ids):
+        local = np.where(bin_ids == bin_id)[0]
+        if len(local) == 0:
+            continue
+
+        point_counts = np.asarray(
+            [segments[order[i]]["point_count"] for i in local],
+            dtype=int,
+        )
+        max_count = point_counts.max()
+        candidates = local[point_counts == max_count]
+        if len(candidates) > 1:
+            center_s = (bin_id + 0.5) * spacing
+            best_local = candidates[int(np.argmin(np.abs(arc[candidates] - center_s)))]
+        else:
+            best_local = candidates[0]
+        selected.append(int(order[best_local]))
+
+    filtered = []
+    for new_id, old_id in enumerate(selected):
+        item = dict(segments[old_id])
+        item["id"] = int(new_id)
+        item["source_segment_id"] = int(segments[old_id]["id"])
+        item["arc_spacing_m"] = float(spacing)
+        filtered.append(item)
+    return filtered
+
+
 def save_outputs(out_dir, source_paths, points, segments, runtime_seconds):
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -430,6 +497,7 @@ def save_outputs(out_dir, source_paths, points, segments, runtime_seconds):
             "merge_normal_angle_deg": MERGE_NORMAL_ANGLE_DEG,
             "merge_curvature_jump": MERGE_CURVATURE_JUMP,
             "min_segment_points": MIN_SEGMENT_POINTS,
+            "dot_spacing_m": DOT_SPACING,
         },
         "segment_count": len(segments),
         "segments": segments,
@@ -482,25 +550,16 @@ def main():
 
     regions = build_initial_regions(points, tree, features)
     regions = merge_regions(regions, points, features)
-    segments = build_segments(regions, points, features)
+    raw_segments = build_segments(regions, points, features)
+    #segments = filter_segments_by_arc_spacing(raw_segments, DOT_SPACING)
 
     runtime_seconds = time.perf_counter() - start_time
-    paths = save_outputs(
-        args.out_dir,
-        {
-            "fix_points": args.fix_points,
-        },
-        points,
-        segments,
-        runtime_seconds,
-    )
+    paths = save_outputs(args.out_dir,{"fix_points": args.fix_points,}, points, raw_segments, runtime_seconds,)
 
-    print(f"Voxel points: {len(points)}")
     print(f"Adaptive regions: {len(regions)}")
-    print(f"Adaptive segments: {len(segments)}")
-    print(f"Runtime: {runtime_seconds:.3f} s")
-    for path in paths:
-        print(f"Saved: {path.resolve()}")
+    print(f"Adaptive segments before arc filter: {len(raw_segments)}")
+    #print(f"Adaptive segments after arc filter: {len(segments)}")
+
 
 
 if __name__ == "__main__":

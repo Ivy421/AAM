@@ -231,9 +231,9 @@ def project_points_base_to_image(points_base, T_base_cam, color_intrinsic, image
     return uv[in_img].astype(np.float32), Z[in_img].astype(np.float32)
 
 
-def make_point_prompt(defect_center_base, T_base_cam, color_intrinsic, image_shape):
+def make_point_prompt(prompt_point_base, T_base_cam, color_intrinsic, image_shape):
     uv, _ = project_points_base_to_image(
-        defect_center_base,
+        prompt_point_base,
         T_base_cam,
         color_intrinsic,
         image_shape,
@@ -274,10 +274,25 @@ def _squeeze_masks(masks):
     return masks
 
 
+def _boxes_from_masks(masks):
+    masks = _squeeze_masks(masks)
+    if masks is None or len(masks) == 0:
+        return np.zeros((0, 4), dtype=np.float32)
+
+    boxes = []
+    for mask in masks:
+        ys, xs = np.where(np.squeeze(mask).astype(bool))
+        boxes.append([xs.min(), ys.min(), xs.max(), ys.max()] if len(xs) else [0, 0, 0, 0])
+    return np.asarray(boxes, dtype=np.float32)
+
+
 def init_sam3_model():
     torch.cuda.empty_cache()
     gc.collect()
-    model = build_sam3_image_model()
+    try:
+        model = build_sam3_image_model(enable_inst_interactivity=True)
+    except TypeError:
+        model = build_sam3_image_model()
     model.eval()
     processor = Sam3Processor(model, confidence_threshold=CONFIDENCE_THRESHOLD)
     return model, processor
@@ -294,6 +309,30 @@ def sam3_text_predict(model, processor, image_path, text_prompt=TEXT_PROMPT):
     scores = _to_numpy(output["scores"])
 
     del state, output
+    torch.cuda.empty_cache()
+    gc.collect()
+    return masks, boxes, scores
+
+
+def sam3_point_predict(model, processor, image_path, point_prompts):
+    image = Image.open(str(image_path)).convert("RGB")
+    point_coords = np.asarray(point_prompts, dtype=np.float32).reshape(-1, 2)
+    point_labels = np.ones((len(point_coords),), dtype=np.int32)
+
+    with torch.inference_mode():
+        state = processor.set_image(image)
+        masks, scores, _ = model.predict_inst(
+            state,
+            point_coords=point_coords,
+            point_labels=point_labels,
+            multimask_output=True,
+        )
+
+    masks = _squeeze_masks(masks)
+    boxes = _boxes_from_masks(masks)
+    scores = _to_numpy(scores)
+
+    del state
     torch.cuda.empty_cache()
     gc.collect()
     return masks, boxes, scores
@@ -328,9 +367,15 @@ def choose_best_mask(masks, boxes, scores, point_prompts):
     return mask, box, score, int(best_idx)
 
 
-def get_mask_by_text_and_point(model, processor, image_path, point_prompts):
+def get_mask_by_point_then_text(model, processor, image_path, point_prompts):
+    masks, boxes, scores = sam3_point_predict(model, processor, image_path, point_prompts)
+    mask, box, score, idx = choose_best_mask(masks, boxes, scores, point_prompts)
+    if mask is not None:
+        return mask, box, score, idx, "point"
+
     masks, boxes, scores = sam3_text_predict(model, processor, image_path, TEXT_PROMPT)
-    return choose_best_mask(masks, boxes, scores, point_prompts)
+    mask, box, score, idx = choose_best_mask(masks, boxes, scores, point_prompts)
+    return mask, box, score, idx, "text_fallback"
 
 
 # =========================
@@ -431,7 +476,7 @@ def process_one_frame(name, prompt_point_base, prompt_meta, color_intrinsic, dep
     T_base_cam = T_base_ee @ T_ee_cam
 
     point_prompts = make_point_prompt(
-        defect_center_base=prompt_point_base,
+        prompt_point_base=prompt_point_base,
         T_base_cam=T_base_cam,
         color_intrinsic=color_intrinsic,
         image_shape=img.shape,
@@ -447,7 +492,7 @@ def process_one_frame(name, prompt_point_base, prompt_meta, color_intrinsic, dep
             "prompt_point_base_m": [round(float(v), 6) for v in prompt_point_base.reshape(3)],
         }
 
-    mask, selected_box, selected_score, selected_idx = get_mask_by_text_and_point(
+    mask, selected_box, selected_score, selected_idx, segmentation_mode = get_mask_by_point_then_text(
         model=model,
         processor=processor,
         image_path=image_path,
@@ -459,6 +504,7 @@ def process_one_frame(name, prompt_point_base, prompt_meta, color_intrinsic, dep
             "name": name,
             "success": False,
             "reason": "SAM3 returned no mask",
+            "segmentation_mode": segmentation_mode,
             "cube_name": prompt_meta.get("cube_name", ""),
             "is_dev_view": bool(prompt_meta.get("is_dev_view", False)),
             "prompt_point_base_m": [round(float(v), 6) for v in prompt_point_base.reshape(3)],
@@ -486,6 +532,7 @@ def process_one_frame(name, prompt_point_base, prompt_meta, color_intrinsic, dep
     debug = {
         "name": name,
         "success": bool(filtered_count > 0),
+        "segmentation_mode": segmentation_mode,
         "cube_name": prompt_meta.get("cube_name", ""),
         "is_dev_view": bool(prompt_meta.get("is_dev_view", False)),
         "prompt_point_base_m": [round(float(v), 6) for v in prompt_point_base.reshape(3)],
@@ -508,7 +555,6 @@ def extract_fine_points():
     color_intrinsic, depth_scale = load_camera_config(CAMERA_CONFIG_PATH)
     T_ee_cam = load_matrix(HAND_EYE_PATH)
     defect_center_base, object_center_base, safe_prompt_base = load_safe_prompt_point()
-    prompt_targets = load_fine_prompt_targets(safe_prompt_base)
 
     sam3_model, sam3_processor = init_sam3_model()
 
@@ -522,11 +568,11 @@ def extract_fine_points():
 
     for name in png_names:
         print(f"\nProcessing fine frame: {name}.png")
-        prompt_meta = prompt_targets.get(name, {
-            "prompt_point_base": safe_prompt_base,
+        prompt_meta = {
+            "prompt_point_base": object_center_base,
             "cube_name": "",
             "is_dev_view": False,
-        })
+        }
         try:
             points_base_h, T_base_cam, debug = process_one_frame(
                 name=name,
@@ -580,7 +626,7 @@ def extract_fine_points():
         safe_prompt_world_m=safe_prompt_base.reshape(3),
         safe_prompt_alpha=SAFE_PROMPT_ALPHA,
         prompt_targets_world_m=np.asarray(
-            [prompt_targets.get(name, {"prompt_point_base": safe_prompt_base})["prompt_point_base"].reshape(3) for name in valid_png_names],
+            [object_center_base.reshape(3) for _ in valid_png_names],
             dtype=np.float64,
         ),
     )
@@ -591,7 +637,7 @@ def extract_fine_points():
     "object_center_world_m": [round(float(v), 6) for v in object_center_base.reshape(3)],
     "safe_prompt_world_m": [round(float(v), 6) for v in safe_prompt_base.reshape(3)],
     "safe_prompt_alpha": SAFE_PROMPT_ALPHA,
-    "prompt_source": "fine_scanpose.look_target_base_m",
+    "prompt_source": "object_center",
     "valid_png_names": valid_png_names,
     "records": debug_records,
     })

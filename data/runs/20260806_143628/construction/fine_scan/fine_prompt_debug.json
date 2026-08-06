@@ -1,0 +1,353 @@
+{
+  "defect_roi_center_world_m": [
+    0.410987,
+    0.030147,
+    0.023561
+  ],
+  "object_center_world_m": [
+    0.54159,
+    0.060383,
+    0.031319
+  ],
+  "safe_prompt_world_m": [
+    0.476289,
+    0.045265,
+    0.02744
+  ],
+  "safe_prompt_alpha": 0.5,
+  "prompt_source": "object_center",
+  "valid_png_names": [
+    "fine_scan_1",
+    "fine_scan_2",
+    "fine_scan_3",
+    "fine_scan_4",
+    "fine_scan_5",
+    "fine_scan_6",
+    "fine_scan_7",
+    "fine_scan_8",
+    "fine_scan_9",
+    "fine_scan_10",
+    "fine_scan_11"
+  ],
+  "records": [
+    {
+      "name": "fine_scan_1",
+      "success": true,
+      "segmentation_mode": "point",
+      "cube_name": "",
+      "is_dev_view": false,
+      "prompt_point_base_m": [
+        0.54159,
+        0.060383,
+        0.031319
+      ],
+      "text_prompt": "a black rectangular-shaped wooden block",
+      "point_prompts_xy": [
+        [
+          381.86,
+          261.55
+        ]
+      ],
+      "selected_mask_idx": 1,
+      "selected_score": 0.8203,
+      "selected_box_xyxy": [
+        9.0,
+        162.0,
+        469.0,
+        478.0
+      ],
+      "raw_points_count": 11149,
+      "filtered_points_count": 3265
+    },
+    {
+      "name": "fine_scan_2",
+      "success": true,
+      "segmentation_mode": "point",
+      "cube_name": "",
+      "is_dev_view": false,
+      "prompt_point_base_m": [
+        0.54159,
+        0.060383,
+        0.031319
+      ],
+      "text_prompt": "a black rectangular-shaped wooden block",
+      "point_prompts_xy": [
+        [
+          420.74,
+          119.87
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9883,
+      "selected_box_xyxy": [
+        316.0,
+        0.0,
+        508.0,
+        400.0
+      ],
+      "raw_points_count": 51950,
+      "filtered_points_count": 22025
+    },
+    {
+      "name": "fine_scan_3",
+      "success": true,
+      "segmentation_mode": "point",
+      "cube_name": "",
+      "is_dev_view": false,
+      "prompt_point_base_m": [
+        0.54159,
+        0.060383,
+        0.031319
+      ],
+      "text_prompt": "a black rectangular-shaped wooden block",
+      "point_prompts_xy": [
+        [
+          184.58,
+          111.52
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9844,
+      "selected_box_xyxy": [
+        0.0,
+        21.0,
+        447.0,
+        255.0
+      ],
+      "raw_points_count": 68516,
+      "filtered_points_count": 29414
+    },
+    {
+      "name": "fine_scan_4",
+      "success": true,
+      "segmentation_mode": "point",
+      "cube_name": "",
+      "is_dev_view": false,
+      "prompt_point_base_m": [
+        0.54159,
+        0.060383,
+        0.031319
+      ],
+      "text_prompt": "a black rectangular-shaped wooden block",
+      "point_prompts_xy": [
+        [
+          157.28,
+          306.35
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9883,
+      "selected_box_xyxy": [
+        52.0,
+        86.0,
+        302.0,
+        430.0
+      ],
+      "raw_points_count": 52430,
+      "filtered_points_count": 23884
+    },
+    {
+      "name": "fine_scan_5",
+      "success": true,
+      "segmentation_mode": "point",
+      "cube_name": "",
+      "is_dev_view": false,
+      "prompt_point_base_m": [
+        0.54159,
+        0.060383,
+        0.031319
+      ],
+      "text_prompt": "a black rectangular-shaped wooden block",
+      "point_prompts_xy": [
+        [
+          138.95,
+          159.33
+        ]
+      ],
+      "selected_mask_idx": 0,
+      "selected_score": 0.9336,
+      "selected_box_xyxy": [
+        70.0,
+        62.0,
+        242.0,
+        331.0
+      ],
+      "raw_points_count": 18216,
+      "filtered_points_count": 2795
+    },
+    {
+      "name": "fine_scan_6",
+      "success": true,
+      "segmentation_mode": "point",
+      "cube_name": "",
+      "is_dev_view": false,
+      "prompt_point_base_m": [
+        0.54159,
+        0.060383,
+        0.031319
+      ],
+      "text_prompt": "a black rectangular-shaped wooden block",
+      "point_prompts_xy": [
+        [
+          183.09,
+          191.19
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9141,
+      "selected_box_xyxy": [
+        0.0,
+        55.0,
+        408.0,
+        403.0
+      ],
+      "raw_points_count": 29224,
+      "filtered_points_count": 8863
+    },
+    {
+      "name": "fine_scan_7",
+      "success": true,
+      "segmentation_mode": "point",
+      "cube_name": "",
+      "is_dev_view": false,
+      "prompt_point_base_m": [
+        0.54159,
+        0.060383,
+        0.031319
+      ],
+      "text_prompt": "a black rectangular-shaped wooden block",
+      "point_prompts_xy": [
+        [
+          177.74,
+          176.68
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9336,
+      "selected_box_xyxy": [
+        0.0,
+        46.0,
+        499.0,
+        385.0
+      ],
+      "raw_points_count": 53799,
+      "filtered_points_count": 17586
+    },
+    {
+      "name": "fine_scan_8",
+      "success": true,
+      "segmentation_mode": "point",
+      "cube_name": "",
+      "is_dev_view": false,
+      "prompt_point_base_m": [
+        0.54159,
+        0.060383,
+        0.031319
+      ],
+      "text_prompt": "a black rectangular-shaped wooden block",
+      "point_prompts_xy": [
+        [
+          496.41,
+          151.7
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9805,
+      "selected_box_xyxy": [
+        328.0,
+        0.0,
+        639.0,
+        410.0
+      ],
+      "raw_points_count": 54288,
+      "filtered_points_count": 24376
+    },
+    {
+      "name": "fine_scan_9",
+      "success": true,
+      "segmentation_mode": "point",
+      "cube_name": "",
+      "is_dev_view": false,
+      "prompt_point_base_m": [
+        0.54159,
+        0.060383,
+        0.031319
+      ],
+      "text_prompt": "a black rectangular-shaped wooden block",
+      "point_prompts_xy": [
+        [
+          521.95,
+          187.43
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.8008,
+      "selected_box_xyxy": [
+        286.0,
+        92.0,
+        639.0,
+        382.0
+      ],
+      "raw_points_count": 20688,
+      "filtered_points_count": 4391
+    },
+    {
+      "name": "fine_scan_10",
+      "success": true,
+      "segmentation_mode": "point",
+      "cube_name": "",
+      "is_dev_view": false,
+      "prompt_point_base_m": [
+        0.54159,
+        0.060383,
+        0.031319
+      ],
+      "text_prompt": "a black rectangular-shaped wooden block",
+      "point_prompts_xy": [
+        [
+          433.64,
+          141.25
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9766,
+      "selected_box_xyxy": [
+        279.0,
+        0.0,
+        574.0,
+        458.0
+      ],
+      "raw_points_count": 47974,
+      "filtered_points_count": 14675
+    },
+    {
+      "name": "fine_scan_11",
+      "success": true,
+      "segmentation_mode": "point",
+      "cube_name": "",
+      "is_dev_view": false,
+      "prompt_point_base_m": [
+        0.54159,
+        0.060383,
+        0.031319
+      ],
+      "text_prompt": "a black rectangular-shaped wooden block",
+      "point_prompts_xy": [
+        [
+          440.77,
+          109.03
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9805,
+      "selected_box_xyxy": [
+        258.0,
+        0.0,
+        591.0,
+        405.0
+      ],
+      "raw_points_count": 65318,
+      "filtered_points_count": 21819
+    }
+  ]
+}

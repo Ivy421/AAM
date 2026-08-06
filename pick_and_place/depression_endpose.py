@@ -1,90 +1,96 @@
+"""Calculate reachable depression repair-block pick and fix endposes."""
+
 import argparse
 import json
 import os
 import sys
 from pathlib import Path
+
 import numpy as np
 import open3d as o3d
 import pinocchio as pin
 from scipy.optimize import least_squares
-from scipy.spatial.transform import Rotation as R
+from scipy.spatial.transform import Rotation
+
+
 PROJECT_ROOT = Path(os.getenv("AAM_PROJECT_ROOT", Path(__file__).resolve().parents[1]))
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+
 from Piper.endpose_reachability_safe import (
     DEFAULT_EE_FRAME,
     frame_pose,
     get_safe_bounds,
     load_arm_model,
     reachability_test,
-    se3_to_endpose,
 )
 
 
-def base_end_grab_trans(endpose):
-    t = np.array([[endpose[0]],
-                 [endpose[1]],
-                 [endpose[2]]] )
-    Rot = R.from_euler('xyz',[endpose[3], endpose[4], endpose[5]], degrees = True).as_matrix()
-    T = np.column_stack([Rot,t])
-    T = np.vstack([T,np.array([0,0,0,1])])
-    return T
-
-def trans_to_endpose(T):
-    """
-    4x4变换矩阵 -> 末端位姿 [x, y, z, rx, ry, rz]
-    欧拉角顺序: xyz
-    角度单位: degree
-    """
-    T = np.asarray(T, dtype=float)
-
-    pos = T[:3, 3]
-    rot_mat = T[:3, :3]
-
-    euler = R.from_matrix(rot_mat).as_euler('xyz', degrees=True)
-
-    endpose_fix = np.concatenate([pos, euler])
-    return endpose_fix
+ARM_GRIPPER_LENGTH_Z_MM = 142.5
+PRINTER_CENTER_BASE_MM = np.array([-266.425, 184.39, 60.8])
+PRINT_YAW_DEG = 90.0
+UNIT_SCALE = 1000.0
+FIX_X_OFFSET = -0.1
 
 
-def select_reachable_grab_yaw(grab_position_mm):
-    """Keep roll=180/pitch=0 and search the full yaw circle in joint space."""
+def endpose_to_transform(endpose):
+    endpose = np.asarray(endpose, dtype=float).reshape(6)
+    transform = np.eye(4)
+    transform[:3, :3] = Rotation.from_euler(
+        "xyz", endpose[3:], degrees=True
+    ).as_matrix()
+    transform[:3, 3] = endpose[:3]
+    return transform
+
+
+def transform_to_endpose(transform):
+    transform = np.asarray(transform, dtype=float).reshape(4, 4)
+    return np.concatenate([
+        transform[:3, 3],
+        Rotation.from_matrix(transform[:3, :3]).as_euler("xyz", degrees=True),
+    ])
+
+
+def generate_grab_yaw_candidates(grab_position_mm):
+    """Return ordered, unique yaw candidates found by the joint-space search."""
     grab_position_mm = np.asarray(grab_position_mm, dtype=float).reshape(3)
     target_position_m = grab_position_mm / 1000.0
     target_z = np.array([0.0, 0.0, -1.0])
 
     model = load_arm_model()
     frame_id = model.getFrameId(DEFAULT_EE_FRAME)
-    lb, ub = get_safe_bounds(model)
+    lower, upper = get_safe_bounds(model)
     rng = np.random.default_rng(0)
-    seed_qs = [
-        np.clip(pin.neutral(model), lb, ub),
-        np.clip(np.zeros(model.nq), lb, ub),
+    seeds = [
+        np.clip(pin.neutral(model), lower, upper),
+        np.clip(np.zeros(model.nq), lower, upper),
     ]
-    seed_qs.extend(rng.uniform(lb, ub) for _ in range(50))
+    seeds.extend(rng.uniform(lower, upper) for _ in range(50))
 
     candidates = []
-    for q0 in seed_qs:
+    for seed in seeds:
         data = model.createData()
 
         def residual(q):
             pose = frame_pose(model, data, q, frame_id)
-            position_residual = (pose.translation - target_position_m) / 0.002
+            position_error = (pose.translation - target_position_m) / 0.002
             ee_z = pose.rotation[:, 2]
-            axis_residual = np.cross(ee_z, target_z) / np.deg2rad(2.0)
-            direction_residual = np.array([(1.0 - np.dot(ee_z, target_z)) / 0.001])
-            return np.concatenate([position_residual, axis_residual, direction_residual])
+            axis_error = np.cross(ee_z, target_z) / np.deg2rad(2.0)
+            direction_error = np.array([
+                (1.0 - np.dot(ee_z, target_z)) / 0.001
+            ])
+            return np.concatenate([position_error, axis_error, direction_error])
 
-        result = least_squares(
+        solution = least_squares(
             residual,
-            q0,
-            bounds=(lb, ub),
+            seed,
+            bounds=(lower, upper),
             max_nfev=1500,
             xtol=1e-10,
             ftol=1e-10,
             gtol=1e-10,
         )
-        q = result.x
+        q = solution.x
         pose = frame_pose(model, data, q, frame_id)
         position_error_mm = float(
             np.linalg.norm(pose.translation - target_position_m) * 1000.0
@@ -98,266 +104,74 @@ def select_reachable_grab_yaw(grab_position_mm):
         yaw_deg = float(np.degrees(np.arctan2(
             pose.rotation[1, 0], pose.rotation[0, 0]
         )) % 360.0)
-        joint_margin = float(np.min(np.minimum(q - lb, ub - q)))
-        candidates.append((joint_margin, position_error_mm, tilt_error_deg, yaw_deg, q))
+        joint_margin = float(np.min(np.minimum(q - lower, upper - q)))
+        candidates.append({
+            "joint_margin": joint_margin,
+            "position_error_mm": position_error_mm,
+            "tilt_error_deg": tilt_error_deg,
+            "yaw_deg": yaw_deg,
+        })
 
     if not candidates:
         raise RuntimeError("No reachable grab orientation found for yaw in [0, 360).")
 
-    # Prefer the solution farthest from joint limits, then the smaller FK errors.
-    candidates.sort(key=lambda item: (-item[0], item[1], item[2]))
-    for _, _, _, yaw_deg, q in candidates:
-        grab_endpose = np.array([
-            grab_position_mm[0], grab_position_mm[1], grab_position_mm[2],
-            180.0, 0.0, yaw_deg,
-        ])
-        reachable = reachability_test(grab_endpose)
-        if reachable["reachable"]:
-            print(f"Selected grab yaw: {yaw_deg:.3f} deg")
-            print("Selected grab joint degrees:", reachable["joint_degrees"])
-            return grab_endpose, reachable["joint_degrees"]
-
-    raise RuntimeError("Yaw candidates were found, but none passed the final reachability test.")
-
-
-def define_pregrab_endpose(endpose):
-    """
-    Search joint angles whose FK pose lies on the continuous base-Z line
-    above grab_endpose: p(s) = p_grab + [0, 0, s], s in [30, 70] mm.
-    Keep the grasp orientation unchanged.
-    """
-    endpose = np.asarray(endpose, dtype=float).reshape(6)
-    target_xy_m = endpose[:2] / 1000.0
-    z_min_m = (endpose[2] + 30.0) / 1000.0
-    z_max_m = (endpose[2] + 70.0) / 1000.0
-    target_R = R.from_euler('xyz', endpose[3:], degrees=True).as_matrix()
-
-    position_scale_m = 0.002
-    rotation_scale_rad = np.deg2rad(3.0)
-    position_tol_m = 0.002
-    rotation_tol_deg = 3.0
-    random_seed_count = 30
-
-    model = load_arm_model()
-    frame_id = model.getFrameId(DEFAULT_EE_FRAME)
-    lb, ub = get_safe_bounds(model)
-
-    rng = np.random.default_rng(0)
-    seed_qs = [
-        np.clip(pin.neutral(model), lb, ub),
-        np.clip(np.zeros(model.nq), lb, ub),
-    ]
-    for _ in range(random_seed_count):
-        seed_qs.append(rng.uniform(lb, ub))
-
-    best = None
-    print("\n========== Pre-grab continuous line search ==========")
-    print("Search line: grab position + base-Z [30, 70] mm")
-
-    for q0 in seed_qs:
-        data = model.createData()
-
-        def residual(q):
-            pose = frame_pose(model, data, q, frame_id)
-            position = pose.translation
-            z_outside = position[2] - np.clip(position[2], z_min_m, z_max_m)
-            position_residual = np.array([
-                position[0] - target_xy_m[0],
-                position[1] - target_xy_m[1],
-                z_outside,
-            ]) / position_scale_m
-            rotation_residual = R.from_matrix(target_R.T @ pose.rotation).as_rotvec()
-            return np.concatenate([
-                position_residual,
-                rotation_residual / rotation_scale_rad,
-            ])
-
-        result = least_squares(
-            residual,
-            q0,
-            bounds=(lb, ub),
-            max_nfev=1000,
-            xtol=1e-10,
-            ftol=1e-10,
-            gtol=1e-10,
-        )
-
-        q = result.x
-        pose = frame_pose(model, data, q, frame_id)
-        xy_error_m = float(np.linalg.norm(pose.translation[:2] - target_xy_m))
-        z_error_m = float(max(z_min_m - pose.translation[2], 0.0, pose.translation[2] - z_max_m))
-        rotation_error_deg = float(np.rad2deg(
-            np.linalg.norm(R.from_matrix(target_R.T @ pose.rotation).as_rotvec())
-        ))
-        feasible = (
-            xy_error_m <= position_tol_m
-            and z_error_m <= position_tol_m
-            and rotation_error_deg <= rotation_tol_deg
-        )
-        joint_margin = float(np.min(np.minimum(q - lb, ub - q)))
-        score = (
-            10000.0 if feasible else 0.0
-        ) - 1000.0 * xy_error_m - 1000.0 * z_error_m - rotation_error_deg + joint_margin
-
-        if best is None or score > best["score"]:
-            best = {
-                "score": score,
-                "feasible": feasible,
-                "pose": pose.copy(),
-                "q": q.copy(),
-                "xy_error_mm": xy_error_m * 1000.0,
-                "z_error_mm": z_error_m * 1000.0,
-                "rotation_error_deg": rotation_error_deg,
-            }
-
-    if best is None or not best["feasible"]:
-        print("Warning: no reachable pregrab pose.")
-        return None
-
-    pregrab_endpose = se3_to_endpose(best["pose"])
-    print(
-        f"Selected pregrab: xy_err={best['xy_error_mm']:.3f} mm, "
-        f"z_err={best['z_error_mm']:.3f} mm, "
-        f"rot_err={best['rotation_error_deg']:.3f} deg"
-    )
-    print("Selected pregrab joint degrees:", np.round(np.rad2deg(best["q"]), 3))
-    return pregrab_endpose
+    candidates.sort(key=lambda item: (
+        -item["joint_margin"],
+        item["position_error_mm"],
+        item["tilt_error_deg"],
+    ))
+    unique_candidates = []
+    seen_yaws = set()
+    for candidate in candidates:
+        yaw_key = round(candidate["yaw_deg"], 1)
+        if yaw_key not in seen_yaws:
+            seen_yaws.add(yaw_key)
+            unique_candidates.append(candidate)
+    return unique_candidates
 
 
-def define_prefix_endpose(endpose, fix_normal_path, fix_points_path):
-    """
-    Search joint angles on a world-XY square outside the fix surface.
+def find_pre_grab(grab_endpose):
+    """Return the first reachable point 30--70 mm above Grab."""
+    for offset_mm in np.linspace(15.0, 70.0, 9):
+        endpose = np.asarray(grab_endpose, dtype=float).copy()
+        endpose[2] += offset_mm
+        result = reachability_test(endpose)
+        if result["reachable"]:
+            return endpose, result["joint_degrees"]
+    print("Warning: pre_grab is not reachable; saving false.")
+    return False, False
 
-    The anchor is the fix_points point farthest along n_fix_plane. Move it
-    30 mm along n_fix_plane, then use its XY projection as the first corner
-    of an 80 mm x 80 mm square extending along world +X and +Y. The input fix
-    endpose z and orientation are kept fixed.
-    """
-    endpose = np.asarray(endpose, dtype=float).reshape(6)
 
-    with open(fix_normal_path, "r", encoding="utf-8") as f:
-        normal_data = json.load(f)
-    normal = np.asarray(normal_data["n_fix_plane"], dtype=float).reshape(3)
+def find_pre_fix(fix_endpose, fix_normal_path, fix_points_path):
+    """Return the first reachable point in the existing pre-fix search region."""
+    with open(fix_normal_path, "r", encoding="utf-8") as file:
+        normal = np.asarray(json.load(file)["n_fix_plane"], dtype=float).reshape(3)
     normal_norm = np.linalg.norm(normal)
     if normal_norm <= 1e-12:
         raise ValueError(f"Invalid zero n_fix_plane in {fix_normal_path}")
-    normal = normal / normal_norm
+    normal /= normal_norm
 
-    fix_pcd = o3d.io.read_point_cloud(str(fix_points_path))
-    fix_points = np.asarray(fix_pcd.points, dtype=float)
-    if len(fix_points) == 0:
+    points = np.asarray(o3d.io.read_point_cloud(str(fix_points_path)).points)
+    if len(points) == 0:
         raise RuntimeError(f"No points found in {fix_points_path}")
-    anchor = fix_points[np.argmax(fix_points @ normal)]
+    first_corner_m = points[np.argmax(points @ normal)] + 0.030 * normal
 
-    first_corner = anchor + 0.030 * normal
-    square_min_xy = first_corner[:2]
-    square_max_xy = square_min_xy + np.array([0.080, 0.080])
-    fixed_z_m = endpose[2] / 1000.0
-    target_R = R.from_euler('xyz', endpose[3:], degrees=True).as_matrix()
-
-    position_scale_m = 1e-5
-    rotation_scale_rad = np.deg2rad(1e-3)
-    numerical_position_tol_m = 1e-6
-    numerical_rotation_tol_deg = 1e-4
-    random_seed_count = 30
-
-    model = load_arm_model()
-    frame_id = model.getFrameId(DEFAULT_EE_FRAME)
-    lb, ub = get_safe_bounds(model)
-
-    rng = np.random.default_rng(0)
-    seed_qs = [
-        np.clip(pin.neutral(model), lb, ub),
-        np.clip(np.zeros(model.nq), lb, ub),
-    ]
-    for _ in range(random_seed_count):
-        seed_qs.append(rng.uniform(lb, ub))
-
-    def closest_square_point(position):
-        closest_xy = np.clip(position[:2], square_min_xy, square_max_xy)
-        return np.array([closest_xy[0], closest_xy[1], fixed_z_m])
-
-    best = None
-    for q0 in seed_qs:
-        data = model.createData()
-
-        def residual(q):
-            pose = frame_pose(model, data, q, frame_id)
-            closest_point = closest_square_point(pose.translation)
-            position_residual = (pose.translation - closest_point) / position_scale_m
-            rotation_residual = R.from_matrix(target_R.T @ pose.rotation).as_rotvec()
-            return np.concatenate([
-                position_residual,
-                rotation_residual / rotation_scale_rad,
-            ])
-
-        result = least_squares(
-            residual,
-            q0,
-            bounds=(lb, ub),
-            max_nfev=1000,
-            xtol=1e-10,
-            ftol=1e-10,
-            gtol=1e-10,
-        )
-
-        q = result.x
-        pose = frame_pose(model, data, q, frame_id)
-        closest_point = closest_square_point(pose.translation)
-        position_error_m = float(np.linalg.norm(pose.translation - closest_point))
-        rotation_error_deg = float(np.rad2deg(
-            np.linalg.norm(R.from_matrix(target_R.T @ pose.rotation).as_rotvec())
-        ))
-        feasible = (
-            position_error_m <= numerical_position_tol_m
-            and rotation_error_deg <= numerical_rotation_tol_deg
-        )
-        joint_margin = float(np.min(np.minimum(q - lb, ub - q)))
-        score = (
-            10000.0 if feasible else 0.0
-        ) - 1000.0 * position_error_m - rotation_error_deg + joint_margin
-
-        if best is None or score > best["score"]:
-            best = {
-                "score": score,
-                "feasible": feasible,
-                "pose": pose.copy(),
-                "q": q.copy(),
-                "position_error_mm": position_error_m * 1000.0,
-                "rotation_error_deg": rotation_error_deg,
-            }
-
-    if best is None or not best["feasible"]:
-        print("Warning: no reachable prefix pose.")
-        return None
-
-    selected_xy = np.clip(best["pose"].translation[:2], square_min_xy, square_max_xy) * 1000.0
-    prefix_endpose = np.array([
-        selected_xy[0],
-        selected_xy[1],
-        endpose[2],
-        endpose[3],
-        endpose[4],
-        endpose[5],
-    ])
-    print(
-        f"Selected prefix: pos_err={best['position_error_mm']:.3f} mm, "
-        f"rot_err={best['rotation_error_deg']:.3f} deg"
-    )
-    return prefix_endpose
-
-def round_endpose(endpose):
-    """
-    Keep each element of an endpose to 2 decimal places.
-    endpose format: [x, y, z, rx, ry, rz]
-    """
-    if endpose is None:
-        return None
-    return np.round(np.asarray(endpose, dtype=float).reshape(-1), 2)
+    # Traverse the old 80 x 80 mm world-XY pre-fix region and stop at the
+    # first reachable point. Fix Z and orientation are preserved.
+    for dx_m in np.linspace(0.0, 0.080, 9):
+        for dy_m in np.linspace(0.0, 0.080, 9):
+            endpose = np.asarray(fix_endpose, dtype=float).copy()
+            endpose[0] = (first_corner_m[0] + dx_m) * 1000.0
+            endpose[1] = (first_corner_m[1] + dy_m) * 1000.0
+            result = reachability_test(endpose)
+            if result["reachable"]:
+                return endpose, result["joint_degrees"]
+    print("Warning: pre_fix is not reachable; saving false.")
+    return False, False
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Calculate depression pick/place endposes.")
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "input_dir",
         nargs="?",
@@ -369,160 +183,195 @@ def parse_args():
         type=Path,
         help="Pipeline run folder: read completion/depression and write pickplace.",
     )
-    parser.add_argument("--depression-dir", type=Path, help="Explicit depression result folder.")
-    parser.add_argument("--pick-dir", type=Path, help="Explicit pick/place output folder.")
-    parser.add_argument("--output", type=Path, help="Explicit output .npz file.")
-    parser.add_argument("--fix-points", type=Path, help="Override fix_points.pcd path.")
-    parser.add_argument("--fix-normal", type=Path, help="Override n_fix_plane.json path.")
+    parser.add_argument("--depression-dir", type=Path)
+    parser.add_argument("--pick-dir", type=Path)
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--fix-points", type=Path)
+    parser.add_argument("--fix-normal", type=Path)
     return parser.parse_args()
 
 
 def resolve_paths(args):
-    standalone_inputs = [path for path in (args.input_dir, args.depression_dir) if path is not None]
+    standalone = [
+        path for path in (args.input_dir, args.depression_dir) if path is not None
+    ]
     if args.run_dir is not None:
-        if standalone_inputs:
-            raise ValueError("--run-dir cannot be combined with input_dir or --depression-dir")
+        if standalone:
+            raise ValueError(
+                "--run-dir cannot be combined with input_dir or --depression-dir"
+            )
         run_dir = args.run_dir.expanduser().resolve()
         depression_path = run_dir / "completion" / "depression"
-        pick_path = args.pick_dir.expanduser().resolve() if args.pick_dir else run_dir / "pickplace"
+        pick_path = (
+            args.pick_dir.expanduser().resolve()
+            if args.pick_dir else run_dir / "pickplace"
+        )
     else:
-        if len(standalone_inputs) != 1:
-            raise ValueError("Specify exactly one of --run-dir, input_dir, or --depression-dir")
-        depression_path = standalone_inputs[0].expanduser().resolve()
+        if len(standalone) != 1:
+            raise ValueError(
+                "Specify exactly one of --run-dir, input_dir, or --depression-dir"
+            )
+        depression_path = standalone[0].expanduser().resolve()
         if args.pick_dir is None and args.output is None:
             raise ValueError("Standalone mode requires --pick-dir or --output")
-        pick_path = args.pick_dir.expanduser().resolve() if args.pick_dir else args.output.parent.resolve()
+        pick_path = (
+            args.pick_dir.expanduser().resolve()
+            if args.pick_dir else args.output.parent.resolve()
+        )
 
-    output_path = args.output.expanduser().resolve() if args.output else pick_path / "pick_place_endpose.npz"
-    return depression_path, pick_path, output_path
-
-
-args = parse_args()
-depression_path, pick_path, output_path = resolve_paths(args)
-fix_points_path = args.fix_points.expanduser().resolve() if args.fix_points else depression_path / "fix_points.pcd"
-fix_normal_path = args.fix_normal.expanduser().resolve() if args.fix_normal else depression_path / "n_fix_plane.json"
-
-
-arm_gripper_length_z = 148 # mm 末端Z轴朝前伸出方向
-arm_gripper_width_y = 164 # mm  ## 夹爪开合方向
-arm_gripper_thickness =75 # mm 
-arm_flange = 10.5+2 # mm
-
-printerx = -266.425 #mm
-printery = 184.39
-printerz = 60.8
- 
-depression_dir = str(depression_path)
-pick_dir = str(pick_path)
-
-model_path = depression_dir + '/model_oriented.stl'
-pcd_path = depression_dir + '/model_oriented.pcd'
-meta = np.load(depression_dir + '/meta.npz', allow_pickle=True)
-orient_meta = np.load(depression_dir + '/orientation_meta.npz', allow_pickle=True)
-grip_meta = np.load(depression_dir + '/gripper_meta.npz', allow_pickle=True)
-unit_scale = 1000
-
-attach_center = np.asarray(orient_meta['attach_center_oriented'] ) * unit_scale
-full_box_z_height = np.asarray(orient_meta['full_box_z_height'] ) * unit_scale
-grip_height_total = (grip_meta['grip_body_height'] + grip_meta['base_height'] + grip_meta['v_neck_height']) * unit_scale
-
-####
-#### 打印物体抓取坐标系相对base坐标系的变换矩阵 #######
-####
-
-theta = np.deg2rad(90)
-Rz = np.array([
-    [np.cos(theta), -np.sin(theta), 0],
-    [np.sin(theta),  np.cos(theta), 0],
-    [0,              0,             1]
-])
-b_obj_grab_t = np.array([[printerx],[printery],[printerz]])  ## 固定值代表打印盘中心相对base的位置
-b_obj_grab_T = np.column_stack([Rz, b_obj_grab_t])
-b_obj_grab_T = np.vstack([b_obj_grab_T,np.array([0,0,0,1])])
+    output_path = (
+        args.output.expanduser().resolve()
+        if args.output else pick_path / "pick_place_endpose.npz"
+    )
+    return depression_path, output_path
 
 
-####
-#### 定义抓取位姿: x, y follow attach_center, z 下降到GRIP的一半长度处
-####
+def calculate_pick_and_fix(depression_path, fix_normal_path, fix_points_path):
+    orientation_meta = np.load(
+        depression_path / "orientation_meta.npz", allow_pickle=True
+    )
+    gripper_meta = np.load(
+        depression_path / "gripper_meta.npz", allow_pickle=True
+    )
 
-# 在object_grab坐标系下的抓取位置(仅考虑gripper)
+    attach_center = np.asarray(
+        orientation_meta["attach_center_oriented"], dtype=float
+    ) * UNIT_SCALE
+    full_box_z_height = float(
+        orientation_meta["full_box_z_height"]
+    ) * UNIT_SCALE
+    grip_height_total = float(
+        gripper_meta["grip_body_height"]
+        + gripper_meta["base_height"]
+        + gripper_meta["v_neck_height"]
+    ) * UNIT_SCALE
 
-#p_grab_pos = np.array([attach_center[0], top_plane_center[1], top_plane_center[2]*2 + grip_height_total/2 ,1])
-obj_grabx = attach_center[0]
-obj_graby = attach_center[1] 
-obj_grabz = (full_box_z_height - grip_height_total/2 )
-obj_grab_pos = np.array([obj_grabx, obj_graby , obj_grabz, 1 ])
+    theta = np.deg2rad(PRINT_YAW_DEG)
+    base_T_object_pick = np.eye(4)
+    base_T_object_pick[:3, :3] = np.array([
+        [np.cos(theta), -np.sin(theta), 0.0],
+        [np.sin(theta), np.cos(theta), 0.0],
+        [0.0, 0.0, 1.0],
+    ])
+    base_T_object_pick[:3, 3] = PRINTER_CENTER_BASE_MM
 
-#base坐标系下的抓取endpose
-b_grab_pos = b_obj_grab_T @ obj_grab_pos
-#b_pre_end_grab  = np.array([b_grab_pos[0], b_grab_pos[1], b_grab_pos[2]+pre_grab_height,180,0,0])# mm,degree
-grab_position = np.array([
-    b_grab_pos[0],
-    b_grab_pos[1],
-    b_grab_pos[2] + arm_gripper_length_z,
-])
-grab_endpose, grab_joint_degrees = select_reachable_grab_yaw(grab_position)
+    object_P_grip = np.array([
+        attach_center[0],
+        attach_center[1],
+        full_box_z_height - grip_height_total / 2.0,
+        1.0,
+    ])
+    base_P_grip = base_T_object_pick @ object_P_grip
+    grab_position = base_P_grip[:3].copy()
+    grab_position[2] += ARM_GRIPPER_LENGTH_Z_MM
 
-#抓取末端姿态在base下的变换矩阵
-base_end_grab_T = base_end_grab_trans(grab_endpose)
+    base_T_object_fix = np.asarray(
+        orientation_meta["base_T_full"], dtype=float
+    ).copy()
+    base_T_object_fix[0, -1] += FIX_X_OFFSET
 
-# object_grab 在 末端抓取时刻坐标系下的表示
-end_grab_obj_grab_T = np.linalg.inv(base_end_grab_T) @ b_obj_grab_T 
+    selected = None
+    for candidate in generate_grab_yaw_candidates(grab_position):
+        grab_endpose = np.array([
+            grab_position[0], grab_position[1], grab_position[2],
+            180.0, 0.0, candidate["yaw_deg"],
+        ])
+        grab_reachability = reachability_test(grab_endpose)
+        if not grab_reachability["reachable"]:
+            continue
 
-#### 计算base_obj_fix_T
-base_obj_fix_T = orient_meta['base_T_full']
-base_obj_fix_T[0,-1] -= 0.1
-print(base_obj_fix_T)
+        base_T_end_grab = endpose_to_transform(grab_endpose)
+        end_grab_T_object = np.linalg.inv(base_T_end_grab) @ base_T_object_pick
+        base_T_end_fix = base_T_object_fix @ np.linalg.inv(end_grab_T_object)
+        fix_endpose = transform_to_endpose(base_T_end_fix)
+        fix_reachability = reachability_test(fix_endpose)
+        if not fix_reachability["reachable"]:
+            continue
 
-##########取逆
-base_obj_fix_T = np.linalg.inv(base_obj_fix_T)
+        selected = (
+            grab_endpose, grab_reachability, fix_endpose, fix_reachability
+        )
+        print(f"Selected first jointly reachable yaw: {candidate['yaw_deg']:.3f} deg")
+        break
 
-### 计算最终的安装旋转矩阵
-base_end_fix_T =  base_obj_fix_T @ np.linalg.inv(end_grab_obj_grab_T)
-fix_endpose = trans_to_endpose(base_end_fix_T)
-#fix_endpose[0] += 0.003
-#fix_endpose[1] -= 0.003
+    if selected is None:
+        raise RuntimeError("No yaw produces both reachable Grab and Fix endposes.")
 
-fix_reachable = reachability_test(fix_endpose)
+    grab_endpose, grab_reachability, fix_endpose, fix_reachability = selected
 
-######### 这里如果希望做的更robust，可以加入条件语句，若true，若false则调动底盘移动计算
-############### 先默认都可达
+    # Pre points are deliberately calculated only after the Grab/Fix pair has
+    # been accepted. Their failure does not invalidate that pair.
+    pre_grab_endpose, pre_grab_joint_degrees = find_pre_grab(grab_endpose)
+    pre_fix_endpose, pre_fix_joint_degrees = find_pre_fix(
+        fix_endpose, fix_normal_path, fix_points_path
+    )
 
-if fix_reachable['reachable'] == True:
-    print('😍 pick and fix enpose reachable! 😍 ')
-    #pregrab_endpose = round_endpose(define_pregrab_endpose(grab_endpose))
-    #prefix_endpose = round_endpose(
-    #    define_prefix_endpose(fix_endpose, fix_normal_path, fix_points_path)
-    #)
-    #grab_endpose = round_endpose(grab_endpose)
-    #fix_endpose = round_endpose(fix_endpose)
-    #pre_fix_reachable = reachability_test(prefix_endpose)
-    #fix_reachable_final = reachability_test(fix_endpose)
-    #if not pre_fix_reachable["reachable"]:
-    #    raise RuntimeError("pre_fix_endpose is not reachable")
-    #if not fix_reachable_final["reachable"]:
-    #    raise RuntimeError("fix_endpose is not reachable")
-#
-    #pre_fix_joint_degrees = pre_fix_reachable["joint_degrees"]
-    fix_joint_degrees = fix_reachable["joint_degrees"]
+    return {
+        "pre_grab_endpose": pre_grab_endpose,
+        "pre_grab_joint_degrees": pre_grab_joint_degrees,
+        "grab_endpose": grab_endpose,
+        "grab_joint_degrees": grab_reachability["joint_degrees"],
+        "pre_fix_endpose": pre_fix_endpose,
+        "pre_fix_joint_degrees": pre_fix_joint_degrees,
+        "fix_endpose": fix_endpose,
+        "fix_joint_degrees": fix_reachability["joint_degrees"],
+    }
 
-    #________________ save endpose data ______________#
+
+def save_results(results, output_path):
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    np.savez(output_path,
-    #pregrab_endpose = pregrab_endpose,
-    #prefix_endpose = prefix_endpose,
-    grab_endpose = grab_endpose,
-    fix_endpose = fix_endpose   )
+    np.savez(
+        output_path,
+        pre_grab_endpose=results["pre_grab_endpose"],
+        grab_endpose=results["grab_endpose"],
+        pre_fix_endpose=results["pre_fix_endpose"],
+        fix_endpose=results["fix_endpose"],
+    )
 
-    json_output_path = output_path.with_suffix('.json')
-    with open(json_output_path, 'w', encoding='utf-8') as f:
+    def json_value(value):
+        return False if value is False else np.asarray(value).tolist()
+
+    json_output_path = output_path.with_suffix(".json")
+    with open(json_output_path, "w", encoding="utf-8") as file:
         json.dump({
-            'garb_joint_degrees':grab_joint_degrees,
-            #"pre_fix_endpose": prefix_endpose.tolist(),
-            #"pre_fix_joint_degrees": pre_fix_joint_degrees,
-            "fix_endpose": fix_endpose.tolist(),
-            "fix_joint_degrees": fix_joint_degrees,
-        }, f, ensure_ascii=False, indent=2)
-    print('saved:', json_output_path)
-    print('pick joint degrees: \n ', grab_joint_degrees , '\n \n fix joint degrees: \n ', fix_joint_degrees)
+            "pre_grab_endpose": json_value(results["pre_grab_endpose"]),
+            "pre_grab_joint_degrees": json_value(
+                results["pre_grab_joint_degrees"]
+            ),
+            "grab_endpose": json_value(results["grab_endpose"]),
+            "grab_joint_degrees": json_value(results["grab_joint_degrees"]),
+            "pre_fix_endpose": json_value(results["pre_fix_endpose"]),
+            "pre_fix_joint_degrees": json_value(
+                results["pre_fix_joint_degrees"]
+            ),
+            "fix_endpose": json_value(results["fix_endpose"]),
+            "fix_joint_degrees": json_value(results["fix_joint_degrees"]),
+        }, file, ensure_ascii=False, indent=2)
 
+    print("saved:", output_path)
+    print("saved:", json_output_path)
+
+
+def main():
+    args = parse_args()
+    depression_path, output_path = resolve_paths(args)
+    fix_points_path = (
+        args.fix_points.expanduser().resolve()
+        if args.fix_points else depression_path / "fix_points.pcd"
+    )
+    fix_normal_path = (
+        args.fix_normal.expanduser().resolve()
+        if args.fix_normal else depression_path / "n_fix_plane.json"
+    )
+    results = calculate_pick_and_fix(
+        depression_path, fix_normal_path, fix_points_path
+    )
+    save_results(results, output_path)
+    print("pre-grab joint degrees:\n", results["pre_grab_joint_degrees"])
+    print("pick joint degrees:\n", results["grab_joint_degrees"])
+    print("pre-fix joint degrees:\n", results["pre_fix_joint_degrees"])
+    print("fix joint degrees:\n", results["fix_joint_degrees"])
+
+
+if __name__ == "__main__":
+    main()

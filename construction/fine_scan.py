@@ -211,21 +211,21 @@ def build_fine_cube_centers(defect_center, target_camera_position, radius):
 
     views = [
         # name, yaw_deg, elevation_deg, radius_scale
-        ("front_low",       0.0,    0.0,    1.00),
-        ("front_mid",       0.0,    25.0,   1.00),
-        ("front_up",        0.0,    50.0,   1.00),
+        ("front_low",       0.0,    0.0,    0.9),
+        ("front_mid",       0.0,    25.0,   0.9),
+        ("front_up",        0.0,    50.0,   0.9),
 
-        ("left_front_up",   45.0,   30.0,   1.00),
-        ("left_front_side", 60.0,   0.0,    1.0),
-        ("left_side_mid",   90.0,   10.0,    1.05),
-        ("left_side_dev",  90.0,   20.0,    1.05),
-        ("left_side_up_dev",  90.0,   30,    1.05),
+        ("left_front_up",   45.0,   30.0,   0.9),
+        ("left_front_side", 60.0,   0.0,    0.9),
+        ("left_side_mid",   90.0,   10.0,    1.0),
+        ("left_side_dev",  90.0,   20.0,    1.0),
+        ("left_side_up_dev",  90.0,   30,    1.0),
 
-        ("right_front_up",  -45.0,  30.0,   1.00),
-        ("right_front_side",-60.0,  0.0,    1.0),
-        ("right_side_mid",  -90.0,  10.0,    1.05),
-        ("right_side_dev", -90.0,  20.0,    1.05),
-        ("right_side_up_dev", -90.0,  30,    1.05),        
+        ("right_front_up",  -45.0,  30.0,   0.9 ),
+        ("right_front_side",-60.0,  0.0,    0.9 ),
+        ("right_side_mid",  -90.0,  10.0,   1.0 ),
+        ("right_side_dev", -90.0,  20.0,    1.0 ),
+        ("right_side_up_dev", -90.0,  30,   1.0 ),        
 
 
     ]

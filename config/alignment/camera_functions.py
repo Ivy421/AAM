@@ -224,4 +224,4 @@ def synchron_piper(arm_name, camera_syn_endpose_path):
 
 
 if __name__ == "__main__":
-    capture('/home/smmg/AAM/data/runs/20260804_145353/pickplace/','apriltag',1,1,0,1,True)
+    capture('/home/smmg/AAM/data/runs/20260806_143628/pickplace/','apriltag',1,1,0,1,True)
