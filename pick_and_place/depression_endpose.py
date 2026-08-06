@@ -30,7 +30,8 @@ ARM_GRIPPER_LENGTH_Z_MM = 142.5
 PRINTER_CENTER_BASE_MM = np.array([-266.425, 184.39, 60.8])
 PRINT_YAW_DEG = 90.0
 UNIT_SCALE = 1000.0
-FIX_X_OFFSET = -0.1
+FIX_X_OFFSET = 18
+FIX_Y_OFFSET = 18
 
 
 def endpose_to_transform(endpose):
@@ -268,7 +269,12 @@ def calculate_pick_and_fix(depression_path, fix_normal_path, fix_points_path):
     base_T_object_fix = np.asarray(
         orientation_meta["base_T_full"], dtype=float
     ).copy()
+    base_T_object_fix[:3,3] *= UNIT_SCALE
+
+    base_T_object_fix[0, -1] -= 100
     base_T_object_fix[0, -1] += FIX_X_OFFSET
+    base_T_object_fix[1, -1] += FIX_Y_OFFSET
+
 
     selected = None
     for candidate in generate_grab_yaw_candidates(grab_position):
@@ -301,18 +307,16 @@ def calculate_pick_and_fix(depression_path, fix_normal_path, fix_points_path):
 
     # Pre points are deliberately calculated only after the Grab/Fix pair has
     # been accepted. Their failure does not invalidate that pair.
-    pre_grab_endpose, pre_grab_joint_degrees = find_pre_grab(grab_endpose)
-    pre_fix_endpose, pre_fix_joint_degrees = find_pre_fix(
-        fix_endpose, fix_normal_path, fix_points_path
-    )
+    # pre_grab_endpose, pre_grab_joint_degrees = find_pre_grab(grab_endpose)
+    #pre_fix_endpose, pre_fix_joint_degrees = find_pre_fix( fix_endpose, fix_normal_path, fix_points_path )
 
     return {
-        "pre_grab_endpose": pre_grab_endpose,
-        "pre_grab_joint_degrees": pre_grab_joint_degrees,
+        #"pre_grab_endpose": pre_grab_endpose,
+        #"pre_grab_joint_degrees": pre_grab_joint_degrees,
         "grab_endpose": grab_endpose,
         "grab_joint_degrees": grab_reachability["joint_degrees"],
-        "pre_fix_endpose": pre_fix_endpose,
-        "pre_fix_joint_degrees": pre_fix_joint_degrees,
+        #"pre_fix_endpose": pre_fix_endpose,
+        #"pre_fix_joint_degrees": pre_fix_joint_degrees,
         "fix_endpose": fix_endpose,
         "fix_joint_degrees": fix_reachability["joint_degrees"],
     }
@@ -322,9 +326,9 @@ def save_results(results, output_path):
     output_path.parent.mkdir(parents=True, exist_ok=True)
     np.savez(
         output_path,
-        pre_grab_endpose=results["pre_grab_endpose"],
+        #pre_grab_endpose=results["pre_grab_endpose"],
         grab_endpose=results["grab_endpose"],
-        pre_fix_endpose=results["pre_fix_endpose"],
+        #pre_fix_endpose=results["pre_fix_endpose"],
         fix_endpose=results["fix_endpose"],
     )
 
@@ -334,16 +338,12 @@ def save_results(results, output_path):
     json_output_path = output_path.with_suffix(".json")
     with open(json_output_path, "w", encoding="utf-8") as file:
         json.dump({
-            "pre_grab_endpose": json_value(results["pre_grab_endpose"]),
-            "pre_grab_joint_degrees": json_value(
-                results["pre_grab_joint_degrees"]
-            ),
+            #"pre_grab_endpose": json_value(results["pre_grab_endpose"]),
+            #"pre_grab_joint_degrees": json_value( results["pre_grab_joint_degrees"]),
             "grab_endpose": json_value(results["grab_endpose"]),
             "grab_joint_degrees": json_value(results["grab_joint_degrees"]),
-            "pre_fix_endpose": json_value(results["pre_fix_endpose"]),
-            "pre_fix_joint_degrees": json_value(
-                results["pre_fix_joint_degrees"]
-            ),
+            #"pre_fix_endpose": json_value(results["pre_fix_endpose"]),
+            #"pre_fix_joint_degrees": json_value(results["pre_fix_joint_degrees"]),
             "fix_endpose": json_value(results["fix_endpose"]),
             "fix_joint_degrees": json_value(results["fix_joint_degrees"]),
         }, file, ensure_ascii=False, indent=2)
@@ -357,7 +357,7 @@ def main():
     depression_path, output_path = resolve_paths(args)
     fix_points_path = (
         args.fix_points.expanduser().resolve()
-        if args.fix_points else depression_path / "fix_points.pcd"
+        if args.fix_points else depression_path / "fix_points_curve.pcd"
     )
     fix_normal_path = (
         args.fix_normal.expanduser().resolve()
@@ -367,9 +367,9 @@ def main():
         depression_path, fix_normal_path, fix_points_path
     )
     save_results(results, output_path)
-    print("pre-grab joint degrees:\n", results["pre_grab_joint_degrees"])
+    #print("pre-grab joint degrees:\n", results["pre_grab_joint_degrees"])
     print("pick joint degrees:\n", results["grab_joint_degrees"])
-    print("pre-fix joint degrees:\n", results["pre_fix_joint_degrees"])
+    #print("pre-fix joint degrees:\n", results["pre_fix_joint_degrees"])
     print("fix joint degrees:\n", results["fix_joint_degrees"])
 
 
