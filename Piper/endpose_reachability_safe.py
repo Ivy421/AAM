@@ -15,7 +15,7 @@ from scipy.spatial.transform import Rotation as R
 # Fixed config: modify here if your URDF or EE frame changes.
 # ============================================================
 DEFAULT_URDF = os.path.expanduser(r"/home/smmg/AAM/config/piper/piper_description.urdf")
-#DEFAULT_URDF = os.path.expanduser(r"E:/HKUSTGZ/AAM_MASTER/config/piper/piper_description.urdf")
+DEFAULT_URDF = os.path.expanduser(r"E:/HKUSTGZ/AAM/config/piper/piper_description.urdf")
 
 DEFAULT_EE_FRAME = "link6"   # If you use TCP/gripper frame later, change this.
 

@@ -1,7 +1,9 @@
-"""Move Mark1 so every brush contact center has base X <= 380 mm."""
+"""Move Mark1 in 0.1 m steps when a brush contact X exceeds 0.4 m."""
 
 import argparse
 import json
+import math
+import shutil
 import sys
 import threading
 from pathlib import Path
@@ -19,7 +21,8 @@ TAG_P_BRUSH_CENTER_M = np.array([0.0, 0.0, -0.085])
 BRUSH_RADIUS_M = 0.0275
 PRESS_DEPTH_M = 0.0
 PRE_OFFSET_M = 0.100
-CONTACT_X_TARGET_M = 0.350
+CONTACT_X_TARGET_M = 0.400
+MARK1_X_STEP_M = 0.100
 MARK1_X_SPEED = 0.08
 
 WORLD_X = np.array([1.0, 0.0, 0.0])
@@ -51,7 +54,7 @@ def resolve_paths(args):
     )
     args.output = (
         args.output
-        or run_dir / "pickplace" / "glue_applicate_endpose_brush_mark1.json"
+        or run_dir / "pickplace" / "glue_brush_adaptive_segments_mark1.json"
     )
     return args
 
@@ -185,55 +188,77 @@ def execute_mark1(dx):
 
 def main():
     args = resolve_paths(parse_args())
-    brush_pick = json.loads(args.brush_pick_json.read_text(encoding="utf-8"))
     segment_data = json.loads(args.segments_json.read_text(encoding="utf-8"))
     segments = segment_data["segments"]
-    flange_T_tag = flange_T_tag_from_pick(brush_pick)
 
     initial_contacts = [contact_center(segment)[2] for segment in segments]
     initial_max_x = max(point[0] for point in initial_contacts)
-    planned_dx = max(0.0, initial_max_x - CONTACT_X_TARGET_M)
+    if initial_max_x > CONTACT_X_TARGET_M:
+        step_count = math.ceil(
+            (initial_max_x - CONTACT_X_TARGET_M) / MARK1_X_STEP_M
+        )
+        planned_dx = step_count * MARK1_X_STEP_M
+    else:
+        planned_dx = 0.0
+
+    copied_segments = None
+    if planned_dx == 0.0:
+        copied_segments = (
+            args.run_dir.expanduser().resolve()
+            / "pickplace"
+            / "glue_brush_adaptive_segments.json"
+        )
+        copied_segments.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(args.segments_json, copied_segments)
+
     final_delta = np.array([planned_dx, 0.0])
     execution = None
 
     if args.execute_mark1:
         final_delta, execution = execute_mark1(planned_dx)
 
-    records = [
-        plan_segment(segment, final_delta, flange_T_tag)
-        for segment in segments
-    ]
-    final_max_x = max(
-        record["brush_center_contact_base_m"][0] for record in records
-    )
+    transformed_segments = []
+    for segment in segments:
+        transformed = dict(segment)
+        center = np.asarray(segment["center_point_base_m"], dtype=float).copy()
+        center[:2] -= final_delta
+        transformed["center_point_base_m"] = np.round(center, 9).tolist()
+        transformed_segments.append(transformed)
 
-    output = {
-        "coordinate_frame": "base_after_mark1_motion",
-        "contact_x_target_mm": CONTACT_X_TARGET_M * 1000.0,
-        "initial_max_contact_x_mm": initial_max_x * 1000.0,
-        "final_max_contact_x_mm": final_max_x * 1000.0,
-        "planned_mark1_delta_base_m": [planned_dx, 0.0],
-        "final_mark1_delta_base_m": final_delta.tolist(),
-        "mark1_executed": execution is not None,
-        "mark1_execution": execution,
-        "brush_radius_mm": BRUSH_RADIUS_M * 1000.0,
-        "press_depth_mm": PRESS_DEPTH_M * 1000.0,
-        "pre_app_offset_mm": PRE_OFFSET_M * 1000.0,
-        "tag_p_brush_center_mm": (TAG_P_BRUSH_CENTER_M * 1000.0).tolist(),
-        "flange_T_tag": np.round(flange_T_tag, 9).tolist(),
-        "segment_count": len(records),
-        "contacts": records,
-    }
+    final_max_x = max(
+        contact_center(segment)[2][0] for segment in transformed_segments
+    )
+    output = {"segments": transformed_segments}
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(
         json.dumps(output, indent=2, ensure_ascii=False), encoding="utf-8"
     )
 
+    motion_output = (
+        args.run_dir.expanduser().resolve() / "pickplace" / "mark1_motion.json"
+    )
+    motion_output.parent.mkdir(parents=True, exist_ok=True)
+    motion_output.write_text(
+        json.dumps(
+            {
+                "move": planned_dx > 0.0,
+                "delta_base_m": final_delta.tolist(),
+                "executed": execution is not None,
+            },
+            indent=2,
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
     print(f"Initial max contact X: {initial_max_x * 1000.0:.3f} mm")
     print(f"Planned Mark1 X motion: {planned_dx * 1000.0:.3f} mm")
     print(f"Final max contact X: {final_max_x * 1000.0:.3f} mm")
+    if copied_segments is not None:
+        print(f"Segments copied: {copied_segments}")
     print(f"Saved: {args.output.resolve()}")
+    print(f"Saved: {motion_output.resolve()}")
 
 
 if __name__ == "__main__":

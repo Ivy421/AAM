@@ -30,8 +30,8 @@ ARM_GRIPPER_LENGTH_Z_MM = 142.5
 PRINTER_CENTER_BASE_MM = np.array([-266.425, 184.39, 60.8])
 PRINT_YAW_DEG = 90.0
 UNIT_SCALE = 1000.0
-FIX_X_OFFSET = 18
-FIX_Y_OFFSET = 18
+FIX_X_OFFSET = 0
+FIX_Y_OFFSET = 0
 
 
 def endpose_to_transform(endpose):
@@ -143,30 +143,123 @@ def find_pre_grab(grab_endpose):
     return False, False
 
 
-def find_pre_fix(fix_endpose, fix_normal_path, fix_points_path):
-    """Return the first reachable point in the existing pre-fix search region."""
-    with open(fix_normal_path, "r", encoding="utf-8") as file:
-        normal = np.asarray(json.load(file)["n_fix_plane"], dtype=float).reshape(3)
+def find_pre_fix(
+    fix_endpose,
+    segments_path,
+    fix_points_path,
+    mark1_delta_xy,
+):
+    """Search joint space for an EE pose inside the continuous pre-fix box."""
+    segment_data = json.loads(segments_path.read_text(encoding="utf-8"))
+    normal = np.asarray(
+        [segment["outward_normal_unit"] for segment in segment_data["segments"]],
+        dtype=float,
+    ).sum(axis=0)
     normal_norm = np.linalg.norm(normal)
     if normal_norm <= 1e-12:
-        raise ValueError(f"Invalid zero n_fix_plane in {fix_normal_path}")
+        raise ValueError(f"Invalid average outward normal in {segments_path}")
     normal /= normal_norm
 
     points = np.asarray(o3d.io.read_point_cloud(str(fix_points_path)).points)
-    if len(points) == 0:
-        raise RuntimeError(f"No points found in {fix_points_path}")
+    points[:, :2] -= np.asarray(mark1_delta_xy, dtype=float).reshape(2)
     first_corner_m = points[np.argmax(points @ normal)] + 0.030 * normal
 
-    # Traverse the old 80 x 80 mm world-XY pre-fix region and stop at the
-    # first reachable point. Fix Z and orientation are preserved.
-    for dx_m in np.linspace(0.0, 0.080, 9):
-        for dy_m in np.linspace(0.0, 0.080, 9):
-            endpose = np.asarray(fix_endpose, dtype=float).copy()
-            endpose[0] = (first_corner_m[0] + dx_m) * 1000.0
-            endpose[1] = (first_corner_m[1] + dy_m) * 1000.0
-            result = reachability_test(endpose)
-            if result["reachable"]:
-                return endpose, result["joint_degrees"]
+    fix_endpose = np.asarray(fix_endpose, dtype=float).reshape(6)
+    box_min_xy = first_corner_m[:2]
+    box_max_xy = box_min_xy + np.array([0.080, 0.080])
+    fixed_z_m = fix_endpose[2] / 1000.0
+    target_rotation = Rotation.from_euler(
+        "xyz", fix_endpose[3:], degrees=True
+    ).as_matrix()
+
+    model = load_arm_model()
+    frame_id = model.getFrameId(DEFAULT_EE_FRAME)
+    lower, upper = get_safe_bounds(model)
+    rng = np.random.default_rng(0)
+    seeds = [
+        np.clip(pin.neutral(model), lower, upper),
+        np.clip(np.zeros(model.nq), lower, upper),
+    ]
+    seeds.extend(rng.uniform(lower, upper) for _ in range(30))
+
+    position_scale_m = 0.002
+    rotation_scale_rad = np.deg2rad(2.0)
+    position_tolerance_m = 0.002
+    rotation_tolerance_deg = 3.0
+    best = None
+
+    def closest_box_point(position):
+        xy = np.clip(position[:2], box_min_xy, box_max_xy)
+        return np.array([xy[0], xy[1], fixed_z_m])
+
+    for seed in seeds:
+        data = model.createData()
+
+        def residual(q):
+            pose = frame_pose(model, data, q, frame_id)
+            position_error = pose.translation - closest_box_point(
+                pose.translation
+            )
+            rotation_error = Rotation.from_matrix(
+                target_rotation.T @ pose.rotation
+            ).as_rotvec()
+            return np.concatenate([
+                position_error / position_scale_m,
+                rotation_error / rotation_scale_rad,
+            ])
+
+        solution = least_squares(
+            residual,
+            seed,
+            bounds=(lower, upper),
+            max_nfev=1500,
+            xtol=1e-10,
+            ftol=1e-10,
+            gtol=1e-10,
+        )
+        q = solution.x
+        pose = frame_pose(model, data, q, frame_id)
+        target_position = closest_box_point(pose.translation)
+        position_error_m = float(
+            np.linalg.norm(pose.translation - target_position)
+        )
+        rotation_error_deg = float(np.rad2deg(np.linalg.norm(
+            Rotation.from_matrix(
+                target_rotation.T @ pose.rotation
+            ).as_rotvec()
+        )))
+        if (
+            position_error_m > position_tolerance_m
+            or rotation_error_deg > rotation_tolerance_deg
+        ):
+            continue
+
+        joint_margin = float(np.min(np.minimum(q - lower, upper - q)))
+        score = (
+            joint_margin
+            - 1000.0 * position_error_m
+            - np.deg2rad(rotation_error_deg)
+        )
+        if best is None or score > best["score"]:
+            best = {
+                "score": score,
+                "q": q.copy(),
+                "target_position": target_position,
+                "position_error_mm": position_error_m * 1000.0,
+                "rotation_error_deg": rotation_error_deg,
+            }
+
+    if best is not None:
+        pre_fix_endpose = fix_endpose.copy()
+        pre_fix_endpose[:3] = best["target_position"] * 1000.0
+        joint_degrees = np.round(np.rad2deg(best["q"]), 3).tolist()
+        print(
+            "Selected continuous-box pre_fix: "
+            f"position error={best['position_error_mm']:.3f} mm, "
+            f"rotation error={best['rotation_error_deg']:.3f} deg"
+        )
+        return pre_fix_endpose, joint_degrees
+
     print("Warning: pre_fix is not reachable; saving false.")
     return False, False
 
@@ -188,7 +281,8 @@ def parse_args():
     parser.add_argument("--pick-dir", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--fix-points", type=Path)
-    parser.add_argument("--fix-normal", type=Path)
+    parser.add_argument("--segments-json", type=Path)
+    parser.add_argument("--mark1-motion", type=Path)
     return parser.parse_args()
 
 
@@ -207,6 +301,21 @@ def resolve_paths(args):
             args.pick_dir.expanduser().resolve()
             if args.pick_dir else run_dir / "pickplace"
         )
+        mark1_motion_path = (
+            args.mark1_motion.expanduser().resolve()
+            if args.mark1_motion
+            else run_dir / "pickplace" / "mark1_motion.json"
+        )
+        if args.segments_json:
+            segments_path = args.segments_json.expanduser().resolve()
+        else:
+            motion = json.loads(mark1_motion_path.read_text(encoding="utf-8"))
+            segments_name = (
+                "glue_brush_adaptive_segments_mark1.json"
+                if motion["move"]
+                else "glue_brush_adaptive_segments.json"
+            )
+            segments_path = run_dir / "pickplace" / segments_name
     else:
         if len(standalone) != 1:
             raise ValueError(
@@ -219,15 +328,29 @@ def resolve_paths(args):
             args.pick_dir.expanduser().resolve()
             if args.pick_dir else args.output.parent.resolve()
         )
+        mark1_motion_path = (
+            args.mark1_motion.expanduser().resolve()
+            if args.mark1_motion else None
+        )
+        segments_path = (
+            args.segments_json.expanduser().resolve()
+            if args.segments_json
+            else depression_path / "glue_brush_adaptive_segments.json"
+        )
 
     output_path = (
         args.output.expanduser().resolve()
         if args.output else pick_path / "pick_place_endpose.npz"
     )
-    return depression_path, output_path
+    return depression_path, output_path, mark1_motion_path, segments_path
 
 
-def calculate_pick_and_fix(depression_path, fix_normal_path, fix_points_path):
+def calculate_pick_and_fix(
+    depression_path,
+    segments_path,
+    fix_points_path,
+    mark1_motion_path=None,
+):
     orientation_meta = np.load(
         depression_path / "orientation_meta.npz", allow_pickle=True
     )
@@ -248,30 +371,39 @@ def calculate_pick_and_fix(depression_path, fix_normal_path, fix_points_path):
     ) * UNIT_SCALE
 
     theta = np.deg2rad(PRINT_YAW_DEG)
-    base_T_object_pick = np.eye(4)
-    base_T_object_pick[:3, :3] = np.array([
+    base_T_printer = np.eye(4)
+    base_T_printer[:3, :3] = np.array([
         [np.cos(theta), -np.sin(theta), 0.0],
         [np.sin(theta), np.cos(theta), 0.0],
         [0.0, 0.0, 1.0],
     ])
-    base_T_object_pick[:3, 3] = PRINTER_CENTER_BASE_MM
+    base_T_printer[:3, 3] = PRINTER_CENTER_BASE_MM
 
-    object_P_grip = np.array([
+    printer_T_full = np.eye(4)
+    printer_T_full[2,-1] = full_box_z_height/2
+
+    printer_P_grip = np.array([
         attach_center[0],
         attach_center[1],
         full_box_z_height - grip_height_total / 2.0,
         1.0,
     ])
-    base_P_grip = base_T_object_pick @ object_P_grip
+    base_P_grip = base_T_printer @ printer_P_grip
     grab_position = base_P_grip[:3].copy()
     grab_position[2] += ARM_GRIPPER_LENGTH_Z_MM
 
     base_T_object_fix = np.asarray(
         orientation_meta["base_T_full"], dtype=float
     ).copy()
+    mark1_delta_xy = np.zeros(2)
+    if mark1_motion_path is not None:
+        motion = json.loads(mark1_motion_path.read_text(encoding="utf-8"))
+        if motion["move"]:
+            mark1_delta_xy = np.asarray(
+                motion["final_delta_base_m"], dtype=float
+            ).reshape(2)
+            base_T_object_fix[:2, 3] -= mark1_delta_xy
     base_T_object_fix[:3,3] *= UNIT_SCALE
-
-    base_T_object_fix[0, -1] -= 100
     base_T_object_fix[0, -1] += FIX_X_OFFSET
     base_T_object_fix[1, -1] += FIX_Y_OFFSET
 
@@ -287,8 +419,8 @@ def calculate_pick_and_fix(depression_path, fix_normal_path, fix_points_path):
             continue
 
         base_T_end_grab = endpose_to_transform(grab_endpose)
-        end_grab_T_object = np.linalg.inv(base_T_end_grab) @ base_T_object_pick
-        base_T_end_fix = base_T_object_fix @ np.linalg.inv(end_grab_T_object)
+        end_grab_T_full = np.linalg.inv(base_T_end_grab) @ base_T_printer @ printer_T_full
+        base_T_end_fix = base_T_object_fix @ np.linalg.inv(end_grab_T_full)
         fix_endpose = transform_to_endpose(base_T_end_fix)
         fix_reachability = reachability_test(fix_endpose)
         if not fix_reachability["reachable"]:
@@ -307,18 +439,25 @@ def calculate_pick_and_fix(depression_path, fix_normal_path, fix_points_path):
 
     # Pre points are deliberately calculated only after the Grab/Fix pair has
     # been accepted. Their failure does not invalidate that pair.
-    # pre_grab_endpose, pre_grab_joint_degrees = find_pre_grab(grab_endpose)
-    #pre_fix_endpose, pre_fix_joint_degrees = find_pre_fix( fix_endpose, fix_normal_path, fix_points_path )
+    pre_grab_endpose, pre_grab_joint_degrees = find_pre_grab(grab_endpose)
+    pre_fix_endpose, pre_fix_joint_degrees = find_pre_fix(
+        fix_endpose,
+        segments_path,
+        fix_points_path,
+        mark1_delta_xy,
+    )
 
     return {
-        #"pre_grab_endpose": pre_grab_endpose,
-        #"pre_grab_joint_degrees": pre_grab_joint_degrees,
         "grab_endpose": grab_endpose,
         "grab_joint_degrees": grab_reachability["joint_degrees"],
-        #"pre_fix_endpose": pre_fix_endpose,
-        #"pre_fix_joint_degrees": pre_fix_joint_degrees,
         "fix_endpose": fix_endpose,
         "fix_joint_degrees": fix_reachability["joint_degrees"],
+
+        "pre_grab_endpose": pre_grab_endpose,
+        "pre_grab_joint_degrees": pre_grab_joint_degrees,
+        "pre_fix_endpose": pre_fix_endpose,
+        "pre_fix_joint_degrees": pre_fix_joint_degrees,
+
     }
 
 
@@ -338,14 +477,15 @@ def save_results(results, output_path):
     json_output_path = output_path.with_suffix(".json")
     with open(json_output_path, "w", encoding="utf-8") as file:
         json.dump({
-            #"pre_grab_endpose": json_value(results["pre_grab_endpose"]),
-            #"pre_grab_joint_degrees": json_value( results["pre_grab_joint_degrees"]),
-            "grab_endpose": json_value(results["grab_endpose"]),
             "grab_joint_degrees": json_value(results["grab_joint_degrees"]),
-            #"pre_fix_endpose": json_value(results["pre_fix_endpose"]),
-            #"pre_fix_joint_degrees": json_value(results["pre_fix_joint_degrees"]),
-            "fix_endpose": json_value(results["fix_endpose"]),
             "fix_joint_degrees": json_value(results["fix_joint_degrees"]),
+            "grab_endpose": json_value(results["grab_endpose"]),
+            "fix_endpose": json_value(results["fix_endpose"]),
+
+            #"pre_grab_endpose": json_value(results["pre_grab_endpose"]),
+            "pre_grab_joint_degrees": json_value( results["pre_grab_joint_degrees"]),
+            #"pre_fix_endpose": json_value(results["pre_fix_endpose"]),
+            "pre_fix_joint_degrees": json_value(results["pre_fix_joint_degrees"]),
         }, file, ensure_ascii=False, indent=2)
 
     print("saved:", output_path)
@@ -354,23 +494,29 @@ def save_results(results, output_path):
 
 def main():
     args = parse_args()
-    depression_path, output_path = resolve_paths(args)
+    (
+        depression_path,
+        output_path,
+        mark1_motion_path,
+        segments_path,
+    ) = resolve_paths(args)
     fix_points_path = (
         args.fix_points.expanduser().resolve()
         if args.fix_points else depression_path / "fix_points_curve.pcd"
     )
-    fix_normal_path = (
-        args.fix_normal.expanduser().resolve()
-        if args.fix_normal else depression_path / "n_fix_plane.json"
-    )
     results = calculate_pick_and_fix(
-        depression_path, fix_normal_path, fix_points_path
+        depression_path,
+        segments_path,
+        fix_points_path,
+        mark1_motion_path,
     )
     save_results(results, output_path)
-    #print("pre-grab joint degrees:\n", results["pre_grab_joint_degrees"])
-    print("pick joint degrees:\n", results["grab_joint_degrees"])
-    #print("pre-fix joint degrees:\n", results["pre_fix_joint_degrees"])
+    
+    print("grab joint degrees:\n", results["grab_joint_degrees"])
     print("fix joint degrees:\n", results["fix_joint_degrees"])
+    print("pre-grab joint degrees:\n", results["pre_grab_joint_degrees"])
+    print("pre-fix joint degrees:\n", results["pre_fix_joint_degrees"])
+    
 
 
 if __name__ == "__main__":
