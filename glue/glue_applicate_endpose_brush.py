@@ -21,8 +21,8 @@ from Piper import endpose_reachability_safe as ik
 DEFAULT_URDF = Path("/home/smmg/AAM/config/piper/piper_description.urdf")
 
 TAG_P_BRUSH_CENTER_M = np.array([0.0, 0.0, -0.086], dtype=float)
-BRUSH_RADIUS_M = 0.018
-PRESS_DEPTH_M = 0.00
+BRUSH_RADIUS_M = 0.02
+PRESS_DEPTH_M = 0.0
 
 DEFAULT_PRE_OFFSET_M = 0.100
 PRE_OFFSET_MIN_M = 0.040
@@ -54,13 +54,19 @@ def resolve_paths(args):
             args.brush_pick_json
             or run_dir / "pickplace" / "glue_brush_pick_endpose.json"
         )
-        args.segments_json = (
-            args.segments_json
-            or run_dir
-            / "completion"
-            / "depression"
-            / "glue_brush_adaptive_segments.json"
-        )
+        if args.segments_json is None:
+            pickplace_dir = run_dir / "pickplace"
+            motion = json.loads(
+                (pickplace_dir / "mark1_motion.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            segments_name = (
+                "glue_brush_adaptive_segments_mark1.json"
+                if motion["move"]
+                else "glue_brush_adaptive_segments.json"
+            )
+            args.segments_json = pickplace_dir / segments_name
         args.output = (
             args.output
             or run_dir / "pickplace" / "glue_applicate_endpose_brush.json"

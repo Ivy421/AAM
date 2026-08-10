@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"black rectangular block\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"black rectangular block with a chipped and irregular broken corner at the bottom end\",\n      \"short_object_prompt\": \"black rectangular block\",\n      \"balanced_prompt\": \"black block with damaged corner edge\"\n    },\n    \"description\": \"A black rectangular prism object lying on a green table has a visible volume defect where the bottom corner is chipped off and irregular, suitable for repair by adding material.\",\n    \"confidence\": 9\n  }\n]"
+]

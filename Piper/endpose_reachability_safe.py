@@ -20,8 +20,8 @@ DEFAULT_URDF = os.path.expanduser(r"/home/smmg/AAM/config/piper/piper_descriptio
 DEFAULT_EE_FRAME = "link6"   # If you use TCP/gripper frame later, change this.
 
 # IK judgement thresholds
-POS_TOL_MM = 2.0
-ROT_TOL_DEG = 3.0
+POS_TOL_MM = 1.0
+ROT_TOL_DEG = 1.0
 
 # IK search config
 N_RANDOM_INIT = 100
