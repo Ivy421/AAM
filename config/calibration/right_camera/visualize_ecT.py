@@ -47,19 +47,19 @@ def set_axes_equal(ax, lim=1.2):
     ax.set_ylabel("Y_A")
     ax.set_zlabel("Z_A")
 
-ecT_old = np.load('/home/smmg/AAM/config/calibration/right_camera/ecT_0706.npy')
+ecT_old = np.load('/home/smmg/AAM/config/calibration/right_camera/ecT_20260727.npy')
 # =========================
 # 你的两个旋转矩阵
 # =========================
 
-ecT = np.load('/home/smmg/AAM/config/alignment/test_data/ecT_20260727.npy')
+ecT = np.load('/home/smmg/AAM/config/calibration/right_camera/data/image_20260812/ecT_20260812.npy')
 
-R_AB = ecT[:3,:3]
-R_AC = ecT_old[:3,:3]
+R_old = ecT_old[:3,:3]
+R_new = ecT[:3,:3]
 
 # 检查是否为合法旋转矩阵
-check_rotation(R_AB, "R_AB")
-check_rotation(R_AC, "R_AC")
+check_rotation(R_old, "R_old")
+check_rotation(R_new, "R_new")
 
 # =========================
 # 可视化
@@ -72,10 +72,10 @@ ax = fig.add_subplot(111, projection="3d")
 #draw_frame(ax, np.eye(3), name="A", length=1.0)
 
 # B坐标系
-draw_frame(ax, R_AB, name="B", length=0.8)
+draw_frame(ax, R_old, name="o", length=0.8)
 
 # C坐标系
-draw_frame(ax, R_AC, name="C", length=0.8)
+draw_frame(ax, R_new, name="n", length=0.8)
 
 set_axes_equal(ax, lim=1.2)
 ax.set_title("Rotation Matrix Visualization")

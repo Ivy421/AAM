@@ -1,3 +1,0 @@
-[
-    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"black rectangular foam block\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"the bottom corner of the black rectangular foam block resting on the white paper has a jagged broken edge and missing volume\",\n      \"short_object_prompt\": \"black foam block\",\n      \"balanced_prompt\": \"broken bottom corner of the black foam block\"\n    },\n    \"description\": \"The black rectangular block has a visibly damaged and irregular bottom corner where material is missing or chipped off, creating an uneven edge suitable for volumetric repair.\",\n    \"confidence\": 9\n  }\n]"
-]

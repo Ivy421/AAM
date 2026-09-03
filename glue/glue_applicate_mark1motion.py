@@ -23,7 +23,7 @@ PRESS_DEPTH_M = 0.0
 PRE_OFFSET_M = 0.100
 CONTACT_X_TARGET_M = 0.400
 MARK1_X_STEP_M = 0.100
-MARK1_X_SPEED = 0.08
+MARK1_X_SPEED = 0.10
 
 WORLD_X = np.array([1.0, 0.0, 0.0])
 WORLD_Z = np.array([0.0, 0.0, 1.0])
@@ -35,7 +35,6 @@ def parse_args():
     parser.add_argument("--brush-pick-json", type=Path)
     parser.add_argument("--segments-json", type=Path)
     parser.add_argument("--output", type=Path)
-    parser.add_argument("--execute-mark1", action="store_true")
     return parser.parse_args()
 
 
@@ -169,9 +168,11 @@ def execute_mark1(dx):
 
     base.wait_for_odom()
     start = np.array([base.x, base.y, base.yaw], dtype=float)
+    threading.Event().wait(1)
     if dx > 1e-4:
         base.move_x(dx, speed_mps=MARK1_X_SPEED)
-    base.wait_for_odom()
+    base.stop()
+    threading.Event().wait(2)
     end = np.array([base.x, base.y, base.yaw], dtype=float)
 
     base.stop()
@@ -183,7 +184,10 @@ def execute_mark1(dx):
     delta_odom = end[:2] - start[:2]
     c, s = np.cos(start[2]), np.sin(start[2])
     actual_delta = np.array([[c, s], [-s, c]]) @ delta_odom
-    return actual_delta, {"start_odom": start.tolist(), "end_odom": end.tolist()}
+    return actual_delta, {
+        "odom_before": start.tolist(),
+        "odom_after": end.tolist(),
+    }
 
 
 def main():
@@ -211,11 +215,11 @@ def main():
         copied_segments.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(args.segments_json, copied_segments)
 
-    final_delta = np.array([planned_dx, 0.0])
-    execution = None
-
-    if args.execute_mark1:
+    if planned_dx > 0.0:
         final_delta, execution = execute_mark1(planned_dx)
+    else:
+        final_delta = np.zeros(2, dtype=float)
+        execution = {"odom_before": None, "odom_after": None}
 
     transformed_segments = []
     for segment in segments:
@@ -243,8 +247,12 @@ def main():
         json.dumps(
             {
                 "move": planned_dx > 0.0,
+                "planned_delta_base_m": [planned_dx, 0.0],
+                "final_delta_base_m": final_delta.tolist(),
                 "delta_base_m": final_delta.tolist(),
-                "executed": execution is not None,
+                "odom_before": execution["odom_before"],
+                "odom_after": execution["odom_after"],
+                "executed": planned_dx > 0.0,
             },
             indent=2,
             ensure_ascii=False,
@@ -252,11 +260,10 @@ def main():
         encoding="utf-8",
     )
 
-    print(f"Initial max contact X: {initial_max_x * 1000.0:.3f} mm")
-    print(f"Planned Mark1 X motion: {planned_dx * 1000.0:.3f} mm")
-    print(f"Final max contact X: {final_max_x * 1000.0:.3f} mm")
-    if copied_segments is not None:
-        print(f"Segments copied: {copied_segments}")
+    if execution["odom_before"] is not None:
+        print(f"Odom before [x, y, yaw]: {execution['odom_before']}")
+        print(f"Odom after  [x, y, yaw]: {execution['odom_after']}")
+        print(f"Measured base delta [x, y]: {final_delta.tolist()}")
     print(f"Saved: {args.output.resolve()}")
     print(f"Saved: {motion_output.resolve()}")
 

@@ -1,0 +1,11 @@
+{
+    "is_defect": "yes",
+    "defect_type": "depression",
+    "defect_object": "black rectangular foam block",
+    "defect_region": "irregular chipped and missing material at the lower corner edge",
+    "segmentation_text_prompt": {
+        "long_defect_prompt": "black rectangular foam block with a visibly chipped and irregular lower corner edge missing material",
+        "short_object_prompt": "black foam block",
+        "balanced_prompt": "black foam block with damaged lower corner"
+    }
+}

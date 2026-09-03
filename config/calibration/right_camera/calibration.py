@@ -1,118 +1,48 @@
 """
-手眼标定用这份代码
-输入：image/x.png
-endpose.csv 该数据直接保存机械臂末端endpose信息
+Eye-in-hand hand-eye calibration.
+
+Input folder format:
+    data_dir/N.png
+    data_dir/N.json
+
+Each json saves robot endpose: x, y, z, rx, ry, rz
+Output:
+    ecT_20260727.csv
+    ecT_20260727.npy
 """
 
-import os, csv, cv2, json
+import os
+import csv
+import cv2
+import json
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+
 
 # ============================================================
 # 0. User settings
 # ============================================================
 
-data_dir = '/home/smmg/AAM/config/alignment/test_data'
-camera_config_path = '/home/smmg/AAM/config/calibration/right_camera/camera_config.npy'
+data_dir = "/home/smmg/AAM/config/calibration/right_camera/data/image_20260813"
+camera_config_path = "/home/smmg/AAM/config/calibration/right_camera/camera_config.npy"
 
-output_ecT_csv = os.path.join(data_dir, "ecT_20260727.csv")
-output_ecT_npy = os.path.join(data_dir, "ecT_20260727.npy")
-output_used_pairs_csv = os.path.join(data_dir, "used_pairs_20260727.csv")
+output_ecT_csv = os.path.join(data_dir, "ecT_20260813.csv")
+output_ecT_npy = os.path.join(data_dir, "ecT_20260813.npy")
 
-# 棋盘格参数：必须按你的标定板修改
-PATTERN_SIZE = (9,6)       # chessboard inner corners: (cols, rows)
-SQUARE_SIZE_M = 0.0235       # square size in meter
+PATTERN_SIZE = (  10 , 7  )       # chessboard inner corners: (cols, rows)
+SQUARE_SIZE_M = 0.015     # square size in meter
 
-# endpose2.csv 单位
 POS_SCALE = 1e-6            # x/y/z: 10^-6 m -> m
 ANGLE_SCALE = 1e-3          # rx/ry/rz: 0.001 deg -> deg
+FROM_EULER_ANGLE = "xyz"
 
-FROM_EULER_ANGLE = "xyz"    # 用户要求
+PNP_MEAN_TH_PX = 0.5
+PNP_MAX_TH_PX = 1.
 
 
 # ============================================================
 # 1. Basic utilities
 # ============================================================
-
-def is_float(x):
-    try:
-        float(str(x).strip())
-        return True
-    except Exception:
-        return False
-
-
-def load_endposes(csv_path):
-    """
-    读取 endpose2.csv
-
-    输入格式:
-        x, y, z, rx, ry, rz
-
-    单位:
-        x/y/z: 10^-6 m
-        rx/ry/rz: 0.001 degree
-
-    输出:
-        list of 4x4 matrix, each is base_T_ee
-    """
-    with open(csv_path, "r", newline="", encoding="utf-8-sig") as f:
-        rows = list(csv.reader(f))
-
-    rows = [r for r in rows if len(r) > 0 and any(str(c).strip() for c in r)]
-    if len(rows) == 0:
-        raise ValueError(f"Empty CSV: {csv_path}")
-
-    first = rows[0]
-    has_header = any(not is_float(c) for c in first)
-
-    if has_header:
-        headers = [str(c).strip().lower() for c in first]
-        data_rows = rows[1:]
-
-        required = ["x", "y", "z", "rx", "ry", "rz"]
-        for k in required:
-            if k not in headers:
-                raise ValueError(f"Missing column '{k}' in {csv_path}. Existing headers: {headers}")
-
-        idx = {k: headers.index(k) for k in required}
-
-        values = []
-        for r in data_rows:
-            values.append([
-                float(r[idx["x"]]),
-                float(r[idx["y"]]),
-                float(r[idx["z"]]),
-                float(r[idx["rx"]]),
-                float(r[idx["ry"]]),
-                float(r[idx["rz"]]),
-            ])
-    else:
-        values = []
-        for r in rows:
-            if len(r) < 6:
-                continue
-            values.append([float(r[i]) for i in range(6)])
-
-    base_T_ee_list = []
-
-    for i, row in enumerate(values):
-        x, y, z, rx, ry, rz = row
-
-        t = np.array([x, y, z], dtype=np.float64) * POS_SCALE
-        euler_deg = np.array([rx, ry, rz], dtype=np.float64) * ANGLE_SCALE
-
-        rot = R.from_euler(FROM_EULER_ANGLE, euler_deg, degrees=True)
-        R_mat = rot.as_matrix()
-
-        T = np.eye(4, dtype=np.float64)
-        T[:3, :3] = R_mat
-        T[:3, 3] = t
-
-        base_T_ee_list.append(T)
-
-    return base_T_ee_list
-
 
 def load_endpose_json(json_path):
     with open(json_path, "r", encoding="utf-8") as f:
@@ -125,19 +55,12 @@ def load_endpose_json(json_path):
     else:
         pose = raw
 
-    x = float(pose["x"])
-    y = float(pose["y"])
-    z = float(pose["z"])
-    rx = float(pose["rx"])
-    ry = float(pose["ry"])
-    rz = float(pose["rz"])
-
-    t = np.array([x, y, z], dtype=np.float64) * POS_SCALE
-    euler_deg = np.array([rx, ry, rz], dtype=np.float64) * ANGLE_SCALE
+    xyz = np.array([pose["x"], pose["y"], pose["z"]], dtype=np.float64) * POS_SCALE
+    rpy = np.array([pose["rx"], pose["ry"], pose["rz"]], dtype=np.float64) * ANGLE_SCALE
 
     T = np.eye(4, dtype=np.float64)
-    T[:3, :3] = R.from_euler(FROM_EULER_ANGLE, euler_deg, degrees=True).as_matrix()
-    T[:3, 3] = t
+    T[:3, :3] = R.from_euler(FROM_EULER_ANGLE, rpy, degrees=True).as_matrix()
+    T[:3, 3] = xyz
     return T
 
 
@@ -148,137 +71,79 @@ def load_calibration_pairs(folder_path):
         if ext.lower() == ".json" and stem.isdigit():
             json_paths.append((int(stem), os.path.join(folder_path, name)))
 
-    json_paths = sorted(json_paths, key=lambda item: item[0])
-
     pairs = []
-    for idx, json_path in json_paths:
+    for idx, json_path in sorted(json_paths, key=lambda item: item[0]):
         image_path = os.path.join(folder_path, f"{idx}.png")
-        if not os.path.exists(image_path):
-            print(f"[WARN] Image missing for endpose: {image_path}")
-            continue
-        pairs.append({
-            "index": idx,
-            "image_path": image_path,
-            "base_T_ee": load_endpose_json(json_path),
-        })
-
+        if os.path.exists(image_path):
+            pairs.append({
+                "index": idx,
+                "image_path": image_path,
+                "base_T_ee": load_endpose_json(json_path),
+            })
     return pairs
 
 
-def load_camera_intrinsic(camera_config_path):
-    """
-    加载 camera_config.npy
-
-    用户给定格式:
-        config = np.load(camera_config_path, allow_pickle=True).item()
-        color_intrinsic = config['color_intrinsic']
-        fx = color_intrinsic['fx']
-        fy = color_intrinsic['fy']
-        cx = color_intrinsic['ppx']
-        cy = color_intrinsic['ppy']
-    """
-    config = np.load(camera_config_path, allow_pickle=True).item()
-
-    color_intrinsic = config["color_intrinsic"]
-    fx = color_intrinsic["fx"]
-    fy = color_intrinsic["fy"]
-    cx = color_intrinsic["ppx"]
-    cy = color_intrinsic["ppy"]
+def load_camera_intrinsic(config_path):
+    config = np.load(config_path, allow_pickle=True).item()
+    intr = config["color_intrinsic"]
 
     K = np.array([
-        [fx, 0.0, cx],
-        [0.0, fy, cy],
-        [0.0, 0.0, 1.0]
+        [intr["fx"], 0.0, intr["ppx"]],
+        [0.0, intr["fy"], intr["ppy"]],
+        [0.0, 0.0, 1.0],
     ], dtype=np.float64)
 
-    # 如果你的 npy 里保存了畸变参数，会自动尝试读取；
-    # 如果没有，就默认无畸变。
-    dist = None
-
-    possible_keys = [
-        "color_distortion",
-        "color_distortion_coeffs",
-        "dist_coeffs",
-        "distortion",
-        "D"
-    ]
-
-    for k in possible_keys:
-        if k in config:
-            dist = np.asarray(config[k], dtype=np.float64).reshape(-1, 1)
-            break
-
-    if dist is None:
-        dist = np.zeros((5, 1), dtype=np.float64)
-
+    dist = np.zeros((5, 1), dtype=np.float64)   # keep hard-coded zero distortion
     return K, dist
 
 
 def make_chessboard_object_points(pattern_size, square_size_m):
-    """
-    生成棋盘格世界坐标点，位于标定板坐标系 z=0 平面。
-    pattern_size = (cols, rows)
-    """
     cols, rows = pattern_size
-
     objp = np.zeros((rows * cols, 3), dtype=np.float32)
     objp[:, :2] = np.mgrid[0:cols, 0:rows].T.reshape(-1, 2)
     objp *= square_size_m
-
     return objp
 
 
 def detect_target_pose(image_path, K, dist, objp, pattern_size):
-    """
-    对单张图片检测棋盘格，并用 solvePnP 计算 camera_T_target.
-
-    OpenCV solvePnP 返回:
-        rvec, tvec: target coordinate -> camera coordinate
-        即 cam_T_target
-    """
     img = cv2.imread(image_path)
-    if img is None:
-        print(f"[WARN] Failed to read image: {image_path}")
-        return None
-
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     flags = (
-        cv2.CALIB_CB_ADAPTIVE_THRESH
-        + cv2.CALIB_CB_NORMALIZE_IMAGE
-        + cv2.CALIB_CB_FAST_CHECK
+        cv2.CALIB_CB_NORMALIZE_IMAGE |
+        cv2.CALIB_CB_EXHAUSTIVE |
+        cv2.CALIB_CB_ACCURACY
     )
 
-    found, corners = cv2.findChessboardCorners(gray, pattern_size, flags)
-
+    found, corners = cv2.findChessboardCornersSB(gray, pattern_size, flags)
     if not found:
-        print(f"[WARN] Chessboard not found: {os.path.basename(image_path)}")
+        print(f"[REJECT] {os.path.basename(image_path)} | chessboard not found")
         return None
 
-    criteria = (
-        cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER,
-        50,
-        1e-6
-    )
-
-    corners_subpix = cv2.cornerSubPix(
-        gray,
-        corners,
-        winSize=(11, 11),
-        zeroZone=(-1, -1),
-        criteria=criteria
-    )
+    corners = corners.reshape(-1, 2).astype(np.float64)
 
     ok, rvec, tvec = cv2.solvePnP(
         objp,
-        corners_subpix,
+        corners,
         K,
         dist,
         flags=cv2.SOLVEPNP_ITERATIVE
     )
-
     if not ok:
-        print(f"[WARN] solvePnP failed: {os.path.basename(image_path)}")
+        print(f"[REJECT] {os.path.basename(image_path)} | solvePnP failed")
+        return None
+
+    projected, _ = cv2.projectPoints(objp, rvec, tvec, K, dist)
+    projected = projected.reshape(-1, 2)
+    reproj_err = np.linalg.norm(projected - corners, axis=1)
+    reproj_mean_px = float(np.mean(reproj_err))
+    reproj_max_px = float(np.max(reproj_err))
+
+    if reproj_mean_px >= PNP_MEAN_TH_PX or reproj_max_px >= PNP_MAX_TH_PX:
+        print(
+            f"[REJECT] {os.path.basename(image_path)} | "
+            f"pnp_mean={reproj_mean_px:.4f}px, pnp_max={reproj_max_px:.4f}px"
+        )
         return None
 
     R_target2cam, _ = cv2.Rodrigues(rvec)
@@ -287,7 +152,50 @@ def detect_target_pose(image_path, K, dist, objp, pattern_size):
     cam_T_target[:3, :3] = R_target2cam
     cam_T_target[:3, 3] = tvec.reshape(3)
 
-    return cam_T_target
+    return {
+        "cam_T_target": cam_T_target,
+        "corners": corners,
+        "pnp_mean_px": reproj_mean_px,
+        "pnp_max_px": reproj_max_px,
+    }
+
+
+def transform_points(T, points):
+    points_h = np.column_stack([points, np.ones(len(points))])
+    return (T @ points_h.T).T[:, :3]
+
+
+def project_camera_points(points_cam, K):
+    x = points_cam[:, 0]
+    y = points_cam[:, 1]
+    z = points_cam[:, 2]
+
+    u = K[0, 0] * x / z + K[0, 2]
+    v = K[1, 1] * y / z + K[1, 2]
+    return np.column_stack([u, v])
+
+
+def calc_cross_reprojection(records, objp, K, ecT):
+    all_errors = []
+
+    for src in records:
+        base_T_target_src = src["base_T_ee"] @ ecT @ src["cam_T_target"]
+        points_base = transform_points(base_T_target_src, objp.astype(np.float64))
+
+        for dst in records:
+            if src["index"] == dst["index"]:
+                continue
+
+            base_T_cam_dst = dst["base_T_ee"] @ ecT
+            cam_T_base_dst = np.linalg.inv(base_T_cam_dst)
+            points_cam_dst = transform_points(cam_T_base_dst, points_base)
+            uv = project_camera_points(points_cam_dst, K)
+
+            err = np.linalg.norm(uv - dst["corners"], axis=1)
+            all_errors.extend(err.tolist())
+
+    all_errors = np.asarray(all_errors, dtype=np.float64)
+    return float(np.mean(all_errors)), float(np.max(all_errors))
 
 
 def save_matrix_csv(path, T):
@@ -310,86 +218,67 @@ def print_matrix(name, T):
 def main():
     print("========== Eye-in-hand hand-eye calibration ==========")
 
-    # ------------------------------------------------------------
-    # Load camera intrinsic
-    # ------------------------------------------------------------
     K, dist = load_camera_intrinsic(camera_config_path)
-
     print("\nCamera intrinsic K:")
     print(K)
     print("\nDistortion coeffs:")
     print(dist.reshape(-1))
 
-    # ------------------------------------------------------------
-    # Load image/endpose pairs from test_data/N.png + N.json
-    # ------------------------------------------------------------
     calibration_pairs = load_calibration_pairs(data_dir)
-
     print(f"\nLoaded calibration pairs: {len(calibration_pairs)}")
 
-    # ------------------------------------------------------------
-    # Detect target pose in camera frame
-    # ------------------------------------------------------------
     objp = make_chessboard_object_points(PATTERN_SIZE, SQUARE_SIZE_M)
 
     R_gripper2base = []
     t_gripper2base = []
-
     R_target2cam = []
     t_target2cam = []
-
-    used_pairs = []
+    records = []
 
     for pair in calibration_pairs:
-        image_path = pair["image_path"]
-        base_T_ee = pair["base_T_ee"]
-        image_index = pair["index"]
-
-        cam_T_target = detect_target_pose(
-            image_path=image_path,
+        result = detect_target_pose(
+            image_path=pair["image_path"],
             K=K,
             dist=dist,
             objp=objp,
-            pattern_size=PATTERN_SIZE
+            pattern_size=PATTERN_SIZE,
         )
-
-        if cam_T_target is None:
+        if result is None:
             continue
 
-        # OpenCV calibrateHandEye 输入:
-        # R_gripper2base: ee -> base, 即 base_T_ee
-        # R_target2cam: target -> camera, 即 cam_T_target
+        base_T_ee = pair["base_T_ee"]
+        cam_T_target = result["cam_T_target"]
+
         R_gripper2base.append(base_T_ee[:3, :3])
         t_gripper2base.append(base_T_ee[:3, 3].reshape(3, 1))
-
         R_target2cam.append(cam_T_target[:3, :3])
         t_target2cam.append(cam_T_target[:3, 3].reshape(3, 1))
 
-        used_pairs.append(image_index)
+        records.append({
+            "index": pair["index"],
+            "base_T_ee": base_T_ee,
+            "cam_T_target": cam_T_target,
+            "corners": result["corners"],
+        })
 
-        print(f"[OK] Use pair: image {image_index}.png")
-
-    if len(used_pairs) < 4:
-        raise RuntimeError(
-            f"Valid calibration pairs are too few: {len(used_pairs)}. "
-            f"At least 4 valid views are recommended."
+        print(
+            f"[OK] {pair['index']}.png | "
+            f"pnp_mean={result['pnp_mean_px']:.4f}px, "
+            f"pnp_max={result['pnp_max_px']:.4f}px"
         )
 
-    print(f"\nValid pairs used: {len(used_pairs)}")
-    print("Used image indices:", used_pairs)
+    if len(records) < 4:
+        raise RuntimeError(f"Valid calibration pairs are too few: {len(records)}")
 
-    # ------------------------------------------------------------
-    # Hand-eye calibration
-    # ------------------------------------------------------------
-    # 返回:
-    # R_cam2gripper, t_cam2gripper
-    # 即 ee_T_cam，也就是用户要求的 ecT
+    print(f"\nValid pairs used: {len(records)}")
+    print("Used image indices:", [r["index"] for r in records])
+
     R_cam2ee, t_cam2ee = cv2.calibrateHandEye(
         R_gripper2base=R_gripper2base,
         t_gripper2base=t_gripper2base,
         R_target2cam=R_target2cam,
         t_target2cam=t_target2cam,
-        method=cv2.CALIB_HAND_EYE_TSAI
+        method=cv2.CALIB_HAND_EYE_TSAI,
     )
 
     ecT = np.eye(4, dtype=np.float64)
@@ -398,23 +287,16 @@ def main():
 
     print_matrix("ecT = end_effector_T_camera", ecT)
 
-    # ------------------------------------------------------------
-    # Save outputs
-    # ------------------------------------------------------------
+    cross_mean, cross_max = calc_cross_reprojection(records, objp, K, ecT)
+    print(f"\ncross_reproj_mean_px: {cross_mean:.4f}")
+    print(f"cross_reproj_max_px:  {cross_max:.4f}")
+
     save_matrix_csv(output_ecT_csv, ecT)
     np.save(output_ecT_npy, ecT)
-
-    with open(output_used_pairs_csv, "w", newline="") as f:
-        writer = csv.writer(f)
-        writer.writerow(["image_index", "image_name"])
-        for i in used_pairs:
-            writer.writerow([i, f"{i}.png"])
 
     print("\nSaved:")
     print(output_ecT_csv)
     print(output_ecT_npy)
-    print(output_used_pairs_csv)
-
     print("\nDone.")
 
 

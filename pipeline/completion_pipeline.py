@@ -14,6 +14,7 @@ SCRIPTS = {
     "deviation": COMPLETION_CODE_DIR / "depression_completion_deviation.py",
     "twoFit": COMPLETION_CODE_DIR / "depression_completion_twoFit.py",
     "glue_applicate_path": COMPLETION_CODE_DIR / "depression_glue_applicate_path_brush_adaptive.py", #depression_glue_applicate_path
+    "glue_applicate_path_continue": COMPLETION_CODE_DIR / "depression_glue_applicate_path_brush_continue.py",
     "ransacFit": COMPLETION_CODE_DIR / "depression_completion_ransacFit.py",
     "mesh_generation": COMPLETION_CODE_DIR / "mesh_generation.py",
     "depression_grip": COMPLETION_CODE_DIR / "Depression_grip.py",
@@ -78,6 +79,13 @@ def run_depression_completion(run_dir, dry_run=False, printing=False):
         #"--fixpoint-choice", "fix_points",
         dry_run=dry_run,
     )
+    run_script(
+    SCRIPTS["glue_applicate_path_continue"],
+    "--fix-points", fix_points,
+    "--out-dir", completion_dir,
+    dry_run= dry_run
+    )
+    
     print("\n \n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n mesh_generation working \n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  \n ")
     run_script(
         SCRIPTS["mesh_generation"],

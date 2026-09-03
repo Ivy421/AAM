@@ -20,8 +20,8 @@ from Piper import endpose_reachability_safe as ik
 
 DEFAULT_URDF = Path("/home/smmg/AAM/config/piper/piper_description.urdf")
 
-TAG_P_BRUSH_CENTER_M = np.array([0.0, 0.0, -0.086], dtype=float)
-BRUSH_RADIUS_M = 0.02
+TAG_P_BRUSH_CENTER_M = np.array([0.0, 0.0, -0.09], dtype=float)
+BRUSH_RADIUS_M = 0.02  #0.01
 PRESS_DEPTH_M = 0.0
 
 DEFAULT_PRE_OFFSET_M = 0.100

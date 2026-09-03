@@ -70,13 +70,13 @@ def move_line(piper, endpose, speed, wait):
 
 def move_to_segment_safe_pose(piper, pre_app_joints, args):
     safe_pose_1 = list(pre_app_joints)
-    safe_pose_1[2] = -30.0
+    safe_pose_1[2] = -35.0
 
     safe_pose_2 = safe_pose_1.copy()
-    safe_pose_2[1] = 80.0
+    safe_pose_2[1] = 70.0
 
     move_joint(piper, safe_pose_1, args.joint_speed, 0.0)
-    time.sleep(5.0)
+    time.sleep(2.0)
     move_joint(piper, safe_pose_2, args.joint_speed, args.motion_wait)
 
 

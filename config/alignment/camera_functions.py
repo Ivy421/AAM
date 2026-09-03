@@ -80,9 +80,9 @@ def capture(img_save_path, save_file_name='image' ,AUTO_SAVE_INTERVAL=2.0, MAX_S
         spatial.set_option(rs.option.filter_smooth_alpha, 0.5)
         spatial.set_option(rs.option.filter_smooth_delta, 20)
         # spatial.set_option(rs.option.holes_fill, 0)  # 不填充空洞
-        temporal.set_option(rs.option.filter_smooth_alpha, 0.3)
-        temporal.set_option(rs.option.filter_smooth_delta, 20)
-        temporal.set_option(rs.option.holes_fill, 2)  # Valid in 2/last 4
+        #temporal.set_option(rs.option.filter_smooth_alpha, 0.3)
+        #temporal.set_option(rs.option.filter_smooth_delta, 20)
+        #temporal.set_option(rs.option.holes_fill, 2)  # Valid in 2/last 4
 
             
     ## 保存相机内置参数
@@ -224,6 +224,8 @@ def synchron_piper(arm_name, camera_syn_endpose_path):
 
 
 if __name__ == "__main__":
-    apriltag_path = '/home/smmg/AAM/data/runs/20260810_134711/pickplace/'
+    apriltag_path = '/home/smmg/AAM/data/runs/20260813_131114/pickplace/'
+    calibration_path = '/home/smmg/AAM/config/calibration/right_camera/'
+    test_path = '/home/smmg/AAM/data'
 
-    capture(apriltag_path,'apriltag',1,1,0,1,True)
+    capture(apriltag_path ,'fuse_align',1,1,0,1,True)

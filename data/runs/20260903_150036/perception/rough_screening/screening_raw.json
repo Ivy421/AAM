@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"black rectangular block\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"black rectangular foam block with a jagged broken corner edge resting on the white table\",\n      \"short_object_prompt\": \"black rectangular block\",\n      \"balanced_prompt\": \"black block with damaged corner edge\"\n    },\n    \"description\": \"A black rectangular object, likely foam or plastic, has a visibly irregular and broken lower-left corner edge that appears to be missing material, suitable for volume repair.\",\n    \"confidence\": 9\n  }\n]"
+]

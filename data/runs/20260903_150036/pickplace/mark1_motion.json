@@ -1,0 +1,18 @@
+{
+  "move": false,
+  "planned_delta_base_m": [
+    0.0,
+    0.0
+  ],
+  "final_delta_base_m": [
+    0.0,
+    0.0
+  ],
+  "delta_base_m": [
+    0.0,
+    0.0
+  ],
+  "odom_before": null,
+  "odom_after": null,
+  "executed": false
+}

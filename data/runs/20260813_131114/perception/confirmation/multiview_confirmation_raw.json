@@ -1,0 +1,3 @@
+[
+    "{\n  \"is_defect\": \"yes\",\n  \"defect_type\": \"depression\",\n  \"defect_object\": \"black rectangular foam block\",\n  \"defect_region\": \"irregularly chipped and jagged lower corner with missing material volume\",\n  \"segmentation_text_prompt\": {\n    \"long_defect_prompt\": \"black rectangular foam block with a chipped and jagged lower corner showing missing material\",\n    \"short_object_prompt\": \"black foam block\",\n    \"balanced_prompt\": \"black foam block with damaged chipped corner\"\n  }\n}"
+]

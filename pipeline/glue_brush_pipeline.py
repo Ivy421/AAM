@@ -1,4 +1,4 @@
-"""Plan Mark1 motion, capture the brush, compute brush paths, and execute them."""
+"""Move Mark1, capture the brush, compute brush paths, and execute them."""
 
 import argparse
 import os

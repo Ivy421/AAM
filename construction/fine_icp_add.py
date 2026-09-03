@@ -196,10 +196,10 @@ def main():
     print("saved transforms:", OUTPUT_TRANSFORM_NPZ)
     print("fused points:", len(fused.points))
 
-    if base.VISUALIZE:
-        vis = base.copy_pcd(fused)
-        vis.paint_uniform_color([0.2, 0.7, 1.0])
-        o3d.visualization.draw_geometries([vis], window_name="fine_fuse.pcd")
+
+    vis = base.copy_pcd(fused)
+    vis.paint_uniform_color([0.2, 0.7, 1.0])
+    o3d.visualization.draw_geometries([vis], window_name="fine_fuse.pcd")
 
 
 if __name__ == "__main__":

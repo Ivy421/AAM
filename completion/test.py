@@ -5,7 +5,7 @@ import numpy as np
 import open3d as o3d
 
 
-RUN_DIR = "E:/HKUSTGZ/AAM/data/runs/20260804_145353"
+RUN_DIR = "/home/smmg/AAM/data/runs/20260812_104525"
 LAYER_ID = 12  # 0-based layer index. Set 12 to inspect the 12th saved z slice index.
 FIX_PCD = f"{RUN_DIR}/completion/depression/fix_points_curve.pcd"
 RAW_FIX_PCD = f"{RUN_DIR}/completion/depression/fix_points.pcd"

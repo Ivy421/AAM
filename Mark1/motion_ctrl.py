@@ -334,7 +334,7 @@ def mark1_ctrl(vx=0.0, vy=0.0, wz=0.0, duration=2.0, rate_hz=20):
 
 
 def main():
-    mark1_ctrl(vx=0.0, vy=0.0, wz=0.0, duration=1, rate_hz=20)
+    mark1_ctrl(vx=-0.0, vy=0.0, wz=0.0, duration=1, rate_hz=20)
 
 
 if __name__ == '__main__':
