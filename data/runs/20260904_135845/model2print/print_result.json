@@ -1,0 +1,14 @@
+{
+  "success": false,
+  "finished": false,
+  "stopped": false,
+  "error": "134184967",
+  "state": "PAUSE",
+  "percentage": 0,
+  "message": "Printer error detected: 134184967",
+  "task_kept": true,
+  "cooldown_ready": false,
+  "bed_temperature": null,
+  "cooldown_elapsed_sec": 0.0,
+  "cooldown_reason": "print_failed"
+}

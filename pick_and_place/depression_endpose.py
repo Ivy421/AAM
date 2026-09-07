@@ -148,6 +148,7 @@ def find_pre_fix(
     segments_path,
     fix_points_path,
     mark1_delta_xy,
+    delta_T_base,
 ):
     """Search joint space for an EE pose inside the continuous pre-fix box."""
     segment_data = json.loads(segments_path.read_text(encoding="utf-8"))
@@ -155,6 +156,9 @@ def find_pre_fix(
         [segment["outward_normal_unit"] for segment in segment_data["segments"]],
         dtype=float,
     ).sum(axis=0)
+    rotation = delta_T_base[:3, :3]
+    translation = delta_T_base[:3, 3]
+    normal = rotation @ normal
     normal_norm = np.linalg.norm(normal)
     if normal_norm <= 1e-12:
         raise ValueError(f"Invalid average outward normal in {segments_path}")
@@ -162,6 +166,7 @@ def find_pre_fix(
 
     points = np.asarray(o3d.io.read_point_cloud(str(fix_points_path)).points)
     points[:, :2] -= np.asarray(mark1_delta_xy, dtype=float).reshape(2)
+    points = (rotation @ points.T).T + translation
     first_corner_m = points[np.argmax(points @ normal)] + 0.030 * normal
 
     fix_endpose = np.asarray(fix_endpose, dtype=float).reshape(6)
@@ -283,6 +288,7 @@ def parse_args():
     parser.add_argument("--fix-points", type=Path)
     parser.add_argument("--segments-json", type=Path)
     parser.add_argument("--mark1-motion", type=Path)
+    parser.add_argument("--alignment-json", type=Path)
     return parser.parse_args()
 
 
@@ -305,6 +311,11 @@ def resolve_paths(args):
             args.mark1_motion.expanduser().resolve()
             if args.mark1_motion
             else run_dir / "pickplace" / "mark1_motion.json"
+        )
+        alignment_path = (
+            args.alignment_json.expanduser().resolve()
+            if args.alignment_json
+            else run_dir / "pickplace" / "iterative_correction.json"
         )
         if args.segments_json:
             segments_path = args.segments_json.expanduser().resolve()
@@ -332,6 +343,10 @@ def resolve_paths(args):
             args.mark1_motion.expanduser().resolve()
             if args.mark1_motion else None
         )
+        alignment_path = (
+            args.alignment_json.expanduser().resolve()
+            if args.alignment_json else None
+        )
         segments_path = (
             args.segments_json.expanduser().resolve()
             if args.segments_json
@@ -342,7 +357,13 @@ def resolve_paths(args):
         args.output.expanduser().resolve()
         if args.output else pick_path / "pick_place_endpose.npz"
     )
-    return depression_path, output_path, mark1_motion_path, segments_path
+    return (
+        depression_path,
+        output_path,
+        mark1_motion_path,
+        segments_path,
+        alignment_path,
+    )
 
 
 def calculate_pick_and_fix(
@@ -350,6 +371,7 @@ def calculate_pick_and_fix(
     segments_path,
     fix_points_path,
     mark1_motion_path=None,
+    alignment_path=None,
 ):
     orientation_meta = np.load(
         depression_path / "orientation_meta.npz", allow_pickle=True
@@ -395,6 +417,13 @@ def calculate_pick_and_fix(
     base_T_object_fix = np.asarray(
         orientation_meta["base_T_full"], dtype=float
     ).copy()
+    delta_T_base = np.eye(4)
+    if alignment_path is not None:
+        alignment = json.loads(alignment_path.read_text(encoding="utf-8"))
+        delta_T_base = np.asarray(
+            alignment["delta_T_base"], dtype=float
+        ).reshape(4, 4)
+
     mark1_delta_xy = np.zeros(2)
     if mark1_motion_path is not None:
         motion = json.loads(mark1_motion_path.read_text(encoding="utf-8"))
@@ -403,6 +432,7 @@ def calculate_pick_and_fix(
                 motion["delta_base_m"], dtype=float
             ).reshape(2)
             base_T_object_fix[:2, 3] -= mark1_delta_xy
+    base_T_object_fix = delta_T_base @ base_T_object_fix
     base_T_object_fix[:3,3] *= UNIT_SCALE
     base_T_object_fix[0, -1] += FIX_X_OFFSET
     base_T_object_fix[1, -1] += FIX_Y_OFFSET
@@ -445,6 +475,7 @@ def calculate_pick_and_fix(
         segments_path,
         fix_points_path,
         mark1_delta_xy,
+        delta_T_base,
     )
 
     return {
@@ -499,6 +530,7 @@ def main():
         output_path,
         mark1_motion_path,
         segments_path,
+        alignment_path,
     ) = resolve_paths(args)
     fix_points_path = (
         args.fix_points.expanduser().resolve()
@@ -509,6 +541,7 @@ def main():
         segments_path,
         fix_points_path,
         mark1_motion_path,
+        alignment_path,
     )
     save_results(results, output_path)
     

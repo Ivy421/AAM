@@ -21,7 +21,7 @@ TAG_P_BRUSH_CENTER_M = np.array([0.0, 0.0, -0.085])
 BRUSH_RADIUS_M = 0.0275
 PRESS_DEPTH_M = 0.0
 PRE_OFFSET_M = 0.100
-CONTACT_X_TARGET_M = 0.400
+CONTACT_X_TARGET_M = 0.37
 MARK1_X_STEP_M = 0.100
 MARK1_X_SPEED = 0.10
 
@@ -35,6 +35,8 @@ def parse_args():
     parser.add_argument("--brush-pick-json", type=Path)
     parser.add_argument("--segments-json", type=Path)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--fine-fuse-pcd", type=Path)
+    parser.add_argument("--fine-fuse-motion-pcd", type=Path)
     return parser.parse_args()
 
 
@@ -54,6 +56,14 @@ def resolve_paths(args):
     args.output = (
         args.output
         or run_dir / "pickplace" / "glue_brush_adaptive_segments_mark1.json"
+    )
+    args.fine_fuse_pcd = (
+        args.fine_fuse_pcd
+        or run_dir / "construction"/ "fine_scan" / "fine_fuse.pcd"
+    )
+    args.fine_fuse_motion_pcd = (
+        args.fine_fuse_motion_pcd
+        or run_dir / "pickplace" /  "fine_fuse_motion.pcd"
     )
     return args
 
@@ -168,11 +178,10 @@ def execute_mark1(dx):
 
     base.wait_for_odom()
     start = np.array([base.x, base.y, base.yaw], dtype=float)
-    threading.Event().wait(1)
     if dx > 1e-4:
         base.move_x(dx, speed_mps=MARK1_X_SPEED)
     base.stop()
-    threading.Event().wait(2)
+    threading.Event().wait(0.5)
     end = np.array([base.x, base.y, base.yaw], dtype=float)
 
     base.stop()
@@ -188,6 +197,18 @@ def execute_mark1(dx):
         "odom_before": start.tolist(),
         "odom_after": end.tolist(),
     }
+
+
+def translate_fine_fuse(input_path, output_path, base_delta_xy):
+    import open3d as o3d
+
+    point_cloud = o3d.io.read_point_cloud(str(input_path))
+    translation = np.array(
+        [-base_delta_xy[0], -base_delta_xy[1], 0.0], dtype=float
+    )
+    point_cloud.translate(translation)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    o3d.io.write_point_cloud(str(output_path), point_cloud)
 
 
 def main():
@@ -227,7 +248,16 @@ def main():
         center = np.asarray(segment["center_point_base_m"], dtype=float).copy()
         center[:2] -= final_delta
         transformed["center_point_base_m"] = np.round(center, 9).tolist()
+        transformed["center_point_base_mm"] = np.round(
+            center * 1000.0, 3
+        ).tolist()
         transformed_segments.append(transformed)
+
+    translate_fine_fuse(
+        args.fine_fuse_pcd,
+        args.fine_fuse_motion_pcd,
+        final_delta,
+    )
 
     final_max_x = max(
         contact_center(segment)[2][0] for segment in transformed_segments
@@ -265,6 +295,7 @@ def main():
         print(f"Odom after  [x, y, yaw]: {execution['odom_after']}")
         print(f"Measured base delta [x, y]: {final_delta.tolist()}")
     print(f"Saved: {args.output.resolve()}")
+    print(f"Saved: {args.fine_fuse_motion_pcd.resolve()}")
     print(f"Saved: {motion_output.resolve()}")
 
 

@@ -1498,8 +1498,6 @@ def filter_repair_layers_by_uv_column_support(repair_layers: List[dict], min_poi
 # ============================================================
 def load_and_prepare_plane(cfg: CompletionConfig) -> PlaneData:
     pcd_raw = o3d.io.read_point_cloud(cfg.fine_pcd_path)
-    if len(pcd_raw.points) == 0:
-        raise RuntimeError(f"Empty point cloud: {cfg.fine_pcd_path}")
 
     points_raw = np.asarray(pcd_raw.points)
     plane_model, plane_pcd, rest_pcd = find_plane(
@@ -1681,6 +1679,7 @@ def run_layered_flood_fill(
     fix_points_all = []
     fix_points_curve_all = []
     fix_surface_curve_masks = []
+    fix_surface_curve_z_values = []
 
     z = cfg.layer_step
     while z <= cfg.max_search_depth:
@@ -1751,18 +1750,7 @@ def run_layered_flood_fill(
                 corner_mode,
             )
             fix_surface_curve_masks.append(fix_surface_curve_mask.copy())
-            curve_uv = mask_to_uv_points(fix_surface_curve_mask, grid.u_min, grid.v_min, cfg.grid_res)
-            if len(curve_uv) > 0:
-                curve_z_arr = np.full(len(curve_uv), z)
-                curve_pts = uvz_to_3d(
-                    curve_uv,
-                    curve_z_arr,
-                    plane.origin,
-                    plane.u_axis,
-                    plane.v_axis,
-                    plane.n_axis,
-                )
-                fix_points_curve_all.append(curve_pts)
+            fix_surface_curve_z_values.append(z)
             repair_layers.append({
                 "z": z,
                 "mask": repair_mask_z.copy(),
@@ -1810,6 +1798,70 @@ def run_layered_flood_fill(
     if len(repair_layers) == 0:
         raise RuntimeError("No repair layers left after UV column support filter.")
 
+    # Apply the same thin-wall removal to the contact curves.  Curves are
+    # generated before repair-layer post-processing, so reconstruct their
+    # final points only after intersecting them with the surviving UV region
+    # and the surviving repair mask at the same depth.
+    fix_surface_curve_masks_raw = [
+        mask.copy() for mask in fix_surface_curve_masks
+    ]
+    uv_keep_mask = uv_column_v_keep[:, None] & uv_column_u_keep[None, :]
+    postprocess_keep_mask = column_keep_mask & uv_keep_mask
+    filtered_curve_masks = []
+    fix_points_curve_all = []
+
+    for curve_mask, curve_z in zip(
+        fix_surface_curve_masks_raw,
+        fix_surface_curve_z_values,
+    ):
+        matching_layer = next(
+            (
+                layer
+                for layer in repair_layers
+                if np.isclose(layer["z"], curve_z, atol=cfg.layer_step * 0.25)
+            ),
+            None,
+        )
+        if matching_layer is None:
+            filtered_mask = np.zeros_like(curve_mask, dtype=bool)
+        else:
+            layer_support = ndimage.binary_dilation(
+                matching_layer["mask"].astype(bool),
+                iterations=1,
+            )
+            filtered_mask = (
+                curve_mask.astype(bool)
+                & postprocess_keep_mask
+                & layer_support
+            )
+
+        filtered_curve_masks.append(filtered_mask)
+        curve_uv = mask_to_uv_points(
+            filtered_mask,
+            grid.u_min,
+            grid.v_min,
+            cfg.grid_res,
+        )
+        if len(curve_uv) > 0:
+            curve_z_arr = np.full(len(curve_uv), curve_z)
+            fix_points_curve_all.append(
+                uvz_to_3d(
+                    curve_uv,
+                    curve_z_arr,
+                    plane.origin,
+                    plane.u_axis,
+                    plane.v_axis,
+                    plane.n_axis,
+                )
+            )
+
+    fix_surface_curve_masks = filtered_curve_masks
+    raw_curve_points = sum(mask.sum() for mask in fix_surface_curve_masks_raw)
+    filtered_curve_points = sum(mask.sum() for mask in fix_surface_curve_masks)
+    print("\n========== Fix curve post-filter ==========")
+    print("curve points before filter:", int(raw_curve_points))
+    print("curve points after filter:", int(filtered_curve_points))
+
     all_layer_points = []
     for layer in repair_layers:
         uv_layer = mask_to_uv_points(layer["mask"], grid.u_min, grid.v_min, cfg.grid_res)
@@ -1853,8 +1905,14 @@ def run_layered_flood_fill(
         barrier_processed_masks_arr = np.zeros((0, grid.H, grid.W), dtype=bool)
         fix_surface_masks_arr = np.zeros((0, grid.H, grid.W), dtype=bool)
     if len(fix_surface_curve_masks) > 0:
+        fix_surface_curve_masks_raw_arr = np.asarray(
+            fix_surface_curve_masks_raw, dtype=bool
+        )
         fix_surface_curve_masks_arr = np.asarray(fix_surface_curve_masks, dtype=bool)
     else:
+        fix_surface_curve_masks_raw_arr = np.zeros(
+            (0, grid.H, grid.W), dtype=bool
+        )
         fix_surface_curve_masks_arr = np.zeros((0, grid.H, grid.W), dtype=bool)
 
     fix_points_curve = (
@@ -1868,7 +1926,9 @@ def run_layered_flood_fill(
         "barrier_curve_masks": barrier_curve_masks_arr,
         "barrier_processed_masks": barrier_processed_masks_arr,
         "fix_surface_masks": fix_surface_masks_arr,
+        "fix_surface_curve_masks_raw": fix_surface_curve_masks_raw_arr,
         "fix_surface_curve_masks": fix_surface_curve_masks_arr,
+        "fix_surface_curve_z_values": np.asarray(fix_surface_curve_z_values),
         "barrier_z_values": np.asarray(barrier_z_values),
         "barrier_valid_flags": np.asarray(barrier_valid_flags, dtype=bool),
         "barrier_area_ratios": np.asarray(barrier_area_ratios),

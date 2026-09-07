@@ -192,7 +192,7 @@ def capture_scan_views(scanpose_json, view_mode, dry_run=False):
 
     piper = connect_right(with_gripper=False)
     piper.enable()
-    piper.set_speed(10)
+    piper.set_speed(15)
     camera_functions.json = json
 
     try:

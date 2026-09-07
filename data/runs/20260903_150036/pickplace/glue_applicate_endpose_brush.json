@@ -1,0 +1,100 @@
+{
+  "coordinate_frame": "base",
+  "brush_radius_mm": 20.0,
+  "press_depth_mm": 0.0,
+  "default_pre_app_offset_mm": 100.0,
+  "pre_app_offset_search_range_mm": [
+    40.0,
+    350.0
+  ],
+  "tag_p_brush_center_mm": [
+    0.0,
+    0.0,
+    -86.0
+  ],
+  "brush_axis_definition": "Tag +Z = brush cylinder axis = base +Z",
+  "orientation_search": "contact-first continuous yaw search about Tag +Z",
+  "pre_app_search": "after contact succeeds, search distance along the horizontal outward normal using contact joints as the first seed",
+  "urdf": "/home/smmg/AAM/config/piper/piper_description.urdf",
+  "flange_T_tag": [
+    [
+      -1.0,
+      7.413e-06,
+      -0.0,
+      -0.050000097
+    ],
+    [
+      7.413e-06,
+      1.0,
+      -0.0,
+      -9e-08
+    ],
+    [
+      -0.0,
+      -0.0,
+      -1.0,
+      0.124499691
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "input_segment_count": 9,
+  "generated_segment_count": 0,
+  "full_pose_set_count": 0,
+  "contact_only_segment_count": 0,
+  "skipped_segment_ids": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "skipped_segments": [
+    {
+      "segment_id": 0,
+      "reason": "contact fail"
+    },
+    {
+      "segment_id": 1,
+      "reason": "contact fail"
+    },
+    {
+      "segment_id": 2,
+      "reason": "contact fail"
+    },
+    {
+      "segment_id": 3,
+      "reason": "contact fail"
+    },
+    {
+      "segment_id": 4,
+      "reason": "contact fail"
+    },
+    {
+      "segment_id": 5,
+      "reason": "contact fail"
+    },
+    {
+      "segment_id": 6,
+      "reason": "contact fail"
+    },
+    {
+      "segment_id": 7,
+      "reason": "contact fail"
+    },
+    {
+      "segment_id": 8,
+      "reason": "contact fail"
+    }
+  ],
+  "pre_app_failed_segment_ids": [],
+  "segments": []
+}

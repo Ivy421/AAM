@@ -30,8 +30,8 @@ NORMAL_RADIUS = 0.015
 NORMAL_MAX_NN = 30
 
 # ICP
-ICP_DISTANCE_THRESHOLD = 0.015
-ICP_MAX_ITERATION = 100
+ICP_DISTANCE_THRESHOLD = 0.01
+ICP_MAX_ITERATION = 1000
 MIN_FITNESS = 0.40
 MAX_RMSE = 0.005
 MAX_TRANSLATION = 0.08
@@ -238,13 +238,18 @@ def copy_pcd(pcd):
 def run_icp(source, target):
     estimate_normals(source)
     estimate_normals(target)
+
     return o3d.pipelines.registration.registration_icp(
         source,
         target,
         ICP_DISTANCE_THRESHOLD,
         np.eye(4),
         o3d.pipelines.registration.TransformationEstimationPointToPlane(),
-        o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=ICP_MAX_ITERATION),
+        o3d.pipelines.registration.ICPConvergenceCriteria(
+            relative_fitness=1e-7,
+            relative_rmse=1e-7,
+            max_iteration=100,
+        ),
     )
 
 

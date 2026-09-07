@@ -20,8 +20,8 @@ from Piper import endpose_reachability_safe as ik
 
 DEFAULT_URDF = Path("/home/smmg/AAM/config/piper/piper_description.urdf")
 
-TAG_P_BRUSH_CENTER_M = np.array([0.0, 0.0, -0.09], dtype=float)
-BRUSH_RADIUS_M = 0.02  #0.01
+TAG_P_BRUSH_CENTER_M = np.array([0.0, 0.0, -0.086], dtype=float)
+BRUSH_RADIUS_M = 0.023
 PRESS_DEPTH_M = 0.0
 
 DEFAULT_PRE_OFFSET_M = 0.100
@@ -41,6 +41,7 @@ def parse_args():
     parser.add_argument("--run-dir", type=Path)
     parser.add_argument("--brush-pick-json", type=Path)
     parser.add_argument("--segments-json", type=Path)
+    parser.add_argument("--alignment-json", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--urdf", type=Path, default=DEFAULT_URDF)
     parser.add_argument("--no-ik", action="store_true")
@@ -71,23 +72,41 @@ def resolve_paths(args):
             args.output
             or run_dir / "pickplace" / "glue_applicate_endpose_brush.json"
         )
-
-    missing = [
-        name
-        for name in ("brush_pick_json", "segments_json", "output")
-        if getattr(args, name) is None
-    ]
-    if missing:
-        raise ValueError(
-            "--run-dir or explicit paths are required; missing: "
-            + ", ".join(missing)
+        args.alignment_json = (
+            args.alignment_json
+            or run_dir / "pickplace" / "iterative_correction.json"
         )
+
     return args
 
 
 def normalize(vector):
     vector = np.asarray(vector, dtype=float).reshape(3)
     return vector / np.linalg.norm(vector)
+
+
+def transform_segment_by_delta(segment, delta_T_base):
+    transformed = dict(segment)
+    rotation = delta_T_base[:3, :3]
+    translation = delta_T_base[:3, 3]
+
+    center = np.asarray(segment["center_point_base_m"], dtype=float)
+    transformed["center_point_base_m"] = (
+        rotation @ center + translation
+    ).tolist()
+
+    normal = np.asarray(segment["outward_normal_unit"], dtype=float)
+    transformed["outward_normal_unit"] = normalize(
+        rotation @ normal
+    ).tolist()
+
+    if segment.get("tangent_unit") is not None:
+        tangent = np.asarray(segment["tangent_unit"], dtype=float)
+        transformed["tangent_unit"] = normalize(
+            rotation @ tangent
+        ).tolist()
+
+    return transformed
 
 
 def endpose_to_transform(endpose):
@@ -730,7 +749,16 @@ def main():
     segment_data = json.loads(
         args.segments_json.read_text(encoding="utf-8")
     )
-    segments = segment_data["segments"]
+    alignment = json.loads(
+        args.alignment_json.read_text(encoding="utf-8")
+    )
+    delta_T_base = np.asarray(
+        alignment["delta_T_base"], dtype=float
+    ).reshape(4, 4)
+    segments = [
+        transform_segment_by_delta(segment, delta_T_base)
+        for segment in segment_data["segments"]
+    ]
 
     flange_T_tag = compute_flange_T_tag(brush_pick)
 
