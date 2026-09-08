@@ -224,7 +224,7 @@ def synchron_piper(arm_name, camera_syn_endpose_path):
 
 
 if __name__ == "__main__":
-    apriltag_path = '/home/smmg/AAM/data/runs/20260904_130321/pickplace/'
+    apriltag_path = '/home/smmg/AAM/data/runs/20260907_151721/pickplace/'
     calibration_path = '/home/smmg/AAM/config/calibration/right_camera/'
     test_path = '/home/smmg/AAM/data/'
 

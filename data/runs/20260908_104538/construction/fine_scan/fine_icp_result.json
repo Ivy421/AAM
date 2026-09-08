@@ -1,0 +1,957 @@
+{
+  "mode": "additive_icp",
+  "coarse_point_file": "/home/smmg/AAM/data/runs/20260908_104538/construction/coarse_scan/coarse_point_result.npz",
+  "fine_point_file": "/home/smmg/AAM/data/runs/20260908_104538/construction/fine_scan/fine_point_result.npz",
+  "coarse_seq_file": "/home/smmg/AAM/data/runs/20260908_104538/construction/coarse_scan/coarse_png_sequence.json",
+  "fine_seq_file": "/home/smmg/AAM/data/runs/20260908_104538/construction/fine_scan/fine_png_sequence.json",
+  "output_fused_pcd": "/home/smmg/AAM/data/runs/20260908_104538/construction/fine_scan/fine_fuse.pcd",
+  "output_transforms_npz": "/home/smmg/AAM/data/runs/20260908_104538/construction/fine_scan/fine_icp_transforms.npz",
+  "target_index": 0,
+  "target_dataset": "coarse",
+  "target_name": "coarse_scan_1",
+  "target_global_name": "coarse:coarse_scan_1",
+  "target_selection": {
+    "rule": "front_high preferred",
+    "selected_cube_name": "front_high",
+    "selected_frame": "coarse_scan_1",
+    "front_high_raw_points": 24193,
+    "front_high_processed_points": 24193
+  },
+  "fused_points": 58779,
+  "filter_rule": {
+    "min_fitness": 0.7,
+    "max_inlier_rmse": 0.005,
+    "max_translation_m": 0.08,
+    "max_rotation_deg": 15.0,
+    "min_overlap_ratio": 0.5,
+    "overlap_distance_threshold_m": 0.01
+  },
+  "voxel_size": 0.002,
+  "icp_distance_threshold": 0.01,
+  "records": [
+    {
+      "index": 0,
+      "dataset": "coarse",
+      "name": "coarse_scan_1",
+      "global_name": "coarse:coarse_scan_1",
+      "raw_points": 24193,
+      "processed_points": 24193,
+      "is_target": true,
+      "kept": true,
+      "fitness": null,
+      "inlier_rmse": null,
+      "translation_norm_m": 0.0,
+      "rotation_angle_deg": 0.0,
+      "overlap_ratio": 1.0,
+      "transformation": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "target frame"
+    },
+    {
+      "index": 1,
+      "dataset": "coarse",
+      "name": "coarse_scan_10",
+      "global_name": "coarse:coarse_scan_10",
+      "raw_points": 13083,
+      "processed_points": 13083,
+      "is_target": false,
+      "kept": true,
+      "fitness": 0.7997401207674081,
+      "inlier_rmse": 0.0034390312127622713,
+      "translation_norm_m": 0.023502411441986507,
+      "rotation_angle_deg": 3.591093268027948,
+      "overlap_ratio": 0.7997401207674081,
+      "transformation": [
+        [
+          0.9988730768264905,
+          0.04745932286352503,
+          0.00043481549818675044,
+          0.0020491229969350215
+        ],
+        [
+          -0.047437383342101305,
+          0.9980366211076404,
+          0.040897403214608094,
+          0.020301562468927493
+        ],
+        [
+          0.0015070012728262822,
+          -0.04087194149265976,
+          0.9991632566031363,
+          -0.011662375394922125
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "kept"
+    },
+    {
+      "index": 2,
+      "dataset": "coarse",
+      "name": "coarse_scan_11",
+      "global_name": "coarse:coarse_scan_11",
+      "raw_points": 1878,
+      "processed_points": 1878,
+      "is_target": false,
+      "kept": false,
+      "fitness": 0.0,
+      "inlier_rmse": 0.0,
+      "translation_norm_m": 0.13278369219883518,
+      "rotation_angle_deg": 23.30977131439233,
+      "overlap_ratio": 0.0,
+      "transformation": [
+        [
+          0.9434508597474152,
+          -0.07039452000868313,
+          0.3239522909235407,
+          -0.011755977033324731
+        ],
+        [
+          -0.004535456681495638,
+          0.9743628062902181,
+          0.22493677189588432,
+          -0.006606564858629633
+        ],
+        [
+          -0.3314813793783197,
+          -0.21368606241633528,
+          0.9189441560042964,
+          0.1320971582537477
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "bad quality: fitness too low or rmse too large"
+    },
+    {
+      "index": 3,
+      "dataset": "coarse",
+      "name": "coarse_scan_2",
+      "global_name": "coarse:coarse_scan_2",
+      "raw_points": 26283,
+      "processed_points": 26283,
+      "is_target": false,
+      "kept": true,
+      "fitness": 1.0,
+      "inlier_rmse": 0.0011680714271084891,
+      "translation_norm_m": 0.0021793220537542563,
+      "rotation_angle_deg": 1.4481919909875556,
+      "overlap_ratio": 1.0,
+      "transformation": [
+        [
+          0.9996850455346318,
+          -0.0017302930170321857,
+          0.02503629007054932,
+          -0.0006549242570690974
+        ],
+        [
+          0.0016555093752880549,
+          0.999994107313487,
+          0.0030074286377030825,
+          -0.0011472591784739189
+        ],
+        [
+          -0.025041346272311523,
+          -0.0029650336216901357,
+          0.999682019220358,
+          0.0017332960534454322
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "kept"
+    },
+    {
+      "index": 4,
+      "dataset": "coarse",
+      "name": "coarse_scan_3",
+      "global_name": "coarse:coarse_scan_3",
+      "raw_points": 26055,
+      "processed_points": 26055,
+      "is_target": false,
+      "kept": true,
+      "fitness": 0.9826520821339474,
+      "inlier_rmse": 0.0019622281731634774,
+      "translation_norm_m": 0.003920225129324283,
+      "rotation_angle_deg": 2.5046233711262116,
+      "overlap_ratio": 0.9826520821339474,
+      "transformation": [
+        [
+          0.9996256573490733,
+          -0.00880657649455896,
+          0.02590346270055859,
+          -0.0026233308634709537
+        ],
+        [
+          0.009684382701946916,
+          0.9993762813280702,
+          -0.03395969744505192,
+          0.0017994325053416968
+        ],
+        [
+          -0.025588237553922664,
+          0.03419784392798346,
+          0.9990874584187117,
+          0.0022909262109605455
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "kept"
+    },
+    {
+      "index": 5,
+      "dataset": "coarse",
+      "name": "coarse_scan_4",
+      "global_name": "coarse:coarse_scan_4",
+      "raw_points": 23001,
+      "processed_points": 23001,
+      "is_target": false,
+      "kept": true,
+      "fitness": 1.0,
+      "inlier_rmse": 0.0011925913149462264,
+      "translation_norm_m": 0.008338430238682769,
+      "rotation_angle_deg": 3.620137114291329,
+      "overlap_ratio": 1.0,
+      "transformation": [
+        [
+          0.9988790342821969,
+          -0.004790480045903416,
+          0.047092740124093924,
+          -0.005316143099071921
+        ],
+        [
+          0.006755805331845863,
+          0.9991088829857498,
+          -0.04166292156443821,
+          0.004683128090272682
+        ],
+        [
+          -0.04685118958771311,
+          0.04193436824248255,
+          0.9980212797302063,
+          0.004397311984118037
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "kept"
+    },
+    {
+      "index": 6,
+      "dataset": "coarse",
+      "name": "coarse_scan_5",
+      "global_name": "coarse:coarse_scan_5",
+      "raw_points": 12619,
+      "processed_points": 12619,
+      "is_target": false,
+      "kept": true,
+      "fitness": 0.9994452809255884,
+      "inlier_rmse": 0.0014829686028476653,
+      "translation_norm_m": 0.014502375880491166,
+      "rotation_angle_deg": 4.092435223263004,
+      "overlap_ratio": 0.9994452809255884,
+      "transformation": [
+        [
+          0.9979598704899457,
+          -0.014605642859409752,
+          0.06215120343447492,
+          -0.007546101254783113
+        ],
+        [
+          0.016583232534415772,
+          0.9993685951137382,
+          -0.031423040895224,
+          -0.0036855297827101535
+        ],
+        [
+          -0.06165300714806709,
+          0.03238960168104571,
+          0.9975719625232776,
+          0.011823372287649962
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "kept"
+    },
+    {
+      "index": 7,
+      "dataset": "coarse",
+      "name": "coarse_scan_6",
+      "global_name": "coarse:coarse_scan_6",
+      "raw_points": 5236,
+      "processed_points": 5236,
+      "is_target": false,
+      "kept": false,
+      "fitness": 1.0,
+      "inlier_rmse": 0.0013874837978098888,
+      "translation_norm_m": 0.19777876823434246,
+      "rotation_angle_deg": 59.92202900145208,
+      "overlap_ratio": 1.0,
+      "transformation": [
+        [
+          0.8584493799532487,
+          0.27051133114832465,
+          0.4357617259216829,
+          0.011939427906550008
+        ],
+        [
+          0.17692992270589342,
+          0.6412702533566873,
+          -0.7466379742627186,
+          -0.03225743085214836
+        ],
+        [
+          -0.48141506468864154,
+          0.7180501945408914,
+          0.5026365024653696,
+          0.19476485663583384
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "translation too large"
+    },
+    {
+      "index": 8,
+      "dataset": "coarse",
+      "name": "coarse_scan_7",
+      "global_name": "coarse:coarse_scan_7",
+      "raw_points": 33135,
+      "processed_points": 33135,
+      "is_target": false,
+      "kept": true,
+      "fitness": 0.9939339067451336,
+      "inlier_rmse": 0.001473261737732584,
+      "translation_norm_m": 0.015486031484651929,
+      "rotation_angle_deg": 1.693782197261638,
+      "overlap_ratio": 0.9939339067451336,
+      "transformation": [
+        [
+          0.9996746400624945,
+          -0.025247334930084676,
+          0.0036312662875123605,
+          -0.001480497992740006
+        ],
+        [
+          0.02519027230082162,
+          0.9995703700723264,
+          0.014984173480131495,
+          -0.013520139199463741
+        ],
+        [
+          -0.004008016633343262,
+          -0.014887825643805187,
+          0.9998811371609457,
+          -0.007404804714794819
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "kept"
+    },
+    {
+      "index": 9,
+      "dataset": "coarse",
+      "name": "coarse_scan_8",
+      "global_name": "coarse:coarse_scan_8",
+      "raw_points": 8872,
+      "processed_points": 8872,
+      "is_target": false,
+      "kept": true,
+      "fitness": 1.0,
+      "inlier_rmse": 0.002212096059163178,
+      "translation_norm_m": 0.012711483184666542,
+      "rotation_angle_deg": 3.184269965620938,
+      "overlap_ratio": 1.0,
+      "transformation": [
+        [
+          0.9988327085214325,
+          -0.01582397491738664,
+          0.045637946991011855,
+          -0.004474693244626433
+        ],
+        [
+          0.01707086327706539,
+          0.9994879800240715,
+          -0.027062213774497225,
+          0.0018211586176339455
+        ],
+        [
+          -0.04518634765851549,
+          0.02780970343629658,
+          0.9985914151343728,
+          0.011757648847026025
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "kept"
+    },
+    {
+      "index": 10,
+      "dataset": "coarse",
+      "name": "coarse_scan_9",
+      "global_name": "coarse:coarse_scan_9",
+      "raw_points": 18916,
+      "processed_points": 18916,
+      "is_target": false,
+      "kept": true,
+      "fitness": 1.0,
+      "inlier_rmse": 0.0007816341829124181,
+      "translation_norm_m": 0.0072730554918236335,
+      "rotation_angle_deg": 1.7834542303557936,
+      "overlap_ratio": 1.0,
+      "transformation": [
+        [
+          0.9995162026367844,
+          -0.013419824906944029,
+          0.028058313670097763,
+          -0.0014788329122075992
+        ],
+        [
+          0.013450893182048188,
+          0.9999091104923937,
+          -0.0009188182166207466,
+          -0.006130575830914358
+        ],
+        [
+          -0.028043433084195657,
+          0.0012957830748351585,
+          0.9996058657326271,
+          0.0036230414552315348
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "kept"
+    },
+    {
+      "index": 11,
+      "dataset": "fine",
+      "name": "fine_scan_1",
+      "global_name": "fine:fine_scan_1",
+      "raw_points": 3163,
+      "processed_points": 3163,
+      "is_target": false,
+      "kept": true,
+      "fitness": 0.7894404046791021,
+      "inlier_rmse": 0.0011053032298449918,
+      "translation_norm_m": 0.0683761390331918,
+      "rotation_angle_deg": 11.673460139007839,
+      "overlap_ratio": 0.7894404046791021,
+      "transformation": [
+        [
+          0.9834301969908028,
+          -0.0580696211989453,
+          0.17173516454250706,
+          0.00040422588279394935
+        ],
+        [
+          0.042203077571334374,
+          0.9946164809757868,
+          0.09464119618247152,
+          -0.018948700240747282
+        ],
+        [
+          -0.1763064034291973,
+          -0.08582525773425993,
+          0.9805865985443145,
+          0.06569687777747402
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "kept"
+    },
+    {
+      "index": 12,
+      "dataset": "fine",
+      "name": "fine_scan_2",
+      "global_name": "fine:fine_scan_2",
+      "raw_points": 20839,
+      "processed_points": 20839,
+      "is_target": false,
+      "kept": true,
+      "fitness": 0.9964969528288306,
+      "inlier_rmse": 0.0007840105681473422,
+      "translation_norm_m": 0.003125202034293139,
+      "rotation_angle_deg": 1.2141325792173796,
+      "overlap_ratio": 0.9964969528288306,
+      "transformation": [
+        [
+          0.999857219579309,
+          -0.009177357507776408,
+          0.014188606848758287,
+          0.0017008197677610111
+        ],
+        [
+          0.009358015985960788,
+          0.9998753179933577,
+          -0.012719119642856264,
+          -0.0010235801330681406
+        ],
+        [
+          -0.014070109876638245,
+          0.012850080811312026,
+          0.9998184372330814,
+          -0.002413790294108327
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "kept"
+    },
+    {
+      "index": 13,
+      "dataset": "fine",
+      "name": "fine_scan_3",
+      "global_name": "fine:fine_scan_3",
+      "raw_points": 29055,
+      "processed_points": 29055,
+      "is_target": false,
+      "kept": true,
+      "fitness": 1.0,
+      "inlier_rmse": 0.0010163619906714647,
+      "translation_norm_m": 0.0030706593065528134,
+      "rotation_angle_deg": 0.4351441852876631,
+      "overlap_ratio": 1.0,
+      "transformation": [
+        [
+          0.999971337302295,
+          0.00015466566442327856,
+          0.007569719439414116,
+          0.0018028044572463125
+        ],
+        [
+          -0.00015016320285383587,
+          0.9999998114964954,
+          -0.0005953637427362013,
+          0.0002767109356829834
+        ],
+        [
+          -0.007569810094824318,
+          0.0005942099846894921,
+          0.9999711720292852,
+          -0.0024702784709270498
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "kept"
+    },
+    {
+      "index": 14,
+      "dataset": "fine",
+      "name": "fine_scan_4",
+      "global_name": "fine:fine_scan_4",
+      "raw_points": 22734,
+      "processed_points": 22734,
+      "is_target": false,
+      "kept": true,
+      "fitness": 0.9959092108735814,
+      "inlier_rmse": 0.0006754412186523417,
+      "translation_norm_m": 0.0014766056930941307,
+      "rotation_angle_deg": 1.5466131692463356,
+      "overlap_ratio": 0.9959092108735814,
+      "transformation": [
+        [
+          0.9996383834648696,
+          -0.0029955952006577315,
+          0.026723186807275492,
+          -0.0009234854810239524
+        ],
+        [
+          0.0030575265457597955,
+          0.9999927334801122,
+          -0.0022769537532121536,
+          0.00018876142299592726
+        ],
+        [
+          -0.026716171790971844,
+          0.002357837222135808,
+          0.9996402786845223,
+          -0.0011366213372995028
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "kept"
+    },
+    {
+      "index": 15,
+      "dataset": "fine",
+      "name": "fine_scan_5",
+      "global_name": "fine:fine_scan_5",
+      "raw_points": 2775,
+      "processed_points": 2775,
+      "is_target": false,
+      "kept": false,
+      "fitness": 0.9758558558558559,
+      "inlier_rmse": 0.0008302845870626563,
+      "translation_norm_m": 0.09534416195734316,
+      "rotation_angle_deg": 16.332483926812806,
+      "overlap_ratio": 0.9758558558558559,
+      "transformation": [
+        [
+          0.9676164389578733,
+          0.009503961858402162,
+          0.2522461134833958,
+          0.007723577858000408
+        ],
+        [
+          -0.041470734679317396,
+          0.9916980834120862,
+          0.12171725235952881,
+          0.009661465135390374
+        ],
+        [
+          -0.24899519116569668,
+          -0.12823644593402295,
+          0.9599775042731833,
+          0.09453841365210823
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "translation too large"
+    },
+    {
+      "index": 16,
+      "dataset": "fine",
+      "name": "fine_scan_6",
+      "global_name": "fine:fine_scan_6",
+      "raw_points": 7629,
+      "processed_points": 7629,
+      "is_target": false,
+      "kept": false,
+      "fitness": 0.8520120592476078,
+      "inlier_rmse": 0.0018525579709106732,
+      "translation_norm_m": 0.33754599245919215,
+      "rotation_angle_deg": 68.4893396761188,
+      "overlap_ratio": 0.8520120592476078,
+      "transformation": [
+        [
+          0.805705615529591,
+          0.23181316580727251,
+          -0.5450698278775792,
+          0.1225833328591507
+        ],
+        [
+          0.34855497303516875,
+          0.5584756845824645,
+          0.7527378962843573,
+          -0.2104363229567575
+        ],
+        [
+          0.47890280002996055,
+          -0.7964719492163906,
+          0.36916736344767376,
+          -0.23372457618068948
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "translation too large"
+    },
+    {
+      "index": 17,
+      "dataset": "fine",
+      "name": "fine_scan_7",
+      "global_name": "fine:fine_scan_7",
+      "raw_points": 16307,
+      "processed_points": 16307,
+      "is_target": false,
+      "kept": true,
+      "fitness": 0.9392898755135831,
+      "inlier_rmse": 0.002431335099261906,
+      "translation_norm_m": 0.028710073029862823,
+      "rotation_angle_deg": 4.479205345331333,
+      "overlap_ratio": 0.9392898755135831,
+      "transformation": [
+        [
+          0.9993450095330872,
+          -0.014406269771227017,
+          -0.03319655573387061,
+          0.0023700674196096903
+        ],
+        [
+          0.016670263275366942,
+          0.9974798306099301,
+          0.06896441001499143,
+          -0.008426301032493312
+        ],
+        [
+          0.03211937489496491,
+          -0.06947263430779432,
+          0.9970666471398452,
+          -0.027343162302783552
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "kept"
+    },
+    {
+      "index": 18,
+      "dataset": "fine",
+      "name": "fine_scan_8",
+      "global_name": "fine:fine_scan_8",
+      "raw_points": 23196,
+      "processed_points": 23196,
+      "is_target": false,
+      "kept": true,
+      "fitness": 1.0,
+      "inlier_rmse": 0.0008160715451212491,
+      "translation_norm_m": 0.004198237285341256,
+      "rotation_angle_deg": 2.0486961670466552,
+      "overlap_ratio": 1.0,
+      "transformation": [
+        [
+          0.9995249530967825,
+          -0.0020743520389320557,
+          0.030750043910416282,
+          -0.0023415539430933275
+        ],
+        [
+          0.002631213660997545,
+          0.9998330829182236,
+          -0.0180799064408726,
+          0.0034727509342837564
+        ],
+        [
+          -0.030707407112032927,
+          0.018152227572920784,
+          0.999363573371872,
+          0.0002869187760410774
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "kept"
+    },
+    {
+      "index": 19,
+      "dataset": "fine",
+      "name": "fine_scan_9",
+      "global_name": "fine:fine_scan_9",
+      "raw_points": 4024,
+      "processed_points": 4024,
+      "is_target": false,
+      "kept": true,
+      "fitness": 0.9801192842942346,
+      "inlier_rmse": 0.0009353109871496804,
+      "translation_norm_m": 0.055555849437388595,
+      "rotation_angle_deg": 13.7497471494561,
+      "overlap_ratio": 0.9801192842942346,
+      "transformation": [
+        [
+          0.9856381951144071,
+          0.02808237104711342,
+          0.1665194546231369,
+          -0.0031485367307252064
+        ],
+        [
+          0.00047785878747506324,
+          0.9856082878378153,
+          -0.16904459351422246,
+          0.012450620369013326
+        ],
+        [
+          -0.16887012756137149,
+          0.16669638082988386,
+          0.9714397545064871,
+          0.05405109782041226
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "kept"
+    },
+    {
+      "index": 20,
+      "dataset": "fine",
+      "name": "fine_scan_10",
+      "global_name": "fine:fine_scan_10",
+      "raw_points": 13244,
+      "processed_points": 13244,
+      "is_target": false,
+      "kept": true,
+      "fitness": 0.971836303231652,
+      "inlier_rmse": 0.0009443042653575211,
+      "translation_norm_m": 0.004375601532335882,
+      "rotation_angle_deg": 2.0117964198925815,
+      "overlap_ratio": 0.971836303231652,
+      "transformation": [
+        [
+          0.9993839402839888,
+          -0.0191179800000023,
+          0.029432002024468176,
+          0.0012197914856265884
+        ],
+        [
+          0.01914151490906492,
+          0.999816650196068,
+          -0.0005180711354815774,
+          -0.0014432993706964233
+        ],
+        [
+          -0.02941670119906091,
+          0.00108112507827994,
+          0.999566650533685,
+          -0.003946502809820399
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "kept"
+    },
+    {
+      "index": 21,
+      "dataset": "fine",
+      "name": "fine_scan_11",
+      "global_name": "fine:fine_scan_11",
+      "raw_points": 20914,
+      "processed_points": 20914,
+      "is_target": false,
+      "kept": true,
+      "fitness": 1.0,
+      "inlier_rmse": 0.0007543457559205463,
+      "translation_norm_m": 0.0029605196479067027,
+      "rotation_angle_deg": 2.416626309018743,
+      "overlap_ratio": 1.0,
+      "transformation": [
+        [
+          0.9992471204110615,
+          -0.01744168847183137,
+          0.03465515623182728,
+          0.002768903120321608
+        ],
+        [
+          0.018011958941711894,
+          0.9997063259448693,
+          -0.01621206960545835,
+          -9.559168313689722e-06
+        ],
+        [
+          -0.034362213044023426,
+          0.01682407112032423,
+          0.9992678264337629,
+          -0.0010477407686140885
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "reason": "kept"
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"black rectangular block\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"black rectangular foam-like block resting on white paper with a chipped and irregular corner edge\",\n      \"short_object_prompt\": \"black rectangular block\",\n      \"balanced_prompt\": \"black block with damaged corner edge\"\n    },\n    \"description\": \"A black rectangular object, likely foam or plastic, has a visibly broken or chipped corner that creates an irregular geometry suitable for volume restoration via 3D printing.\",\n    \"confidence\": 8\n  }\n]"
+]

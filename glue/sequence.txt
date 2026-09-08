@@ -1,0 +1,1 @@
+代码顺序：fuse_alignment.py -- servopick_endpose_brush.py -- applicate_endpose_brush_execute.py

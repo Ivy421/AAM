@@ -13,8 +13,8 @@ COMPLETION_CODE_DIR = PROJECT_ROOT / "completion"
 SCRIPTS = {
     "deviation": COMPLETION_CODE_DIR / "depression_completion_deviation.py",
     "twoFit": COMPLETION_CODE_DIR / "depression_completion_twoFit.py",
+    "mark1_close_to_defect": COMPLETION_CODE_DIR /  "mark1_close_to_defect.py",
     "glue_applicate_path": COMPLETION_CODE_DIR / "depression_glue_applicate_path_brush_adaptive.py", #depression_glue_applicate_path
-    "glue_applicate_path_continue": COMPLETION_CODE_DIR / "depression_glue_applicate_path_brush_continue.py",
     "ransacFit": COMPLETION_CODE_DIR / "depression_completion_ransacFit.py",
     "mesh_generation": COMPLETION_CODE_DIR / "mesh_generation.py",
     "depression_grip": COMPLETION_CODE_DIR / "Depression_grip.py",
@@ -64,28 +64,33 @@ def run_depression_completion(run_dir, dry_run=False, printing=False):
     # run_script(SCRIPTS["ransacFit"], *completion_args, dry_run=dry_run)
     # run_script(SCRIPTS["deviation"], *completion_args, dry_run=dry_run)
     run_script(SCRIPTS["twoFit"], *completion_args, dry_run=dry_run)
-
-    # depression_completion_twoFit.py writes both files below into completion_dir.
-    # Pass those concrete outputs to the glue-dot stage; it contains no run-specific paths.
-
     fix_points = completion_dir / "fix_points_curve.pcd"
-    fix_mask = completion_dir / 'fix_mask.npz'
+
+    print(
+    "\n \n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! "
+    "\n Mark1 close to defect working "
+    "\n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  \n "
+    )
+
+    run_script(
+        SCRIPTS["mark1_close_to_defect"],
+        "--run-dir", run_dir,
+        "--completion-dir", completion_dir,
+        "--fix-points-curve", fix_points,
+        dry_run=dry_run,
+    )
+
+    # After Mark1 movement, use point clouds in the new Base frame.
+    fix_points = completion_dir / "fix_points_curve_motion.pcd"
+    # motion_meta = completion_dir / "meta_motion.npz"
+
     print("\n \n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n glue applicate path working \n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  \n ")
     run_script(
         SCRIPTS["glue_applicate_path"],
-        #'--fix-mask', fix_mask,
         "--fix-points", fix_points,
         "--out-dir", completion_dir,
-        #"--fixpoint-choice", "fix_points",
         dry_run=dry_run,
     )
-    run_script(
-    SCRIPTS["glue_applicate_path_continue"],
-    "--fix-points", fix_points,
-    "--out-dir", completion_dir,
-    dry_run= dry_run
-    )
-    
     print("\n \n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n mesh_generation working \n !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  \n ")
     run_script(
         SCRIPTS["mesh_generation"],

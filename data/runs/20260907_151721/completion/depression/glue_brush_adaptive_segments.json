@@ -1,0 +1,322 @@
+{
+  "coordinate_frame": "base",
+  "position_unit": "m",
+  "normal_definition": "PCA inward normal has dot(normal, world_x) > 0; outward_normal_unit is its opposite.",
+  "runtime_seconds": 22.354042,
+  "parameters": {
+    "voxel_size_m": 0.0008,
+    "normal_radii_m": [
+      0.008,
+      0.012,
+      0.016,
+      0.02,
+      0.024,
+      0.028,
+      0.032,
+      0.036000000000000004,
+      0.04
+    ],
+    "min_normal_neighbors": 10,
+    "point_connect_radius_m": 0.005,
+    "region_neighbor_angle_deg": 20.0,
+    "region_curvature_jump": 0.03,
+    "max_region_normal_span_deg": 25.0,
+    "max_region_plane_residual_m": 0.003,
+    "merge_distance_m": 0.008,
+    "merge_normal_angle_deg": 20.0,
+    "merge_curvature_jump": 0.025,
+    "min_segment_points": 20,
+    "dot_spacing_m": 0.025
+  },
+  "segment_count": 8,
+  "segments": [
+    {
+      "id": 0,
+      "coordinate_frame": "base",
+      "point_count": 265,
+      "center_point_base_m": [
+        0.297094329,
+        0.060014292,
+        0.032339725
+      ],
+      "center_point_base_mm": [
+        297.094,
+        60.014,
+        32.34
+      ],
+      "inward_normal_unit": [
+        0.582432445,
+        -0.78388657,
+        -0.215161087
+      ],
+      "outward_normal_unit": [
+        -0.582432445,
+        0.78388657,
+        0.215161087
+      ],
+      "xoy_length": 0.029925562,
+      "tangent_unit": [
+        0.818807481,
+        0.57406821,
+        0.0
+      ],
+      "quality": {
+        "curvature": 0.005155898,
+        "normal_span_deg": 20.887623,
+        "plane_residual_p95_m": 0.001320988
+      }
+    },
+    {
+      "id": 1,
+      "coordinate_frame": "base",
+      "point_count": 86,
+      "center_point_base_m": [
+        0.276532903,
+        0.008399152,
+        0.030998933
+      ],
+      "center_point_base_mm": [
+        276.533,
+        8.399,
+        30.999
+      ],
+      "inward_normal_unit": [
+        0.906273313,
+        0.369783661,
+        -0.204765052
+      ],
+      "outward_normal_unit": [
+        -0.906273313,
+        -0.369783661,
+        0.204765052
+      ],
+      "xoy_length": 0.00968475,
+      "tangent_unit": [
+        0.472216837,
+        -0.881482421,
+        0.0
+      ],
+      "quality": {
+        "curvature": 0.00781446,
+        "normal_span_deg": 15.888222,
+        "plane_residual_p95_m": 0.000778455
+      }
+    },
+    {
+      "id": 2,
+      "coordinate_frame": "base",
+      "point_count": 403,
+      "center_point_base_m": [
+        0.277687259,
+        0.031652341,
+        0.031316544
+      ],
+      "center_point_base_mm": [
+        277.687,
+        31.652,
+        31.317
+      ],
+      "inward_normal_unit": [
+        0.947013552,
+        -0.288537735,
+        -0.141107431
+      ],
+      "outward_normal_unit": [
+        -0.947013552,
+        0.288537735,
+        0.141107431
+      ],
+      "xoy_length": 0.035795136,
+      "tangent_unit": [
+        0.293171159,
+        0.956059973,
+        0.0
+      ],
+      "quality": {
+        "curvature": 0.013645886,
+        "normal_span_deg": 22.757015,
+        "plane_residual_p95_m": 0.002047284
+      }
+    },
+    {
+      "id": 3,
+      "coordinate_frame": "base",
+      "point_count": 21,
+      "center_point_base_m": [
+        0.284730267,
+        0.05141894,
+        0.026467457
+      ],
+      "center_point_base_mm": [
+        284.73,
+        51.419,
+        26.467
+      ],
+      "inward_normal_unit": [
+        0.418230261,
+        -0.185737429,
+        -0.889148501
+      ],
+      "outward_normal_unit": [
+        -0.418230261,
+        0.185737429,
+        0.889148501
+      ],
+      "xoy_length": 0.007083575,
+      "tangent_unit": [
+        0.425050549,
+        0.905169614,
+        0.0
+      ],
+      "quality": {
+        "curvature": 0.04042653,
+        "normal_span_deg": 48.157558,
+        "plane_residual_p95_m": 0.000906992
+      }
+    },
+    {
+      "id": 4,
+      "coordinate_frame": "base",
+      "point_count": 146,
+      "center_point_base_m": [
+        0.284169501,
+        0.047610594,
+        0.032771841
+      ],
+      "center_point_base_mm": [
+        284.17,
+        47.611,
+        32.772
+      ],
+      "inward_normal_unit": [
+        0.806819952,
+        -0.590788485,
+        0.003245142
+      ],
+      "outward_normal_unit": [
+        -0.806819952,
+        0.590788485,
+        -0.003245142
+      ],
+      "xoy_length": 0.019051709,
+      "tangent_unit": [
+        0.589263797,
+        0.807940701,
+        0.0
+      ],
+      "quality": {
+        "curvature": 0.042657022,
+        "normal_span_deg": 23.361167,
+        "plane_residual_p95_m": 0.00231001
+      }
+    },
+    {
+      "id": 5,
+      "coordinate_frame": "base",
+      "point_count": 68,
+      "center_point_base_m": [
+        0.27462469,
+        0.017141869,
+        0.03566495
+      ],
+      "center_point_base_mm": [
+        274.625,
+        17.142,
+        35.665
+      ],
+      "inward_normal_unit": [
+        0.57494498,
+        -0.764449596,
+        0.29164205
+      ],
+      "outward_normal_unit": [
+        -0.57494498,
+        0.764449596,
+        -0.29164205
+      ],
+      "xoy_length": 0.007360777,
+      "tangent_unit": [
+        0.446453867,
+        0.894806652,
+        0.0
+      ],
+      "quality": {
+        "curvature": 0.187436532,
+        "normal_span_deg": 68.890999,
+        "plane_residual_p95_m": 0.00244734
+      }
+    },
+    {
+      "id": 6,
+      "coordinate_frame": "base",
+      "point_count": 28,
+      "center_point_base_m": [
+        0.273555926,
+        0.014574793,
+        0.03023319
+      ],
+      "center_point_base_mm": [
+        273.556,
+        14.575,
+        30.233
+      ],
+      "inward_normal_unit": [
+        0.693159313,
+        0.7057991,
+        0.146211485
+      ],
+      "outward_normal_unit": [
+        -0.693159313,
+        -0.7057991,
+        -0.146211485
+      ],
+      "xoy_length": 0.005872528,
+      "tangent_unit": [
+        0.682708623,
+        -0.730690725,
+        0.0
+      ],
+      "quality": {
+        "curvature": 0.064775467,
+        "normal_span_deg": 49.990185,
+        "plane_residual_p95_m": 0.001200477
+      }
+    },
+    {
+      "id": 7,
+      "coordinate_frame": "base",
+      "point_count": 31,
+      "center_point_base_m": [
+        0.275420705,
+        0.012467458,
+        0.036239696
+      ],
+      "center_point_base_mm": [
+        275.421,
+        12.467,
+        36.24
+      ],
+      "inward_normal_unit": [
+        0.582336509,
+        0.560701822,
+        -0.588640516
+      ],
+      "outward_normal_unit": [
+        -0.582336509,
+        -0.560701822,
+        0.588640516
+      ],
+      "xoy_length": 0.006588301,
+      "tangent_unit": [
+        0.756298278,
+        -0.65422696,
+        0.0
+      ],
+      "quality": {
+        "curvature": 0.051420315,
+        "normal_span_deg": 39.684061,
+        "plane_residual_p95_m": 0.001020909
+      }
+    }
+  ]
+}

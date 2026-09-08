@@ -219,6 +219,8 @@ def capture_scan_views(scanpose_json, view_mode, dry_run=False):
                 post_process=1,
                 SAVE_ENDPOSE=True,
             )
+        piper.move_joint( 0, 20, -30, 0,40, 0  )
+        time.sleep(3)
     finally:
         piper.disconnect()
 

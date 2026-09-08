@@ -42,7 +42,7 @@ RUN_DIR = ARGS.run_dir.expanduser().resolve()
 DATA_DIR = RUN_DIR / "pickplace"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-FUSE_PCD_PATH = ARGS.fuse_pcd or DATA_DIR / "fine_fuse_motion.pcd"
+FUSE_PCD_PATH = RUN_DIR / "completion"  / "depression" / "fine_fuse_motion.pcd"
 IMAGE_PATH = DATA_DIR / "fuse_align.png"
 POSE_PATH = DATA_DIR / "fuse_align.json"
 
@@ -104,8 +104,8 @@ CORRECTED_REPROJECT_PATH = DATA_DIR / "after_alignment.png"
 def capture_alignment_frame():
     piper = connect_right()
     piper.enable()
-    piper.set_speed(10)
-    piper.move_joint( 0, 20, -30, 0,45, 0   )
+    piper.set_speed(15)
+    piper.move_joint( 0, 20, -30, 0,45, 0 )
     time.sleep(7.0)
 
     camera_functions.camera_syn_endpose_path = str(POSE_PATH)
@@ -1627,45 +1627,7 @@ real_contours, _ = (
     cv2.findContours(
         Mreal,
         cv2.RETR_EXTERNAL,
-        cv2.CHAIN_APPROX_SIMPLE
-    )
-)
+        cv2.CHAIN_APPROX_SIMPLE))
 
-cv2.drawContours(
-    vis_corrected,
-    real_contours,
-    -1,
-    (0, 255, 0),
-    2
-)
-
-
-cv2.imwrite(
-    str(CORRECTED_REPROJECT_PATH),
-    vis_corrected
-)
-
-
-print(
-    "\n========== Saved =========="
-)
-
-print(
-    "Corrected PCD:",
-    CORRECTED_PCD_PATH
-)
-
-print(
-    "Final Mfuse:",
-    FINAL_MFUSE_PATH
-)
-
-print(
-    "Final reprojection:",
-    CORRECTED_REPROJECT_PATH
-)
-
-print(
-    "Correction:",
-    CORRECTION_PATH
-)
+cv2.drawContours(vis_corrected,real_contours,-1,(0, 255, 0),2)
+cv2.imwrite( str(CORRECTED_REPROJECT_PATH),vis_corrected)

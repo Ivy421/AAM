@@ -1,22 +1,18 @@
-"""Generate two continuous sponge-brush glue trajectories from fix_points_curve.pcd."""
+"""Fit and save two continuous sponge-brush B-spline paths."""
 
 import argparse
-import json
-import time
 from pathlib import Path
 
 import numpy as np
 import open3d as o3d
-from scipy.interpolate import splprep, splev
+from scipy.interpolate import splprep
 
 
 PATH_FRACTIONS = (0.25, 0.75)
 BAND_HALF_WIDTH_M = 0.003
 PCA_BIN_SIZE_M = 0.0006
-TRAJECTORY_SPACING_M = 0.002
 MIN_BIN_POINTS = 3
 BSPLINE_RMS_SMOOTH_M = 0.0005
-DENSE_SPLINE_SAMPLES = 4000
 
 
 def parse_args():
@@ -45,7 +41,6 @@ def load_completion_frame(fix_points_path, meta_path):
         "u_axis": normalize(meta["u_axis"]),
         "v_axis": normalize(meta["v_axis"]),
         "n_axis": normalize(meta["n_axis"]),
-        "meta_path": meta_path,
     }
 
 
@@ -67,7 +62,6 @@ def pca_curve_direction(uv):
     _, eigenvectors = np.linalg.eigh(covariance)
     direction = normalize(eigenvectors[:, -1])
 
-    # Keep a deterministic direction for trajectory ordering.
     if abs(direction[0]) >= abs(direction[1]):
         if direction[0] < 0.0:
             direction = -direction
@@ -77,162 +71,103 @@ def pca_curve_direction(uv):
     return center, direction
 
 
-def build_binned_centers(points, uv, bin_size):
+def build_binned_centers(points, uv):
     uv_center, direction = pca_curve_direction(uv)
     s = (uv - uv_center) @ direction
-
-    s_min = float(s.min())
-    bin_ids = np.floor((s - s_min) / bin_size).astype(int)
+    bin_ids = np.floor(
+        (s - float(s.min())) / PCA_BIN_SIZE_M
+    ).astype(int)
 
     centers = []
     center_s = []
+
     for bin_id in np.unique(bin_ids):
         ids = np.where(bin_ids == bin_id)[0]
         if len(ids) < MIN_BIN_POINTS:
             continue
+
         centers.append(np.median(points[ids], axis=0))
         center_s.append(float(np.median(s[ids])))
 
+    if len(centers) < 2:
+        raise RuntimeError("Not enough binned centers to fit B-spline.")
+
     order = np.argsort(center_s)
-    centers = np.asarray(centers, dtype=float)[order]
-    center_s = np.asarray(center_s, dtype=float)[order]
-    return centers, center_s, direction
+    return np.asarray(centers, dtype=float)[order], direction
 
 
 def fit_bspline(points):
     k = min(3, len(points) - 1)
     smooth = len(points) * BSPLINE_RMS_SMOOTH_M ** 2
     tck, _ = splprep(points.T, s=smooth, k=k)
-    return tck, k, smooth
-
-
-def sample_bspline_by_arc_length(tck, spacing):
-    u_dense = np.linspace(0.0, 1.0, DENSE_SPLINE_SAMPLES)
-    dense_points = np.column_stack(splev(u_dense, tck))
-
-    step = np.linalg.norm(np.diff(dense_points, axis=0), axis=1)
-    arc = np.concatenate([[0.0], np.cumsum(step)])
-    total_length = float(arc[-1])
-
-    sample_arc = np.arange(0.0, total_length + 1e-12, spacing)
-    sample_u = np.interp(sample_arc, arc, u_dense)
-    sampled_points = np.column_stack(splev(sample_u, tck))
-    return sampled_points, sample_arc, total_length
-
-
-def build_trajectory(points, uvz, target_z, reverse=False):
-    band_mask = np.abs(uvz[:, 2] - target_z) <= BAND_HALF_WIDTH_M
-    band_points = points[band_mask]
-    band_uv = uvz[band_mask, :2]
-
-    binned_centers, center_s, pca_direction = build_binned_centers(
-        band_points,
-        band_uv,
-        PCA_BIN_SIZE_M,
-    )
-
-    tck, spline_order, smooth = fit_bspline(binned_centers)
-    trajectory_points, arc, total_length = sample_bspline_by_arc_length(
-        tck,
-        TRAJECTORY_SPACING_M,
-    )
-
-    if reverse:
-        trajectory_points = trajectory_points[::-1]
-        arc = total_length - arc[::-1]
+    t, c, k = tck
 
     return {
-        "target_z_m": float(target_z),
-        "band_point_count": int(len(band_points)),
-        "pca_direction_uv": np.round(pca_direction, 9).tolist(),
-        "bin_size_m": PCA_BIN_SIZE_M,
-        "binned_center_count": int(len(binned_centers)),
-        "binned_centers_base_m": np.round(binned_centers, 9).tolist(),
-        "bspline_order": int(spline_order),
-        "bspline_smoothing": float(smooth),
-        "trajectory_spacing_m": TRAJECTORY_SPACING_M,
-        "trajectory_length_m": round(total_length, 9),
-        "trajectory_point_count": int(len(trajectory_points)),
-        "trajectory_points_base_m": np.round(trajectory_points, 9).tolist(),
-        "trajectory_points_base_mm": np.round(trajectory_points * 1000.0, 3).tolist(),
-        "arc_length_m": np.round(arc, 9).tolist(),
+        "t": np.asarray(t, dtype=float),
+        "c": np.asarray(c, dtype=float),
+        "k": int(k),
+        "smoothing": float(smooth),
     }
 
 
-def save_outputs(out_dir, fix_points_path, frame, z_min, z_max, trajectories, runtime_seconds):
-    out_dir.mkdir(parents=True, exist_ok=True)
+def build_bspline(points, uvz, target_z):
+    mask = np.abs(uvz[:, 2] - target_z) <= BAND_HALF_WIDTH_M
+    band_points = points[mask]
+    band_uv = uvz[mask, :2]
 
-    json_path = out_dir / "glue_brush_continue_trajectory.json"
-    npz_path = out_dir / "glue_brush_continue_trajectory.npz"
-    pcd_path = out_dir / "glue_brush_continue_trajectory.pcd"
+    if len(band_points) == 0:
+        raise RuntimeError(
+            f"No points found around target_z={target_z:.6f} m."
+        )
 
-    payload = {
-        "coordinate_frame": "base",
-        "position_unit": "m",
-        "source_fix_points": str(fix_points_path),
-        "source_meta": str(frame["meta_path"]),
-        "runtime_seconds": round(runtime_seconds, 6),
-        "parameters": {
-            "path_fractions": list(PATH_FRACTIONS),
-            "band_half_width_m": BAND_HALF_WIDTH_M,
-            "pca_bin_size_m": PCA_BIN_SIZE_M,
-            "trajectory_spacing_m": TRAJECTORY_SPACING_M,
-            "min_bin_points": MIN_BIN_POINTS,
-            "bspline_rms_smooth_m": BSPLINE_RMS_SMOOTH_M,
-        },
-        "completion_frame": {
-            "origin_base_m": np.round(frame["origin"], 9).tolist(),
-            "u_axis": np.round(frame["u_axis"], 9).tolist(),
-            "v_axis": np.round(frame["v_axis"], 9).tolist(),
-            "n_axis": np.round(frame["n_axis"], 9).tolist(),
-        },
-        "fix_depth_range_m": [float(z_min), float(z_max)],
-        "fix_depth_m": float(z_max - z_min),
-        "trajectory_count": len(trajectories),
-        "trajectories": trajectories,
-    }
-
-    json_path.write_text(
-        json.dumps(payload, indent=2, ensure_ascii=False),
-        encoding="utf-8",
+    binned_centers, pca_direction = build_binned_centers(
+        band_points,
+        band_uv,
     )
+    spline = fit_bspline(binned_centers)
+
+    return {
+        "target_z": float(target_z),
+        "pca_direction": pca_direction,
+        "binned_centers": binned_centers,
+        **spline,
+    }
+
+
+def save_bspline(out_dir, frame, z_min, z_max, splines):
+    out_dir.mkdir(parents=True, exist_ok=True)
+    output_path = out_dir / "glue_brush_bspline.npz"
 
     np.savez(
-        npz_path,
-        trajectory_0_base_m=np.asarray(
-            trajectories[0]["trajectory_points_base_m"],
-            dtype=float,
-        ),
-        trajectory_1_base_m=np.asarray(
-            trajectories[1]["trajectory_points_base_m"],
-            dtype=float,
-        ),
-        target_z_m=np.asarray(
-            [item["target_z_m"] for item in trajectories],
-            dtype=float,
-        ),
-        n_axis=frame["n_axis"],
+        output_path,
+        path0_t=splines[0]["t"],
+        path0_c=splines[0]["c"],
+        path0_k=splines[0]["k"],
+        path0_target_z=splines[0]["target_z"],
+        path0_pca_direction=splines[0]["pca_direction"],
+        path0_binned_centers_base_m=splines[0]["binned_centers"],
+        path1_t=splines[1]["t"],
+        path1_c=splines[1]["c"],
+        path1_k=splines[1]["k"],
+        path1_target_z=splines[1]["target_z"],
+        path1_pca_direction=splines[1]["pca_direction"],
+        path1_binned_centers_base_m=splines[1]["binned_centers"],
+        origin=frame["origin"],
         u_axis=frame["u_axis"],
         v_axis=frame["v_axis"],
-        origin=frame["origin"],
+        n_axis=frame["n_axis"],
+        fix_depth_range_m=np.asarray([z_min, z_max], dtype=float),
+        path_fractions=np.asarray(PATH_FRACTIONS, dtype=float),
+        band_half_width_m=BAND_HALF_WIDTH_M,
+        pca_bin_size_m=PCA_BIN_SIZE_M,
+        bspline_rms_smooth_m=BSPLINE_RMS_SMOOTH_M,
     )
 
-    all_points = np.vstack(
-        [
-            np.asarray(item["trajectory_points_base_m"], dtype=float)
-            for item in trajectories
-        ]
-    )
-    cloud = o3d.geometry.PointCloud()
-    cloud.points = o3d.utility.Vector3dVector(all_points)
-    o3d.io.write_point_cloud(str(pcd_path), cloud)
-
-    return json_path, npz_path, pcd_path
+    return output_path
 
 
 def main():
     args = parse_args()
-    start_time = time.perf_counter()
 
     source_cloud = o3d.io.read_point_cloud(str(args.fix_points))
     points = np.asarray(source_cloud.points, dtype=float)
@@ -244,28 +179,31 @@ def main():
     z_max = float(uvz[:, 2].max())
     depth = z_max - z_min
 
-    target_z = [z_min + fraction * depth for fraction in PATH_FRACTIONS]
-    trajectories = [
-        build_trajectory(points, uvz, target_z[0], reverse=False),
-        build_trajectory(points, uvz, target_z[1], reverse=True),
+    target_z = [
+        z_min + fraction * depth
+        for fraction in PATH_FRACTIONS
     ]
 
-    runtime_seconds = time.perf_counter() - start_time
-    paths = save_outputs(
+    splines = [
+        build_bspline(points, uvz, target_z[0]),
+        build_bspline(points, uvz, target_z[1]),
+    ]
+
+    output_path = save_bspline(
         args.out_dir,
-        args.fix_points,
         frame,
         z_min,
         z_max,
-        trajectories,
-        runtime_seconds,
+        splines,
     )
 
     print(f"Fix depth: {depth:.6f} m")
-    print(f"Trajectory 1 points: {trajectories[0]['trajectory_point_count']}")
-    print(f"Trajectory 2 points: {trajectories[1]['trajectory_point_count']}")
-    for path in paths:
-        print(f"Saved: {path}")
+    print(
+        "B-spline centers: "
+        f"{len(splines[0]['binned_centers'])}, "
+        f"{len(splines[1]['binned_centers'])}"
+    )
+    print(f"Saved: {output_path.resolve()}")
 
 
 if __name__ == "__main__":
