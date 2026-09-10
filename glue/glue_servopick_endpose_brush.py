@@ -118,9 +118,9 @@ def capture_apriltag(args):
     pose_path = (pickplace_dir/ "apriltag.json")
     piper = connect_right()
     piper.enable()
-    piper.set_speed(15)
+    piper.set_speed(20)
     piper.move_joint(90, 20, -30, 0, 50, 0  )
-    time.sleep(8)
+    time.sleep(5)
     camera_functions.camera_syn_endpose_path = str( pose_path)
     camera_functions.json = json
     camera_functions.capture(
@@ -137,11 +137,6 @@ def capture_apriltag(args):
     )
 
     piper.disconnect()
-
-    print(
-        f"AprilTag frame saved to: "
-        f"{pickplace_dir}"
-    )
 
 
 def execute_grasp(output_path):
@@ -168,34 +163,39 @@ def execute_grasp(output_path):
         piper.enable()
 
         # 1. Open gripper to 40 mm
+        print('move to pre-pick brush')
         piper.move_gripper(
             40,
             force=1.5,
         )
 
         # 2. Move to pre-pick pose
-        piper.set_speed(10)
+        piper.set_speed(20)
 
         piper.move_joint(
             *prepick_joint_degrees
         )
 
-        time.sleep(10)
+        time.sleep(7)
 
         # 3. Slowly move to grasp pose
         piper.set_speed(4)
-
+        print('move to pick brush')
         piper.move_joint(
             *joint_degrees
         )
 
-        time.sleep(5)
+        time.sleep(3)
 
         # Close gripper
         piper.move_gripper(
             0,
             force=1.5,
         )
+        time.sleep(1)
+        
+        print('pull up brush')
+        piper.move_joint(*prepick_joint_degrees)
 
     finally:
         piper.disconnect()

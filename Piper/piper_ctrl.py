@@ -118,15 +118,18 @@ class PiperCtrl:
         return self.gripper.disable_gripper()
 
     def calibrate_gripper(self, timeout=1.0):
+
         if self.gripper is None:
             return False
         return self.gripper.calibrate_gripper(timeout=timeout)
 
-    def clear_error(self, clear_gripper=True):
-        ok = self.robot.clear_joint_error(255)
-        if clear_gripper and self.gripper is not None:
-            self.gripper.calibrate_gripper(timeout=1.0)
-        return ok
+    def clear_error(self, clear_gripper=True): return self.robot.clear_joint_error(255)
+
+    def calibrate_gripper(self, timeout=1 ):
+        if self.gripper is None:
+            return False
+        return self.gripper.calibrate_gripper(timeout =timeout )
+
 
 
 def connect_piper(
@@ -168,8 +171,10 @@ if __name__ == "__main__":
     
     r_piper.clear_error()
     r_piper.enable()
-    #r_piper.set_speed(5)
-    #r_piper.move_joint(0,20,-30,0,40,0)
-
+    r_piper.set_speed(10)
+    
+    #r_piper.move_gripper(20,1)
+    #r_piper.move_joint(90,20,-30,0,40,0)
+    #r_piper.move_gripper(0,1)
 
 

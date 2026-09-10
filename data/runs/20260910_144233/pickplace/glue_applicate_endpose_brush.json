@@ -1,0 +1,525 @@
+{
+  "coordinate_frame": "base",
+  "data_chain": "fix_points_curve_motion.pcd -> adaptive segments -> delta_T_base fuse alignment -> endpose / IK",
+  "segment_source": "/home/smmg/AAM/data/runs/20260910_144233/completion/depression/glue_brush_adaptive_segments.json",
+  "alignment_source": "/home/smmg/AAM/data/runs/20260910_144233/pickplace/iterative_correction.json",
+  "delta_T_base": [
+    [
+      0.999610747,
+      0.027899019,
+      0.0,
+      0.00424231
+    ],
+    [
+      -0.027899019,
+      0.999610747,
+      0.0,
+      -0.004335364
+    ],
+    [
+      0.0,
+      0.0,
+      1.0,
+      0.006908731
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "brush_radius_mm": 17.0,
+  "press_depth_mm": 0.0,
+  "tag_p_brush_center_mm": [
+    0.0,
+    0.0,
+    -86.0
+  ],
+  "flange_T_tag": [
+    [
+      -1.0,
+      -2.103e-06,
+      0.0,
+      -0.05000016
+    ],
+    [
+      -2.103e-06,
+      1.0,
+      0.0,
+      -6.04e-07
+    ],
+    [
+      -0.0,
+      0.0,
+      -1.0,
+      0.124500372
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "input_segment_count": 7,
+  "generated_segment_count": 5,
+  "skipped_segments": [
+    {
+      "segment_id": 5,
+      "reason": "contact fail"
+    },
+    {
+      "segment_id": 6,
+      "reason": "contact fail"
+    }
+  ],
+  "pre_app_failed_segment_ids": [],
+  "segments": [
+    {
+      "segment_id": 0,
+      "segment_center_base_m": [
+        0.3066411519503381,
+        0.049456880926207494,
+        0.031950539462275065
+      ],
+      "segment_tangent_unit": [
+        0.706198735904373,
+        0.7080136618788267,
+        0.0
+      ],
+      "outward_normal_unit": [
+        -0.709219108,
+        0.704988125,
+        0.0
+      ],
+      "contact_reachable": true,
+      "pre_app_reachable": true,
+      "tag_z_search_angle_deg": 252.76903,
+      "pre_app_offset_mm": 77.062,
+      "brush_center_pre_base_m": [
+        0.23993086,
+        0.1157692,
+        0.031950539
+      ],
+      "brush_center_contact_base_m": [
+        0.294584427,
+        0.061441679,
+        0.031950539
+      ],
+      "pre_app_endpose": [
+        195.75873,
+        92.341888,
+        242.450911,
+        180.0,
+        0.0,
+        -152.059434
+      ],
+      "contact_endpose": [
+        250.412297,
+        38.014367,
+        242.450911,
+        180.0,
+        0.0,
+        -152.059434
+      ],
+      "pre_app_joint_degrees": [
+        25.254,
+        77.351,
+        -50.351,
+        -0.0,
+        68.0,
+        -2.687
+      ],
+      "contact_joint_degrees": [
+        8.632,
+        84.808,
+        -57.633,
+        -0.0,
+        67.825,
+        -19.309
+      ],
+      "pre_app_ik_error": {
+        "pos_err_mm": 0.000451,
+        "rot_err_deg": 0.000639
+      },
+      "contact_ik_error": {
+        "pos_err_mm": 0.0,
+        "rot_err_deg": 0.0
+      },
+      "base_R_tag": [
+        [
+          0.883435094,
+          -0.468553555,
+          0.0
+        ],
+        [
+          0.468553555,
+          0.883435094,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "segment_id": 1,
+      "segment_center_base_m": [
+        0.2920061351942766,
+        0.010517661312954582,
+        0.03139753746227506
+      ],
+      "segment_tangent_unit": [
+        0.31135501887707956,
+        -0.9502936663053445,
+        0.0
+      ],
+      "outward_normal_unit": [
+        -0.940919631,
+        -0.338629956,
+        0.0
+      ],
+      "contact_reachable": true,
+      "pre_app_reachable": true,
+      "tag_z_search_angle_deg": 98.385544,
+      "pre_app_offset_mm": 47.108,
+      "brush_center_pre_base_m": [
+        0.231685857,
+        -0.011191157,
+        0.031397537
+      ],
+      "brush_center_contact_base_m": [
+        0.276010501,
+        0.004760952,
+        0.031397537
+      ],
+      "pre_app_endpose": [
+        208.074859,
+        32.883062,
+        241.897909,
+        180.0,
+        0.0,
+        118.17909
+      ],
+      "contact_endpose": [
+        252.399503,
+        48.835171,
+        241.897909,
+        180.0,
+        0.0,
+        118.17909
+      ],
+      "pre_app_joint_degrees": [
+        8.98,
+        76.182,
+        -49.183,
+        -0.0,
+        68.0,
+        70.801
+      ],
+      "contact_joint_degrees": [
+        10.95,
+        85.595,
+        -58.336,
+        -0.0,
+        67.742,
+        72.771
+      ],
+      "pre_app_ik_error": {
+        "pos_err_mm": 0.000321,
+        "rot_err_deg": 0.000448
+      },
+      "contact_ik_error": {
+        "pos_err_mm": 0.0,
+        "rot_err_deg": 0.0
+      },
+      "base_R_tag": [
+        [
+          0.472227254,
+          0.881476841,
+          0.0
+        ],
+        [
+          -0.881476841,
+          0.472227254,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "segment_id": 2,
+      "segment_center_base_m": [
+        0.2911625844417411,
+        0.024240280127264247,
+        0.028293221462275062
+      ],
+      "segment_tangent_unit": [
+        0.3505326239348566,
+        0.936550521625686,
+        0.0
+      ],
+      "outward_normal_unit": [
+        -0.919999892,
+        0.391918611,
+        0.0
+      ],
+      "contact_reachable": true,
+      "pre_app_reachable": true,
+      "tag_z_search_angle_deg": 137.1754,
+      "pre_app_offset_mm": 92.885,
+      "brush_center_pre_base_m": [
+        0.190068455,
+        0.067306232,
+        0.028293221
+      ],
+      "brush_center_contact_base_m": [
+        0.275522586,
+        0.030902897,
+        0.028293221
+      ],
+      "pre_app_endpose": [
+        169.651155,
+        112.947768,
+        238.793593,
+        180.0,
+        0.0,
+        114.101587
+      ],
+      "contact_endpose": [
+        255.105286,
+        76.544433,
+        238.793593,
+        180.0,
+        0.0,
+        114.101587
+      ],
+      "pre_app_joint_degrees": [
+        33.654,
+        74.947,
+        -47.377,
+        0.0,
+        67.43,
+        99.553
+      ],
+      "contact_joint_degrees": [
+        16.702,
+        87.611,
+        -59.794,
+        -0.0,
+        67.184,
+        82.6
+      ],
+      "pre_app_ik_error": {
+        "pos_err_mm": 9.4e-05,
+        "rot_err_deg": 6e-06
+      },
+      "contact_ik_error": {
+        "pos_err_mm": 0.0,
+        "rot_err_deg": 0.0
+      },
+      "base_R_tag": [
+        [
+          0.408353821,
+          0.912823727,
+          0.0
+        ],
+        [
+          -0.912823727,
+          0.408353821,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "segment_id": 3,
+      "segment_center_base_m": [
+        0.2943568611699967,
+        0.03380700882182697,
+        0.030841469462275062
+      ],
+      "segment_tangent_unit": [
+        0.21324703351004767,
+        0.976998312536498,
+        0.0
+      ],
+      "outward_normal_unit": [
+        -0.98227335,
+        0.187454167,
+        0.0
+      ],
+      "contact_reachable": true,
+      "pre_app_reachable": true,
+      "tag_z_search_angle_deg": 190.163925,
+      "pre_app_offset_mm": 40.0,
+      "brush_center_pre_base_m": [
+        0.23836728,
+        0.044491896,
+        0.030841469
+      ],
+      "brush_center_contact_base_m": [
+        0.277658214,
+        0.03699373,
+        0.030841469
+      ],
+      "pre_app_endpose": [
+        188.370248,
+        45.051174,
+        241.341841,
+        180.0,
+        0.0,
+        179.359796
+      ],
+      "contact_endpose": [
+        227.661182,
+        37.553007,
+        241.341841,
+        180.0,
+        0.0,
+        179.359796
+      ],
+      "pre_app_joint_degrees": [
+        13.45,
+        72.52,
+        -45.912,
+        -0.0,
+        68.0,
+        14.091
+      ],
+      "contact_joint_degrees": [
+        9.367,
+        80.353,
+        -52.881,
+        -0.0,
+        67.527,
+        10.007
+      ],
+      "pre_app_ik_error": {
+        "pos_err_mm": 0.295563,
+        "rot_err_deg": 0.391569
+      },
+      "contact_ik_error": {
+        "pos_err_mm": 0.0,
+        "rot_err_deg": 0.0
+      },
+      "base_R_tag": [
+        [
+          0.999937552,
+          0.011175531,
+          0.0
+        ],
+        [
+          -0.011175531,
+          0.999937552,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "segment_id": 4,
+      "segment_center_base_m": [
+        0.2931263807479261,
+        0.02608256325183726,
+        0.033448549462275066
+      ],
+      "segment_tangent_unit": [
+        0.2660570423028198,
+        0.9639572865231507,
+        0.0
+      ],
+      "outward_normal_unit": [
+        -0.973018918,
+        0.230725347,
+        0.0
+      ],
+      "contact_reachable": true,
+      "pre_app_reachable": true,
+      "tag_z_search_angle_deg": 157.692537,
+      "pre_app_offset_mm": 40.0,
+      "brush_center_pre_base_m": [
+        0.237664302,
+        0.039233908,
+        0.033448549
+      ],
+      "brush_center_contact_base_m": [
+        0.276585059,
+        0.030004894,
+        0.033448549
+      ],
+      "pre_app_endpose": [
+        197.033438,
+        68.374067,
+        243.948921,
+        180.0,
+        0.0,
+        144.352878
+      ],
+      "contact_endpose": [
+        235.954195,
+        59.145054,
+        243.948921,
+        180.0,
+        0.0,
+        144.352878
+      ],
+      "pre_app_joint_degrees": [
+        19.138,
+        75.481,
+        -48.976,
+        -0.0,
+        68.0,
+        54.785
+      ],
+      "contact_joint_degrees": [
+        14.072,
+        82.689,
+        -55.788,
+        -0.0,
+        68.0,
+        49.719
+      ],
+      "pre_app_ik_error": {
+        "pos_err_mm": 0.356412,
+        "rot_err_deg": 0.495608
+      },
+      "contact_ik_error": {
+        "pos_err_mm": 0.065107,
+        "rot_err_deg": 0.099105
+      },
+      "base_R_tag": [
+        [
+          0.812620503,
+          0.582793203,
+          0.0
+        ],
+        [
+          -0.582793203,
+          0.812620503,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ]
+}

@@ -53,7 +53,7 @@ TAG_P_BRUSH_CENTER_M = np.array(
     dtype=float,
 )
 
-BRUSH_RADIUS_M = 0.02
+BRUSH_RADIUS_M = 0.017
 PRESS_DEPTH_M = 0.0
 
 
@@ -2423,125 +2423,6 @@ def angle_error_deg(
     ) % 360.0 - 180.0
 
 
-def wait_joint(
-    piper,
-    target,
-    timeout=MOTION_TIMEOUT,
-):
-
-    target = np.asarray(
-        target,
-        dtype=float,
-    )
-
-    deadline = (
-        time.monotonic()
-        + timeout
-    )
-
-    while (
-        time.monotonic()
-        < deadline
-    ):
-
-        current = (
-            piper.get_joint()
-        )
-
-        if current is not None:
-
-            error = angle_error_deg(
-                current,
-                target,
-            )
-
-            if (
-                np.max(
-                    np.abs(
-                        error
-                    )
-                )
-                <= JOINT_TOLERANCE_DEG
-            ):
-
-                return
-
-        time.sleep(
-            0.05
-        )
-
-    raise TimeoutError(
-        "Piper did not reach "
-        "target joint angles."
-    )
-
-
-def wait_endpose(
-    piper,
-    target,
-    timeout=MOTION_TIMEOUT,
-):
-
-    target = np.asarray(
-        target,
-        dtype=float,
-    )
-
-    deadline = (
-        time.monotonic()
-        + timeout
-    )
-
-    while (
-        time.monotonic()
-        < deadline
-    ):
-
-        current = (
-            piper.get_endpose()
-        )
-
-        if current is not None:
-
-            current = np.asarray(
-                current,
-                dtype=float,
-            )
-
-            pos_error = np.linalg.norm(
-                current[:3]
-                - target[:3]
-            )
-
-            rot_error = np.max(
-                np.abs(
-                    angle_error_deg(
-                        current[3:],
-                        target[3:],
-                    )
-                )
-            )
-
-            if (
-                pos_error
-                <= ENDPOSE_POSITION_TOLERANCE_MM
-                and
-                rot_error
-                <= ENDPOSE_ANGLE_TOLERANCE_DEG
-            ):
-
-                return
-
-        time.sleep(
-            0.05
-        )
-
-    raise TimeoutError(
-        "Piper did not reach "
-        "target endpose."
-    )
-
-
 def move_joint_wait(
     piper,
     joints,
@@ -2551,12 +2432,12 @@ def move_joint_wait(
         *joints
     )
 
-def move_endpose_wait(
+def move_line(
     piper,
     endpose,
 ):
 
-    piper.move_endpose(
+    piper.move_line(
         *endpose
     )
 
@@ -2618,11 +2499,10 @@ def prepare_after_pick(
     )
 
     print(
-        "Move to pick endpose "
-        "Z + 40 mm"
+        "Move to pre-pick "
     )
 
-    move_endpose_wait(
+    move_line(
         piper,
         above_pick.tolist(),
     )
@@ -2792,7 +2672,7 @@ def return_brush(
             "prepick_joint_degrees"
         ],
     )
-    time.sleep(8)
+    time.sleep(6)
 
     # --------------------------------------------------------
     # Pre-pick -> pick endpose
@@ -2804,13 +2684,13 @@ def return_brush(
         "Return to pick"
     )
 
-    move_endpose_wait(
+    move_line(
         piper,
         brush_pick[
             "endpose"
         ],
     )
-    time.sleep(3)
+    time.sleep(2)
 
     # --------------------------------------------------------
     # Release
@@ -2828,6 +2708,13 @@ def return_brush(
 
     time.sleep(
         1.0
+    )
+    
+    move_joint_wait(
+        piper,
+        brush_pick[
+            "prepick_joint_degrees"
+        ],
     )
 
 
@@ -2895,11 +2782,7 @@ def main():
     piper = connect_right()
 
     try:
-
-        piper.clear_error(
-            clear_gripper=False
-        )
-
+        piper.clear_error( clear_gripper=False)
         piper.enable()
 
         # ----------------------------------------------------
@@ -2907,11 +2790,7 @@ def main():
         # -> pick Z + 40
         # -> Joint1 = 35 deg
         # ----------------------------------------------------
-
-        prepare_after_pick(
-            piper,
-            brush_pick,
-        )
+        prepare_after_pick(piper, brush_pick,)
 
         # ----------------------------------------------------
         # pre1

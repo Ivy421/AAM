@@ -1,0 +1,87 @@
+{
+  "data_dir": "/home/smmg/AAM/data/runs/20260910_144233/construction/coarse_scan",
+  "target_index": 0,
+  "target_name": "coarse_scan_1",
+  "target_image_path": "/home/smmg/AAM/data/runs/20260910_144233/construction/coarse_scan/coarse_scan_1.png",
+  "defect_label": "D",
+  "corner_mode": "max_u_max_v",
+  "corner_pixel_xy": [
+    369.672,
+    410.377
+  ],
+  "nearest_k": 15,
+  "nearest_pixel_distances_px": [
+    16.624,
+    16.76,
+    16.945,
+    17.343,
+    17.451,
+    17.49,
+    17.592,
+    17.736,
+    17.897,
+    18.083,
+    18.088,
+    18.161,
+    18.209,
+    18.443,
+    18.584
+  ],
+  "defect_roi_center_world_m": [
+    0.414822,
+    0.052971,
+    0.02288
+  ],
+  "defect_roi_size_m": [
+    0.15,
+    0.15,
+    0.15
+  ],
+  "defect_roi_size_mm": [
+    150.0,
+    150.0,
+    150.0
+  ],
+  "defect_roi_cube_corners_world_m": [
+    [
+      0.339822,
+      -0.022029,
+      -0.05212
+    ],
+    [
+      0.339822,
+      -0.022029,
+      0.09788
+    ],
+    [
+      0.339822,
+      0.127971,
+      -0.05212
+    ],
+    [
+      0.339822,
+      0.127971,
+      0.09788
+    ],
+    [
+      0.489822,
+      -0.022029,
+      -0.05212
+    ],
+    [
+      0.489822,
+      -0.022029,
+      0.09788
+    ],
+    [
+      0.489822,
+      0.127971,
+      -0.05212
+    ],
+    [
+      0.489822,
+      0.127971,
+      0.09788
+    ]
+  ]
+}
