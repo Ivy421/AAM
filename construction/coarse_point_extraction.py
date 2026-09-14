@@ -581,7 +581,7 @@ def extract_coarse_points():
     object_center, object_size = load_first_object_points()
     object_center_base = object_center.reshape(1,3)
 
-    png_files = sorted(COARSE_SCAN_DIR.glob("*.png"))
+    png_files = sorted( COARSE_SCAN_DIR.glob("coarse_scan_*.png"),key=lambda p: int(p.stem.split("_")[-1]))
     png_names = [p.stem for p in png_files]
 
     points_collection = []

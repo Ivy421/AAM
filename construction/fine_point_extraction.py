@@ -558,7 +558,8 @@ def extract_fine_points():
 
     sam3_model, sam3_processor = init_sam3_model()
 
-    png_files = sorted(FINE_SCAN_DIR.glob("*.png"), key=fine_frame_sort_key)
+    #png_files = sorted(FINE_SCAN_DIR.glob("*.png"), key=fine_frame_sort_key)
+    png_files = sorted( FINE_SCAN_DIR.glob("coarse_scan_*.png"),key=lambda p: int(p.stem.split("_")[-1]))
     png_names = [p.stem for p in png_files]
 
     points_collection = []
