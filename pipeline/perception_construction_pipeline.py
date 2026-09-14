@@ -31,8 +31,6 @@ CONFIRMATION_RESULT_PATH = None
 
 START_FRAME_STEM = "start"
 
-DESIRED_JOINT_DEG = [ 0, 35, -30, 0, 25, 0]
-
 SCRIPTS = {
     "rough_segmentation": PERCEPTION_DIR / "1_rough_defects_segmentation.py",
     "move_to_defects": PERCEPTION_DIR / "1_1_move_to_defects.py",
@@ -41,11 +39,13 @@ SCRIPTS = {
     "coarse_scan": CONSTRUCTION_DIR / "coarse_scan_9.py",
     "coarse_point_extraction": CONSTRUCTION_DIR / "coarse_point_extraction.py",
     "coarse_icp": CONSTRUCTION_DIR / "coarse_icp_add.py",
+    "coarse_icp_curvature": CONSTRUCTION_DIR / "coarse_icp_curvature.py",
     "corner_mode_mapping": CONSTRUCTION_DIR / "Depression_corner_mode_mapping.py",
     "fine_scan_center": CONSTRUCTION_DIR / "fine_scan_center.py",
     "fine_scan": CONSTRUCTION_DIR / "fine_scan.py",
     "fine_point_extraction": CONSTRUCTION_DIR / "fine_point_extraction.py",
     "fine_icp": CONSTRUCTION_DIR / "fine_icp_add.py",
+    "fine_icp_curvature": CONSTRUCTION_DIR / "fine_icp_curvature.py",
     "completion": PROJECT_ROOT / "pipeline" / "completion_pipeline.py",
 }
 
@@ -182,7 +182,7 @@ def scan_output_dir_and_prefix(view_mode):
 
 
 def capture_scan_views(scanpose_json, view_mode, dry_run=False):
-    records = load_scanpose_records(scanpose_json) if not dry_run else [{"joint_degrees": [ 0, 30 , -30 , 0 , 25 , 0  ]}] * 3
+    records = load_scanpose_records(scanpose_json) if not dry_run else [{"joint_degrees": [ 0, 30 , -30 , 0 , 35 , 0  ]}] * 3
     selected_records, start_index = select_scanpose_records(records, view_mode)
     output_dir, file_prefix = scan_output_dir_and_prefix(view_mode)
 
@@ -192,7 +192,7 @@ def capture_scan_views(scanpose_json, view_mode, dry_run=False):
 
     piper = connect_right(with_gripper=False)
     piper.enable()
-    piper.set_speed(15)
+    piper.set_speed(10)
     camera_functions.json = json
 
     try:
@@ -219,8 +219,6 @@ def capture_scan_views(scanpose_json, view_mode, dry_run=False):
                 post_process=1,
                 SAVE_ENDPOSE=True,
             )
-        piper.move_joint( 0, 20, -30, 0,40, 0  )
-        time.sleep(3)
     finally:
         piper.disconnect()
 
@@ -239,6 +237,7 @@ def is_confirmed_defect(result):
 def run_coarse_reconstruction(dry_run=False):
     run_script(SCRIPTS["coarse_point_extraction"], "--run-dir", RUN_DIR, dry_run=dry_run)
     run_script(SCRIPTS["coarse_icp"], "--run-dir", RUN_DIR, dry_run=dry_run)
+    run_script(SCRIPTS["coarse_icp_curvature"], "--run-dir", RUN_DIR, dry_run=dry_run)
     run_script(SCRIPTS["corner_mode_mapping"], "--run-dir", RUN_DIR, dry_run=dry_run)
     run_script(SCRIPTS["fine_scan_center"], "--run-dir", RUN_DIR, dry_run=dry_run)
 
@@ -252,15 +251,15 @@ def run_fine_reconstruction(dry_run=False):
     )
     run_script(SCRIPTS["fine_point_extraction"], "--run-dir", RUN_DIR, dry_run=dry_run)
     run_script(SCRIPTS["fine_icp"], "--run-dir", RUN_DIR, dry_run=dry_run)
+    run_script(SCRIPTS["fine_icp_curvature"], "--run-dir", RUN_DIR, dry_run=dry_run)
 
 
 def run_pipeline(run_fine=False, printing=False, dry_run=False, run_dir=None):
+    if run_dir is None:
+        run_dir = DEFAULT_RUNS_DIR / time.strftime("%Y%m%d_%H%M%S")
 
     configure_run_paths(Path(run_dir))
     print(f"\nRUN_DIR: {RUN_DIR}")
-    piper = connect_right(with_gripper=False)
-    piper.enable()
-    piper.set_speed(10)
 
     start_image_path = RUN_DIR / "start.png"
     start_depth_path = RUN_DIR / "start.npy"
@@ -309,8 +308,6 @@ def run_pipeline(run_fine=False, printing=False, dry_run=False, run_dir=None):
 
     for command in commands:
         defect_id = int(command.get("id", 1))
-        piper.move_joint(* DESIRED_JOINT_DEG )
-        time.sleep(2)
 
         run_mark1_motion(command, dry_run=dry_run)
         time.sleep(5)

@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"black rectangular block\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"black rectangular block on white paper with a chipped and irregular bottom corner\",\n      \"short_object_prompt\": \"black rectangular block\",\n      \"balanced_prompt\": \"black block with damaged bottom corner\"\n    },\n    \"description\": \"A black rectangular object resting on a sheet of white paper has a visible irregularity or missing volume at its bottom-left corner, appearing as a chip or break that could be filled via 3D printing.\",\n    \"confidence\": 9\n  }\n]"
+]
