@@ -46,11 +46,11 @@ def run_depression_completion(run_dir, dry_run=False, printing=False):
     completion_dir = run_dir / "completion" / "depression"
     completion_dir.mkdir(parents=True, exist_ok=True)
 
-    fine_pcd = run_dir / "construction" / "fine_scan" / "fine_fuse.pcd"
+    fine_pcd = run_dir / "construction" / "fine_scan" / "fine_fuse_curvature.pcd"
     corner_json = run_dir / "construction" / "coarse_scan" / "corner_mapping_result.json"
 
     if not dry_run and not fine_pcd.exists():
-        raise FileNotFoundError(f"Missing fine_fuse.pcd for completion: {fine_pcd}")
+        raise FileNotFoundError(f"Missing fine_fuse_curvature.pcd for completion: {fine_pcd}")
     if not dry_run and not corner_json.exists():
         raise FileNotFoundError(f"Missing corner_mapping_result.json for completion: {corner_json}")
 

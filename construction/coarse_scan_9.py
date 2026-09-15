@@ -210,6 +210,7 @@ def build_cube_centers(object_center, p_cam0, radius):
         ("right_mid", -45.0, 20.0),
         ("right_grazing", -70.0, 10.0),
         ("right_edge", -60.0, 0.0),
+        ("right_edge2", -30.0, 0.0),
         
         ("top_front", 0.0, 70.0),
 
@@ -217,6 +218,7 @@ def build_cube_centers(object_center, p_cam0, radius):
         ("left_mid", 45.0, 20.0),
         ("left_grazing", 70.0, 10.0),
         ("left_edge", 60.0, 0.0),
+        ("left_edge2", 30.0, 0.0),
 
     
         

@@ -183,13 +183,23 @@ def curvature_similarity_icp(source_global,target):
 def main():
     items=load_dataset(COARSE_POINT_FILE,COARSE_SEQ_FILE,"coarse")
     if not items: raise RuntimeError("No coarse point-cloud frames were loaded")
-    clouds=[make_pcd(x["points"]) for x in items]; raw_counts=[len(x["points"]) for x in items]; proc_counts=[len(x.points) for x in clouds]
+    clouds=[make_pcd(x["points"]) for x in items]; 
+    raw_counts=[len(x["points"]) for x in items]; 
+    proc_counts=[len(x.points) for x in clouds]
     target_idx,target_selection=select_target_idx(items,raw_counts,proc_counts)
-    current_target=copy_pcd(clouds[target_idx]); target_name=items[target_idx]["name"]; target_num=frame_number(target_name)
-    accepted=[target_name]; rejected=[]; source_indices=[i for i in range(len(items)) if i!=target_idx]; processing_order=[items[i]["name"] for i in source_indices]
-    transforms=[np.eye(4) for _ in items]; kept=np.zeros(len(items),bool); kept[target_idx]=True; records=[]
+    current_target=copy_pcd(clouds[target_idx]); 
+    target_name=items[target_idx]["name"]; 
+    target_num=frame_number(target_name)
+    accepted=[target_name]; rejected=[]; 
+    source_indices=[i for i in range(len(items)) if i!=target_idx]; 
+    processing_order=[items[i]["name"] for i in source_indices]
+    transforms=[np.eye(4) for _ in items]; 
+    kept=np.zeros(len(items),bool); kept[target_idx]=True; records=[]
     o3d.io.write_point_cloud(str(DEBUG_DIR/f"scan_{target_num}_transformed.pcd"),current_target)
-    print("========== Curvature coarse ICP target =========="); print("target:",items[target_idx]["global_name"]); print("target selection:",target_selection); print("processing order:",processing_order)
+    print("========== Curvature coarse ICP target =========="); 
+    print("target:",items[target_idx]["global_name"]); 
+    print("target selection:",target_selection); 
+    print("processing order:",processing_order)
 
     for step,source_idx in enumerate(source_indices,start=1):
         item=items[source_idx]; name=item["name"]; source=copy_pcd(clouds[source_idx]); target_points_before=len(current_target.points)

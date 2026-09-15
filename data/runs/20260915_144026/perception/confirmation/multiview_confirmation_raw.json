@@ -1,0 +1,3 @@
+[
+    "{\n  \"is_defect\": \"yes\",\n  \"defect_type\": \"depression\",\n  \"defect_object\": \"black rectangular block\",\n  \"defect_region\": \"irregular chipped and jagged corner at the right end of the block with missing volume\",\n  \"segmentation_text_prompt\": {\n    \"long_defect_prompt\": \"black rectangular block with a jagged broken corner and missing material volume\",\n    \"short_object_prompt\": \"black rectangular block\",\n    \"balanced_prompt\": \"black block with damaged irregular corner edge\"\n  }\n}"
+]
