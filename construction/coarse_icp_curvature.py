@@ -8,7 +8,7 @@ from scipy.spatial.transform import Rotation as R
 PROJECT_ROOT=Path(os.getenv("AAM_PROJECT_ROOT",Path(__file__).resolve().parents[1]))
 DATA_DIR=PROJECT_ROOT/"construction"/"data"; COARSE_DIR=DATA_DIR/"coarse_scan"
 COARSE_POINT_FILE=COARSE_DIR/"coarse_point_result.npz"; COARSE_SEQ_FILE=COARSE_DIR/"coarse_png_sequence.json"; COARSE_SCANPOSE_FILE=COARSE_DIR/"coarse_scanpose.json"
-OUTPUT_FUSED_PCD=COARSE_DIR/"coarse_fuse_curvature.pcd"; OUTPUT_RESULT_JSON=COARSE_DIR/"coarse_icp_curvature_result.json"; OUTPUT_TRANSFORM_NPZ=COARSE_DIR/"coarse_icp_curvature_transforms.npz"; DEBUG_DIR=COARSE_DIR/"curvature_debug"
+OUTPUT_FUSED_PCD=COARSE_DIR/"coarse_fuse.pcd"; OUTPUT_RESULT_JSON=COARSE_DIR/"coarse_icp_result.json"; OUTPUT_TRANSFORM_NPZ=COARSE_DIR/"coarse_icp_transforms.npz"; DEBUG_DIR=COARSE_DIR/"curvature_debug"
 VISUALIZE=False
 
 TARGET_CUBE_NAME="front_high"; FALLBACK_TARGET_CUBE_NAME="left_high"; TARGET_MIN_POINTS=500; TARGET_MAX_POINTS=80000
@@ -26,10 +26,10 @@ def configure_paths(args):
     COARSE_POINT_FILE=Path(args.coarse_point_file) if args.coarse_point_file else COARSE_DIR/"coarse_point_result.npz"
     COARSE_SEQ_FILE=Path(args.coarse_seq_file) if args.coarse_seq_file else COARSE_DIR/"coarse_png_sequence.json"
     COARSE_SCANPOSE_FILE=Path(args.coarse_scanpose_file) if args.coarse_scanpose_file else COARSE_DIR/"coarse_scanpose.json"
-    OUTPUT_FUSED_PCD=Path(args.output_pcd) if args.output_pcd else COARSE_DIR/"coarse_fuse_curvature.pcd"
-    OUTPUT_RESULT_JSON=Path(args.output_json) if args.output_json else COARSE_DIR/"coarse_icp_curvature_result.json"
-    OUTPUT_TRANSFORM_NPZ=Path(args.output_transforms) if args.output_transforms else COARSE_DIR/"coarse_icp_curvature_transforms.npz"
-    DEBUG_DIR=Path(args.debug_dir) if args.debug_dir else COARSE_DIR/"curvature_debug"
+    OUTPUT_FUSED_PCD=Path(args.output_pcd) if args.output_pcd else COARSE_DIR/"coarse_fuse.pcd"
+    OUTPUT_RESULT_JSON=Path(args.output_json) if args.output_json else COARSE_DIR/"coarse_icp_result.json"
+    OUTPUT_TRANSFORM_NPZ=Path(args.output_transforms) if args.output_transforms else COARSE_DIR/"coarse_icp_transforms.npz"
+    DEBUG_DIR=Path(args.debug_dir) if args.debug_dir else COARSE_DIR/"debug"
     VISUALIZE=bool(args.visualize); COARSE_DIR.mkdir(parents=True,exist_ok=True); DEBUG_DIR.mkdir(parents=True,exist_ok=True)
 
 def load_json(path):

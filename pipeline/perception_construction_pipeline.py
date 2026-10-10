@@ -36,13 +36,13 @@ SCRIPTS = {
     "move_to_defects": PERCEPTION_DIR / "1_1_move_to_defects.py",
     "multiview_confirmation": PERCEPTION_DIR / "2_multiview_defect_confirmation.py",
     "coarse_scan_center": CONSTRUCTION_DIR / "coarse_scan_center.py",
-    "coarse_scan": CONSTRUCTION_DIR / "coarse_scan_9.py",
+    "coarse_scan": CONSTRUCTION_DIR / "coarse_scan_viewpoint.py",
     "coarse_point_extraction": CONSTRUCTION_DIR / "coarse_point_extraction.py",
     "coarse_icp": CONSTRUCTION_DIR / "coarse_icp_add.py",
     "coarse_icp_curvature": CONSTRUCTION_DIR / "coarse_icp_curvature.py",
     "corner_mode_mapping": CONSTRUCTION_DIR / "Depression_corner_mode_mapping.py",
     "fine_scan_center": CONSTRUCTION_DIR / "fine_scan_center.py",
-    "fine_scan": CONSTRUCTION_DIR / "fine_scan.py",
+    "fine_scan": CONSTRUCTION_DIR / "fine_scan_viewpoint.py",
     "fine_point_extraction": CONSTRUCTION_DIR / "fine_point_extraction.py",
     "fine_icp": CONSTRUCTION_DIR / "fine_icp_add.py",
     "fine_icp_curvature": CONSTRUCTION_DIR / "fine_icp_curvature.py",
@@ -192,7 +192,7 @@ def capture_scan_views(scanpose_json, view_mode, dry_run=False):
 
     piper = connect_right(with_gripper=False)
     piper.enable()
-    piper.set_speed(10)
+    piper.set_speed(20)
     camera_functions.json = json
 
     try:
@@ -236,7 +236,7 @@ def is_confirmed_defect(result):
 
 def run_coarse_reconstruction(dry_run=False):
     run_script(SCRIPTS["coarse_point_extraction"], "--run-dir", RUN_DIR, dry_run=dry_run)
-    run_script(SCRIPTS["coarse_icp"], "--run-dir", RUN_DIR, dry_run=dry_run)
+    #run_script(SCRIPTS["coarse_icp"], "--run-dir", RUN_DIR, dry_run=dry_run)
     run_script(SCRIPTS["coarse_icp_curvature"], "--run-dir", RUN_DIR, dry_run=dry_run)
     run_script(SCRIPTS["corner_mode_mapping"], "--run-dir", RUN_DIR, dry_run=dry_run)
     run_script(SCRIPTS["fine_scan_center"], "--run-dir", RUN_DIR, dry_run=dry_run)
@@ -250,7 +250,7 @@ def run_fine_reconstruction(dry_run=False):
         dry_run=dry_run,
     )
     run_script(SCRIPTS["fine_point_extraction"], "--run-dir", RUN_DIR, dry_run=dry_run)
-    run_script(SCRIPTS["fine_icp"], "--run-dir", RUN_DIR, dry_run=dry_run)
+    #run_script(SCRIPTS["fine_icp"], "--run-dir", RUN_DIR, dry_run=dry_run)
     run_script(SCRIPTS["fine_icp_curvature"], "--run-dir", RUN_DIR, dry_run=dry_run)
 
 
@@ -360,6 +360,11 @@ def run_pipeline(run_fine=False, printing=False, dry_run=False, run_dir=None):
             print("\nSKIP completion: run_fine is False, fine_fuse.pcd is not available.")
 
     print("\nPIPELINE COMPLETE")
+    
+    piper = connect_right(with_gripper=False)
+    piper.enable()
+    piper.set_speed(20)
+    piper.move_joint(0,0,0,0,0,0 )
 
 
 def main():

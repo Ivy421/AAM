@@ -21,7 +21,7 @@ sys.path.append(str(PROJECT_ROOT))
 # =========================
 # Paths / parameters
 # =========================
-DATA_DIR = PROJECT_ROOT / "construction" / "data"
+DATA_DIR = PROJECT_ROOT / "construction" 
 FINE_SCAN_DIR = DATA_DIR / "fine_scan"
 ROI_JSON = DATA_DIR / "coarse_scan" / "defect_roi_result.json"
 FINE_SCANPOSE_PATH = FINE_SCAN_DIR / "fine_scanpose.json"
@@ -559,7 +559,7 @@ def extract_fine_points():
     sam3_model, sam3_processor = init_sam3_model()
 
     #png_files = sorted(FINE_SCAN_DIR.glob("*.png"), key=fine_frame_sort_key)
-    png_files = sorted( FINE_SCAN_DIR.glob("coarse_scan_*.png"),key=lambda p: int(p.stem.split("_")[-1]))
+    png_files = sorted( FINE_SCAN_DIR.glob("fine_scan_*.png"),key=lambda p: int(p.stem.split("_")[-1]))
     png_names = [p.stem for p in png_files]
 
     points_collection = []

@@ -1,13 +1,3 @@
-"""
-优化方向：
-1. 五个cube的选择，俯视点太极端
-2. radius_scale的制定：若某个cube不可达，迭代修改该参数搜索可达点
-3. 对于关节角抵达limit，go_Zero函数调用有问题，要不就跑两次enbale + go_zero, 要不就limit的关节角+-1度
-"""
-
-
-
-
 import json
 import argparse
 import os
@@ -53,10 +43,16 @@ ANGLE_UNIT = "deg"
 EULER_ORDER = "xyz"
 
 # Coarse scan geometry
-RADIUS_SCALE = 1.3
-RADIUS_MIN = 0.20
-RADIUS_MAX = 1
+#RADIUS_SCALE = 1.3
+#RADIUS_MIN = 0.20
+#RADIUS_MAX = 1
+#CUBE_SIZE_M = np.array([0.15, 0.15, 0.15])   # 15 x 15 x 15 cm
+#
+# Coarse scan geometry
+CAMERA_WORK_DISTANCE = 0.30   # dc [m], Intel RealSense D435 working distance
 CUBE_SIZE_M = np.array([0.15, 0.15, 0.15])   # 15 x 15 x 15 cm
+
+
 
 # Optimization settings
 N_RANDOM_SEEDS = 30
@@ -210,7 +206,6 @@ def build_cube_centers(object_center, p_cam0, radius):
         ("right_mid", -45.0, 20.0),
         ("right_grazing", -70.0, 10.0),
         ("right_edge", -60.0, 0.0),
-        ("right_edge2", -30.0, 0.0),
         
         ("top_front", 0.0, 70.0),
 
@@ -218,10 +213,6 @@ def build_cube_centers(object_center, p_cam0, radius):
         ("left_mid", 45.0, 20.0),
         ("left_grazing", 70.0, 10.0),
         ("left_edge", 60.0, 0.0),
-        ("left_edge2", 30.0, 0.0),
-
-    
-        
 
     ]
 
@@ -436,9 +427,17 @@ def main():
 
     # 1. Load first-frame object point cloud in base coordinate.
     points_base = load_object_points()
+
+    # SAM3 mask 3D bounding box
     object_center, bbox_size = estimate_target(points_base)
     bbox_diag = float(np.linalg.norm(bbox_size))
-    radius = float(np.clip(RADIUS_SCALE * bbox_diag, RADIUS_MIN, RADIUS_MAX))
+
+    # PB-NBV radius:
+    # db = half diagonal length of the object's 3D bounding box
+    # dc = camera working distance
+    dc = CAMERA_WORK_DISTANCE
+    db = 0.5 * bbox_diag
+    radius = dc + db
 
     # 2. Load first-frame camera pose. Used only to define front direction.
     T_base_ee0 = parse_endpose_json(ENDPOSE_PATH)
@@ -496,9 +495,6 @@ def main():
     save_json(OUTPUT_PATH, scan_records)
 
     print("\n========== Coarse scan result ==========")
-    print(f"Object center [m]: {object_center}")
-    print(f"BBox size [m]: {bbox_size}")
-    print(f"BBox diag [m]: {bbox_diag:.4f}")
     print(f"Radius [m]: {radius:.4f}")
     print(f"Saved {len(scan_records)} coarse scan poses to {OUTPUT_PATH}")
 

@@ -173,10 +173,11 @@ if __name__ == "__main__":
     r_piper.enable()
     r_piper.set_speed(15)
     
-    #r_piper.move_gripper(20,1)
-    r_piper.move_joint(   
-0,40,-30,0,20,0
-      )
+    print(r_piper.get_joint())
+    r_piper.move_gripper(0,1)
+    r_piper.move_joint(     
+0,40,-30,0,20,10
+ )  #  0,40,-30,0,20,0 
     #r_piper.move_gripper(0,1)
 
 

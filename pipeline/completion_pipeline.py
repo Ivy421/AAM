@@ -13,6 +13,10 @@ COMPLETION_CODE_DIR = PROJECT_ROOT / "completion"
 SCRIPTS = {
     "deviation": COMPLETION_CODE_DIR / "depression_completion_deviation.py",
     "twoFit": COMPLETION_CODE_DIR / "depression_completion_twoFit.py",
+    "part1":COMPLETION_CODE_DIR / "depression_completion_part1.py",
+    "part2":COMPLETION_CODE_DIR / "depression_completion_part2.py",
+    "part3":COMPLETION_CODE_DIR / "depression_completion_part3.py",
+
     "mark1_close_to_defect": COMPLETION_CODE_DIR /  "mark1_close_to_defect.py",
     "glue_applicate_path": COMPLETION_CODE_DIR / "depression_glue_applicate_path_brush_adaptive.py", #depression_glue_applicate_path
     "ransacFit": COMPLETION_CODE_DIR / "depression_completion_ransacFit.py",
@@ -46,13 +50,8 @@ def run_depression_completion(run_dir, dry_run=False, printing=False):
     completion_dir = run_dir / "completion" / "depression"
     completion_dir.mkdir(parents=True, exist_ok=True)
 
-    fine_pcd = run_dir / "construction" / "fine_scan" / "fine_fuse_curvature.pcd"
+    fine_pcd = run_dir / "construction" / "fine_scan" / "fine_fuse.pcd"
     corner_json = run_dir / "construction" / "coarse_scan" / "corner_mapping_result.json"
-
-    if not dry_run and not fine_pcd.exists():
-        raise FileNotFoundError(f"Missing fine_fuse_curvature.pcd for completion: {fine_pcd}")
-    if not dry_run and not corner_json.exists():
-        raise FileNotFoundError(f"Missing corner_mapping_result.json for completion: {corner_json}")
 
     completion_args = [
         "--pcd", fine_pcd,
@@ -63,7 +62,11 @@ def run_depression_completion(run_dir, dry_run=False, printing=False):
 
     # run_script(SCRIPTS["ransacFit"], *completion_args, dry_run=dry_run)
     # run_script(SCRIPTS["deviation"], *completion_args, dry_run=dry_run)
-    run_script(SCRIPTS["twoFit"], *completion_args, dry_run=dry_run)
+    # run_script(SCRIPTS["twoFit"], *completion_args, dry_run=dry_run)
+    run_script(SCRIPTS["part1"], *completion_args, dry_run=dry_run)
+    run_script(SCRIPTS["part2"], *completion_args, dry_run=dry_run)
+    run_script(SCRIPTS["part3"], *completion_args, dry_run=dry_run)
+
     fix_points = completion_dir / "fix_points_curve.pcd"
 
     print(

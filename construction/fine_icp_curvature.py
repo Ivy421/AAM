@@ -10,9 +10,9 @@ from scipy.spatial.transform import Rotation as R
 import fine_icp as base
 
 
-OUTPUT_FUSED_PCD = base.FINE_DIR / "fine_fuse_curvature.pcd"
-OUTPUT_RESULT_JSON = base.FINE_DIR / "fine_icp_curvature_result.json"
-OUTPUT_TRANSFORM_NPZ = base.FINE_DIR / "fine_icp_curvature_transforms.npz"
+OUTPUT_FUSED_PCD = base.FINE_DIR / "fine_fuse.pcd"
+OUTPUT_RESULT_JSON = base.FINE_DIR / "fine_icp_result.json"
+OUTPUT_TRANSFORM_NPZ = base.FINE_DIR / "fine_icp_transforms.npz"
 
 CURV_K = 30
 CURV_PERCENTILE = 85
@@ -30,12 +30,37 @@ CONVERGE_ROTATION_DEG = 0.01
 def configure_paths(args):
     global OUTPUT_FUSED_PCD, OUTPUT_RESULT_JSON, OUTPUT_TRANSFORM_NPZ
 
-    base.configure_paths(args)
+    if args.run_dir:
+        run_dir = Path(args.run_dir)
+        base.DATA_DIR = run_dir / "construction"
+        base.COARSE_DIR = base.DATA_DIR / "coarse_scan"
+        base.FINE_DIR = base.DATA_DIR / "fine_scan"
 
-    OUTPUT_FUSED_PCD = Path(args.output_pcd) if args.output_pcd else base.FINE_DIR / "fine_fuse_curvature.pcd"
-    OUTPUT_RESULT_JSON = Path(args.output_json) if args.output_json else base.FINE_DIR / "fine_icp_curvature_result.json"
-    OUTPUT_TRANSFORM_NPZ = Path(args.output_transforms) if args.output_transforms else base.FINE_DIR / "fine_icp_curvature_transforms.npz"
+        base.COARSE_POINT_FILE = Path(args.coarse_point_file) if args.coarse_point_file else base.COARSE_DIR / "coarse_point_result.npz"
+        base.COARSE_SEQ_FILE = Path(args.coarse_seq_file) if args.coarse_seq_file else base.COARSE_DIR / "coarse_png_sequence.json"
 
+        base.FINE_POINT_FILE = Path(args.fine_point_file) if args.fine_point_file else base.FINE_DIR / "fine_point_result.npz"
+        base.FINE_SEQ_FILE = Path(args.fine_seq_file) if args.fine_seq_file else base.FINE_DIR / "fine_png_sequence.json"
+
+        base.FINE_DIR.mkdir(parents=True, exist_ok=True)
+
+    else:
+        base.configure_paths(args)
+
+    if args.coarse_scan_dir:
+        base.COARSE_DIR = Path(args.coarse_scan_dir)
+        base.COARSE_POINT_FILE = Path(args.coarse_point_file) if args.coarse_point_file else base.COARSE_DIR / "coarse_point_result.npz"
+        base.COARSE_SEQ_FILE = Path(args.coarse_seq_file) if args.coarse_seq_file else base.COARSE_DIR / "coarse_png_sequence.json"
+
+    if args.fine_scan_dir:
+        base.FINE_DIR = Path(args.fine_scan_dir)
+        base.FINE_POINT_FILE = Path(args.fine_point_file) if args.fine_point_file else base.FINE_DIR / "fine_point_result.npz"
+        base.FINE_SEQ_FILE = Path(args.fine_seq_file) if args.fine_seq_file else base.FINE_DIR / "fine_png_sequence.json"
+
+    OUTPUT_FUSED_PCD = Path(args.output_pcd) if args.output_pcd else base.FINE_DIR / "fine_fuse.pcd"
+    OUTPUT_RESULT_JSON = Path(args.output_json) if args.output_json else base.FINE_DIR / "fine_icp.json"
+    OUTPUT_TRANSFORM_NPZ = Path(args.output_transforms) if args.output_transforms else base.FINE_DIR / "fine_icp_transforms.npz"
+    
 
 def save_json(path, data):
     with open(path, "w", encoding="utf-8") as f:
@@ -53,148 +78,101 @@ def tangent_basis(n):
 
 def curvature_descriptors(pcd):
     base.estimate_normals(pcd)
-
     pts = np.asarray(pcd.points)
     nrm = np.asarray(pcd.normals)
     k = min(CURV_K, len(pts))
-
     tree = cKDTree(pts)
     _, idx = tree.query(pts, k=k, workers=-1)
-
     desc = np.zeros((len(pts), 4))
     score = np.zeros(len(pts))
-
     for i in range(len(pts)):
         e1, e2 = tangent_basis(nrm[i])
         d = pts[idx[i]] - pts[i]
         u, v, w = d @ e1, d @ e2, d @ nrm[i]
-
         A = np.column_stack([u*u, u*v, v*v, u, v, np.ones(len(u))])
         c = np.linalg.lstsq(A, w, rcond=None)[0]
-
         H = np.array([[2*c[0], c[1]], [c[1], 2*c[2]]])
         k1, k2 = np.linalg.eigvalsh(H)
-
         if abs(k1) < abs(k2):
             k1, k2 = k2, k1
-
         desc[i] = [k1*k2, (k1+k2)/2, k1, k2]
         score[i] = max(abs(k1), abs(k2))
-
     return desc, score, nrm
 
 
 def curvature_similarity(a, b, flip=False):
     x = a.copy()
-
     if flip:
         x[1:] *= -1
-
     nx = np.linalg.norm(x)
     ny = np.linalg.norm(b)
-
     if nx < 1e-10 or ny < 1e-10:
         return 0.0
-
     return float(np.clip(np.dot(x, b) / (nx * ny), 0, 1))
 
 
 def build_correspondences(sp, sn, sd, sh, tp, tn, td, tree):
     dist, ids = tree.query(sp, k=min(CANDIDATE_K, len(tp)), workers=-1)
-
     if ids.ndim == 1:
         ids = ids[:, None]
         dist = dist[:, None]
-
     si, ti, w = [], [], []
-
     for i in range(len(sp)):
         if not sh[i] and i % PLANE_SAMPLE_STEP:
             continue
-
         for d, j in zip(dist[i], ids[i]):
             if d > REFINE_DIST:
                 break
-
             if sh[i]:
                 sim = curvature_similarity(sd[i], td[j], np.dot(sn[i], tn[j]) < 0)
-
                 if sim < CURV_SIM_THRESHOLD:
                     continue
-
                 weight = FEATURE_WEIGHT
             else:
                 weight = PLANE_WEIGHT
-
             si.append(i)
             ti.append(j)
             w.append(weight)
             break
-
     return np.asarray(si), np.asarray(ti), np.asarray(w)
 
 
 def solve_point_to_plane(s, t, n, w):
     A = np.column_stack([np.cross(s, n), n])
     b = -np.sum(n * (s - t), axis=1)
-
     q = np.sqrt(w)
     x = np.linalg.lstsq(A * q[:, None], b * q, rcond=None)[0]
-
     T = np.eye(4)
     T[:3, :3] = R.from_rotvec(x[:3]).as_matrix()
     T[:3, 3] = x[3:]
-
     return T
 
 
 def curvature_refine(source, target):
     work = base.copy_pcd(source)
     target = base.copy_pcd(target)
-
     sd, ss, _ = curvature_descriptors(work)
     td, ts, tn = curvature_descriptors(target)
-
     sh = ss >= np.percentile(ss, CURV_PERCENTILE)
-
     tp = np.asarray(target.points)
     tree = cKDTree(tp)
-
     T_total = np.eye(4)
-
     for iteration in range(REFINE_MAX_ITER):
         sp = np.asarray(work.points)
         sn = np.asarray(work.normals)
-
         si, ti, w = build_correspondences(sp, sn, sd, sh, tp, tn, td, tree)
-
         if len(si) < 6:
             break
-
         s = sp[si]
         t = tp[ti]
         n = tn[ti]
-
         dT = solve_point_to_plane(s, t, n, w)
-
         work.transform(dT)
         T_total = dT @ T_total
-
         dt = np.linalg.norm(dT[:3, 3])
         dr = np.degrees(R.from_matrix(dT[:3, :3]).magnitude())
-
-        print(
-            f"curv {iteration+1:02d}: "
-            f"corr={len(si)}, "
-            f"feature={np.sum(w > PLANE_WEIGHT)}, "
-            f"plane={np.sum(w == PLANE_WEIGHT)}, "
-            f"dt={dt*1000:.3f} mm, "
-            f"dR={dr:.3f} deg"
-        )
-
         if dt < CONVERGE_TRANSLATION and dr < CONVERGE_ROTATION_DEG:
             break
-
     return work, T_total
 
 
@@ -211,140 +189,77 @@ def pass_filter(fitness, rmse, trans_norm, rot_deg, overlap):
 
 
 def main():
-    items = []
-    items += base.load_dataset(base.COARSE_POINT_FILE, base.COARSE_SEQ_FILE, "coarse")
-    items += base.load_dataset(base.FINE_POINT_FILE, base.FINE_SEQ_FILE, "fine")
-
-    processed = [base.preprocess(x["points"]) for x in items]
+    coarse_items = base.load_dataset(base.COARSE_POINT_FILE, base.COARSE_SEQ_FILE, "coarse")
+    fine_items = base.load_dataset(base.FINE_POINT_FILE, base.FINE_SEQ_FILE, "fine")
+    items = coarse_items + fine_items
+    coarse_processed = [base.preprocess(x["points"]) for x in coarse_items]
+    fine_processed = [base.preprocess(x["points"]) for x in fine_items]
+    processed = coarse_processed + fine_processed
+    coarse_raw_counts = [len(x["points"]) for x in coarse_items]
+    coarse_proc_counts = [len(x.points) for x in coarse_processed]
     raw_counts = [len(x["points"]) for x in items]
     proc_counts = [len(x.points) for x in processed]
-
-    target_idx, target_selection = base.select_target_idx(items, raw_counts, proc_counts)
-
-    fused = base.copy_pcd(processed[target_idx])
+    target_idx, target_selection = base.select_target_idx(coarse_items, coarse_raw_counts, coarse_proc_counts)
+    fused = base.copy_pcd(coarse_processed[target_idx])
     base.estimate_normals(fused)
-
-    records = []
-    transforms = []
-
+    records = [None] * len(items)
+    transforms = [np.eye(4) for _ in items]
+    target_record = {"index": target_idx, "dataset": items[target_idx]["dataset"], "name": items[target_idx]["name"], "global_name": items[target_idx]["global_name"], "is_target": True, "kept": True, "reason": "target frame", "transformation": np.eye(4).tolist()}
+    records[target_idx] = target_record
+    coarse_order = [i for i in range(len(coarse_items)) if i != target_idx]
+    fine_order = list(range(len(coarse_items), len(items)))
+    process_order = coarse_order + fine_order
     print("========== Fine ICP Curvature ==========")
+    print("coarse point file:", base.COARSE_POINT_FILE)
+    print("fine point file:", base.FINE_POINT_FILE)
+    print("coarse frames:", len(coarse_items))
+    print("fine frames:", len(fine_items))
     print("target:", items[target_idx]["global_name"])
     print("target selection:", target_selection)
-
-    for i, source in enumerate(processed):
+    print("processing order:", [items[i]["global_name"] for i in process_order])
+    for i in process_order:
+        source = processed[i]
         T_final = np.eye(4)
-
-        record = {
-            "index": i,
-            "dataset": items[i]["dataset"],
-            "name": items[i]["name"],
-            "global_name": items[i]["global_name"],
-            "is_target": i == target_idx,
-            "kept": False,
-        }
-
-        if i == target_idx:
-            record["kept"] = True
-            record["reason"] = "target frame"
-            record["transformation"] = T_final.tolist()
-            records.append(record)
-            transforms.append(T_final)
-            continue
-
+        record = {"index": i, "dataset": items[i]["dataset"], "name": items[i]["name"], "global_name": items[i]["global_name"], "is_target": False, "kept": False}
         if len(source.points) == 0:
             record["reason"] = "empty cloud"
             record["transformation"] = T_final.tolist()
-            records.append(record)
-            transforms.append(T_final)
+            records[i] = record
+            transforms[i] = T_final
             continue
-
         print(f"\n========== {items[i]['global_name']} ==========")
-
         reg = base.run_icp(source, fused)
         T_global = np.asarray(reg.transformation)
-
         source_global = base.copy_pcd(source)
         source_global.transform(T_global)
-
         _, dT = curvature_refine(source_global, fused)
         T_final = dT @ T_global
-
-        eva = o3d.pipelines.registration.evaluate_registration(
-            source,
-            fused,
-            base.ICP_DISTANCE_THRESHOLD,
-            T_final,
-        )
-
+        eva = o3d.pipelines.registration.evaluate_registration(source, fused, base.ICP_DISTANCE_THRESHOLD, T_final)
         fitness = float(eva.fitness)
         rmse = float(eva.inlier_rmse)
         trans_norm = float(np.linalg.norm(T_final[:3, 3]))
         rot_deg = base.rotation_angle_deg(T_final)
         overlap = base.compute_overlap_ratio(source, fused, T_final)
-
         keep, reason = pass_filter(fitness, rmse, trans_norm, rot_deg, overlap)
-
-        print(
-            f"final fitness={fitness:.4f}, "
-            f"rmse={rmse*1000:.3f} mm, "
-            f"trans={trans_norm*1000:.3f} mm, "
-            f"rot={rot_deg:.3f} deg, "
-            f"overlap={overlap:.3f}, "
-            f"keep={keep}"
-        )
-
-        record.update({
-            "kept": keep,
-            "fitness": fitness,
-            "inlier_rmse": rmse,
-            "translation_norm_m": trans_norm,
-            "rotation_angle_deg": rot_deg,
-            "overlap_ratio": overlap,
-            "T_global": T_global.tolist(),
-            "delta_T_curvature": dT.tolist(),
-            "transformation": T_final.tolist(),
-            "reason": reason,
-        })
-
-        records.append(record)
-        transforms.append(T_final)
-
+        print(f"final fitness={fitness:.4f}, rmse={rmse*1000:.3f} mm, trans={trans_norm*1000:.3f} mm, rot={rot_deg:.3f} deg, overlap={overlap:.3f}, keep={keep}")
+        record.update({"kept": keep, "fitness": fitness, "inlier_rmse": rmse, "translation_norm_m": trans_norm, "rotation_angle_deg": rot_deg, "overlap_ratio": overlap, "T_global": T_global.tolist(), "delta_T_curvature": dT.tolist(), "transformation": T_final.tolist(), "reason": reason})
+        records[i] = record
+        transforms[i] = T_final
         if keep:
             aligned = base.copy_pcd(source)
             aligned.transform(T_final)
-
             fused += aligned
             fused = fused.voxel_down_sample(base.FUSED_VOXEL_SIZE)
-
             if len(fused.points) > base.STAT_NB_NEIGHBORS:
-                _, ind = fused.remove_statistical_outlier(
-                    nb_neighbors=base.STAT_NB_NEIGHBORS,
-                    std_ratio=base.STAT_STD_RATIO,
-                    print_progress=False,
-                )
+                _, ind = fused.remove_statistical_outlier(nb_neighbors=base.STAT_NB_NEIGHBORS, std_ratio=base.STAT_STD_RATIO, print_progress=False)
                 fused = fused.select_by_index(ind)
-
             base.estimate_normals(fused)
-
+    records = [x for x in records if x is not None]
     o3d.io.write_point_cloud(str(OUTPUT_FUSED_PCD), fused)
-
-    np.savez(
-        OUTPUT_TRANSFORM_NPZ,
-        transforms=np.asarray(transforms),
-        names=np.asarray([x["global_name"] for x in items], dtype=object),
-    )
-
-    save_json(OUTPUT_RESULT_JSON, {
-        "mode": "additive_global_icp_curvature",
-        "target": items[target_idx]["global_name"],
-        "target_selection": target_selection,
-        "fused_points": len(fused.points),
-        "records": records,
-    })
-
+    np.savez(OUTPUT_TRANSFORM_NPZ, transforms=np.asarray(transforms), names=np.asarray([x["global_name"] for x in items], dtype=object))
+    save_json(OUTPUT_RESULT_JSON, {"mode": "additive_global_icp_curvature", "target": items[target_idx]["global_name"], "target_selection": target_selection, "coarse_point_file": str(base.COARSE_POINT_FILE), "fine_point_file": str(base.FINE_POINT_FILE), "coarse_frames": len(coarse_items), "fine_frames": len(fine_items), "processing_order": [items[i]["global_name"] for i in process_order], "fused_points": len(fused.points), "records": records})
     print("\nsaved:", OUTPUT_FUSED_PCD)
     print("fused points:", len(fused.points))
-
     if base.VISUALIZE:
         vis = base.copy_pcd(fused)
         vis.paint_uniform_color([0.2, 0.7, 1.0])
@@ -364,6 +279,5 @@ if __name__ == "__main__":
     parser.add_argument("--output-json", type=Path, default=None)
     parser.add_argument("--output-transforms", type=Path, default=None)
     parser.add_argument("--visualize", action="store_true")
-
     configure_paths(parser.parse_args())
     main()

@@ -1,0 +1,15 @@
+{
+  "run_dir": "/home/smmg/AAM/data/runs/20261010_144417",
+  "mode": "execute",
+  "started_at": "2026-10-10T16:49:56",
+  "status": "failed",
+  "current_stage": "alignment",
+  "stages": {
+    "alignment": {
+      "status": "failed",
+      "started_at": "2026-10-10T16:49:56",
+      "finished_at": "2026-10-10T16:50:19",
+      "error": "Command '['/home/smmg/miniforge3/envs/AAM/bin/python', '/home/smmg/AAM/glue/fuse_alignment.py', '--run-dir', '/home/smmg/AAM/data/runs/20261010_144417', '--camera-config', '/home/smmg/AAM/data/runs/20261010_144417/pickplace/camera_config.npy', '--hand-eye', '/home/smmg/AAM/config/calibration/right_camera/ecT.npy']' returned non-zero exit status 1."
+    }
+  }
+}

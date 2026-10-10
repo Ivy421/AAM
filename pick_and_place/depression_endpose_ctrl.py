@@ -56,10 +56,10 @@ def main():
     grab_endpose = repair['grab_endpose']
     leave_endpose = grab_endpose
     leave_endpose[2] +=20
-    #pre_grab_joint = repair["pre_grab_joint_degrees"]
     leave_clearance = repair["leave_clearance_joint_degrees"]
     pre_fix_joint = repair["pre_fix_joint_degrees"]
     fix_joint = repair["fix_joint_degrees"]
+    fix_endpose = repair['fix_endpose']
 
     if not grab_joint or not fix_joint: raise RuntimeError("Grab or fix joint degrees are invalid.")
     if not pre_fix_joint: raise RuntimeError("pre_fix_joint_degrees is invalid.")
@@ -81,45 +81,28 @@ def main():
         piper.clear_error(clear_gripper=False)
         piper.enable()
 
-        ## 这一段计划移动到 glue task中的脚本
-        print("Glue pick -> glue prepick")
-        piper.move_gripper(GRIPPER_OPEN_MM, force=GRIPPER_FORCE)
-        move_joint(piper, glue_prepick, TRAVEL_SPEED)
-        
+        print('move to safe grab clearance')
+        current_joint = piper.get_joint()
+        current_joint[0] = grab_joint[0]
+        current_joint[4] = 60
+        current_joint[5] = grab_joint[5]
+        move_joint(piper, current_joint, TRAVEL_SPEED)
         time.sleep(3)
-        ##
-
-        print("Glue prepick -> printer clearance")
-        move_joint(piper, printer_clearance, TRAVEL_SPEED)
-        time.sleep(2)
-
-        #if pre_grab_joint:
-        #    print("Printer clearance -> pre-grab")
-        #    move_joint(piper, pre_grab_joint, APPROACH_SPEED)
-        #else:
-        #    print("Pre-grab unavailable -> directly approach grab")
 
         print("Move to grab")
         move_joint(piper, grab_joint, GRAB_SPEED)
-        time.sleep(5)
+        time.sleep(6)
 
         print("夹住 repair model")
         piper.move_gripper(GRIPPER_CLOSE_MM, force=GRIPPER_FORCE)
-        time.sleep(1)
+        time.sleep(0.5)
 
-        #if pre_grab_joint:
-        #    print("Leave printer through pre-grab")
-        #    move_joint(piper, pre_grab_joint, LEAVE_SPEED)
-        #else:
-        #    print("Search leave clearance")
-        #    leave_clearance = find_leave_clearance(piper)
-        #    move_joint(piper, leave_clearance, LEAVE_SPEED)
         print('pull up model')
         move_line(piper, leave_endpose, TRAVEL_SPEED)
-        time.sleep(4)
+        time.sleep(3)
 
         print("Move to brush clearance")
-        move_joint(piper, brush_clearance, TRAVEL_SPEED)
+        move_joint(piper, current_joint, TRAVEL_SPEED)  #brush_clearance
         time.sleep(4)
 
         print("Move to fix clearance")
@@ -131,7 +114,8 @@ def main():
         time.sleep(4)
 
         print("Install repair model")
-        move_joint(piper, fix_joint, FIX_SPEED)
+        #move_joint(piper, fix_joint, FIX_SPEED)
+        move_line(piper,fix_endpose, FIX_SPEED)
         time.sleep(5)
 
         print("Release repair model")

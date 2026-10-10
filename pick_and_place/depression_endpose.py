@@ -54,7 +54,7 @@ from Piper.endpose_reachability_safe import (
 ARM_GRIPPER_LENGTH_Z_MM = 147  # 142.5
 
 PRINTER_CENTER_BASE_MM = np.array(
-    [-266.425, 184.39, 60.8],
+    [-284.753, 202.862, 60.8],
     dtype=float,
 )
 
@@ -634,12 +634,6 @@ def find_pre_fix(
             delta_T_base,
         )
     )
-
-    # --------------------------------------------------------
-    # Load fix_points_curve_motion.pcd
-    #
-    # DO NOT apply Mark1 translation again.
-    # --------------------------------------------------------
 
     points = np.asarray(
         o3d.io.read_point_cloud(
