@@ -158,6 +158,73 @@ def select_curve_endpoints(curve_mask: np.ndarray) -> np.ndarray:
     return np.asarray([coords[i], coords[j]], dtype=int)
 
 
+def build_turn_cutoff_mask(
+    cfg: CompletionConfig,
+    grid: GridData,
+    roi: RoiData,
+):
+    """
+    Build two hard cutoff lines from the TwoFit turn points.
+
+    Re-anchored filling frame:
+        O  = (0, 0)
+        P1 = turn_point_u ~= (0, v1)
+        P2 = turn_point_v ~= (u2, 0)
+
+    Hard cutoff:
+        L1: v = v1
+        L2: u = u2
+    """
+
+    cutoff_mask = np.zeros((grid.H, grid.W), dtype=bool)
+
+    p1 = np.asarray(roi.turn_point_u, dtype=float)
+    p2 = np.asarray(roi.turn_point_v, dtype=float)
+
+    v1 = float(p1[1])
+    u2 = float(p2[0])
+
+    # Convert O, P1, P2, P3 into grid coordinates.
+    uv_points = np.asarray([
+        [0.0, 0.0],
+        [0.0, v1],
+        [u2, 0.0],
+        [u2, v1],
+    ])
+
+    xs, ys, valid = uv_to_grid_index(
+        uv_points,
+        grid.u_min,
+        grid.v_min,
+        cfg.grid_res,
+        grid.W,
+        grid.H,
+    )
+
+    if not np.all(valid):
+        raise RuntimeError("Turn cutoff points fall outside UV grid.")
+
+    # P1 -> P3
+    draw_grid_line(
+        cutoff_mask,
+        np.array([ys[1], xs[1]]),
+        np.array([ys[3], xs[3]]),
+    )
+
+    # P2 -> P3
+    draw_grid_line(
+        cutoff_mask,
+        np.array([ys[2], xs[2]]),
+        np.array([ys[3], xs[3]]),
+    )
+
+    cutoff_mask &= grid.domain_mask
+
+    return cutoff_mask
+
+
+
+
 def get_domain_side_coords(domain_mask: np.ndarray, side: str) -> np.ndarray:
     ys, xs = np.where(domain_mask)
     if len(xs) == 0:
@@ -341,7 +408,7 @@ def build_skeleton_barrier_from_raw(
 
 
 def extract_defect_surface_points(cfg: CompletionConfig, plane: PlaneData, grid: GridData):
-    rest_points = np.asarray(plane.rest_pcd.points)
+    rest_points = np.asarray(plane.pcd_raw.points)
     rest_local = project_to_uvz(rest_points, plane.origin, plane.u_axis, plane.v_axis, plane.n_axis)
     rest_uv = rest_local[:, :2]
     rest_z = rest_local[:, 2]
@@ -358,7 +425,7 @@ def extract_defect_surface_points(cfg: CompletionConfig, plane: PlaneData, grid:
     valid_domain = np.zeros(len(rest_points), dtype=bool)
     valid_domain[valid_grid] = grid.domain_mask[ys[valid_grid], xs[valid_grid]]
 
-    defect_surface_mask = valid_grid & valid_domain & (rest_z > -0.003)
+    defect_surface_mask = valid_grid & valid_domain & (rest_z > -0.008)
     return (
         rest_points[defect_surface_mask],
         rest_uv[defect_surface_mask],
@@ -370,8 +437,18 @@ PART2_STATE_NAME = "_part2_barriers.npz"
 PART2_DEFECT_PCD_NAME = "_part2_defect_surface.pcd"
 
 
-def build_layer_barrier_candidates(cfg: CompletionConfig, plane: PlaneData, grid: GridData, corner_mode: str):
+def build_layer_barrier_candidates(
+    cfg: CompletionConfig,
+    plane: PlaneData,
+    roi: RoiData,
+    grid: GridData,
+    corner_mode: str,
+):
     defect_surface_points, defect_surface_uv, defect_surface_z = extract_defect_surface_points(cfg, plane, grid)
+    turn_cutoff_mask = build_turn_cutoff_mask( cfg, grid, roi, )
+    print("\n========== Turn cutoff barrier ==========")
+    print("cutoff pixels:", int(turn_cutoff_mask.sum()))
+
     o3d.io.write_point_cloud(os.path.join(cfg.output_dir, PART2_DEFECT_PCD_NAME), make_colored_pcd(defect_surface_points, [1.0, 0.5, 0.0]))
 
     z_values = []
@@ -383,6 +460,7 @@ def build_layer_barrier_candidates(cfg: CompletionConfig, plane: PlaneData, grid
     fix_wall_masks = []
 
     z = cfg.layer_step
+
     while z <= cfg.max_search_depth:
         slice_mask = np.abs(defect_surface_z - z) <= cfg.band_width
         slice_uv = defect_surface_uv[slice_mask]
@@ -399,8 +477,9 @@ def build_layer_barrier_candidates(cfg: CompletionConfig, plane: PlaneData, grid
             raw_barrier_mask[sy[svalid], sx[svalid]] = True
             raw_barrier_mask &= grid.domain_mask
             barrier_mask, barrier_curve_mask, fix_wall_mask = build_skeleton_barrier_from_raw(
-                raw_barrier_mask, grid.domain_mask, corner_mode, cfg.wall_endpoint_extend_pixels,
-            )
+                raw_barrier_mask, grid.domain_mask, corner_mode, cfg.wall_endpoint_extend_pixels,)
+            barrier_mask |= turn_cutoff_mask
+            barrier_mask &= grid.domain_mask
 
         z_values.append(z)
         slice_nums.append(slice_num)
@@ -433,7 +512,15 @@ def load_part2_state(output_dir: str):
 
 def run_part2(cfg: CompletionConfig):
     plane, roi, grid, corner_mode = load_part1_state(cfg.output_dir)
-    build_layer_barrier_candidates(cfg, plane, grid, corner_mode)
+
+    build_layer_barrier_candidates(
+        cfg,
+        plane,
+        roi,
+        grid,
+        corner_mode,
+    )
+    
 
 
 if __name__ == "__main__":

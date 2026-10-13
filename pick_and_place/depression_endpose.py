@@ -54,7 +54,7 @@ from Piper.endpose_reachability_safe import (
 ARM_GRIPPER_LENGTH_Z_MM = 147  # 142.5
 
 PRINTER_CENTER_BASE_MM = np.array(
-    [-284.753, 202.862, 60.8],
+    [-284.753, 202.862, 55.8],
     dtype=float,
 )
 
@@ -70,11 +70,20 @@ FIX_Y_OFFSET = 0.0  # mm
 # Transform utilities
 # ============================================================
 
+def normalize_angle_deg(angle):
+    return (float(angle) + 180.0) % 360.0 - 180.0
+
+
+def normalize_endpose(endpose):
+    endpose = np.asarray(endpose, dtype=float).reshape(6).copy()
+    endpose[3] = normalize_angle_deg(endpose[3])
+    endpose[4] = normalize_angle_deg(endpose[4])
+    endpose[5] = normalize_angle_deg(endpose[5])
+    return endpose
+
+
 def endpose_to_transform(endpose):
-    endpose = np.asarray(
-        endpose,
-        dtype=float,
-    ).reshape(6)
+    endpose = normalize_endpose(endpose)
 
     transform = np.eye(
         4,
@@ -104,7 +113,7 @@ def transform_to_endpose(transform):
         dtype=float,
     ).reshape(4, 4)
 
-    return np.concatenate(
+    endpose = np.concatenate(
         [
             transform[:3, 3],
 
@@ -118,6 +127,8 @@ def transform_to_endpose(transform):
             ),
         ]
     )
+
+    return normalize_endpose(endpose)
 
 
 def load_delta_T_base(alignment_path):
@@ -371,14 +382,13 @@ def generate_grab_yaw_candidates(
         ):
             continue
 
-        yaw_deg = float(
+        yaw_deg = normalize_angle_deg(
             np.degrees(
                 np.arctan2(
                     pose.rotation[1, 0],
                     pose.rotation[0, 0],
                 )
             )
-            % 360.0
         )
 
         joint_margin = float(
@@ -451,7 +461,7 @@ def generate_grab_yaw_candidates(
 # ============================================================
 
 def find_pre_grab(grab_endpose):
-    grab_endpose = np.asarray(grab_endpose, dtype=float).reshape(6)
+    grab_endpose = normalize_endpose(grab_endpose)
     grab_result = reachability_test(grab_endpose)
     model = load_arm_model()
     frame_id = model.getFrameId(DEFAULT_EE_FRAME)
@@ -492,7 +502,7 @@ def find_pre_grab(grab_endpose):
             if best is None or score > best["score"]: best = {"score": score, "q": q.copy(), "pose": pose, "tilt_err_deg": tilt_err_deg}
 
     if best is not None:
-        pre_grab_endpose = np.r_[best["pose"].translation * 1000.0, Rotation.from_matrix(best["pose"].rotation).as_euler("xyz", degrees=True)]
+        pre_grab_endpose = normalize_endpose(np.r_[best["pose"].translation * 1000.0, Rotation.from_matrix(best["pose"].rotation).as_euler("xyz", degrees=True)])
         joint_degrees = np.round(np.rad2deg(best["q"]), 3).tolist()
         print(f"Selected joint-space pre_grab in upper cube with free yaw: yaw={pre_grab_endpose[5] % 360.0:.2f} deg, +Z={(best['pose'].translation[2] - p0[2]) * 1000.0:.2f} mm, tilt error={best['tilt_err_deg']:.3f} deg")
         return pre_grab_endpose, joint_degrees
@@ -505,7 +515,7 @@ def find_pre_grab(grab_endpose):
 # ============================================================
 
 def find_leave_clearance(grab_endpose, grab_joint_degrees):
-    current_pose = np.asarray(grab_endpose, dtype=float).reshape(6)
+    current_pose = normalize_endpose(grab_endpose)
     current_q = np.deg2rad(np.asarray(grab_joint_degrees, dtype=float))
     p0 = current_pose[:3] / 1000.0
     box_min, box_max = np.array([p0[0] - 0.020, p0[1] - 0.020, p0[2] + 0.005]), np.array([p0[0] + 0.020, p0[1] + 0.020, p0[2] + 0.050])
@@ -556,7 +566,7 @@ def find_leave_clearance(grab_endpose, grab_joint_degrees):
             if best is None or score > best["score"]: best = {"score": score, "q": q.copy(), "pose": pose, "dz_mm": dz_mm, "xy_err_mm": xy_err_mm, "tilt_err_deg": tilt_err_deg, "yaw_err_deg": yaw_err_deg}
 
     if best is not None:
-        leave_endpose = np.r_[best["pose"].translation * 1000.0, Rotation.from_matrix(best["pose"].rotation).as_euler("xyz", degrees=True)]
+        leave_endpose = normalize_endpose(np.r_[best["pose"].translation * 1000.0, Rotation.from_matrix(best["pose"].rotation).as_euler("xyz", degrees=True)])
         leave_joint_degrees = np.round(np.rad2deg(best["q"]), 3).tolist()
         status = {"success": True, "reason": "pre_grab_failed_leave_clearance_found", "dz_mm": best["dz_mm"], "xy_err_mm": best["xy_err_mm"], "tilt_err_deg": best["tilt_err_deg"], "yaw_err_deg": best["yaw_err_deg"]}
         print(f"Selected leave_clearance: +Z {best['dz_mm']:.2f} mm, XY {best['xy_err_mm']:.2f} mm, tilt {best['tilt_err_deg']:.2f} deg, yaw error {best['yaw_err_deg']:.2f} deg")
@@ -669,10 +679,7 @@ def find_pre_fix(
         * normal
     )
 
-    fix_endpose = np.asarray(
-        fix_endpose,
-        dtype=float,
-    ).reshape(6)
+    fix_endpose = normalize_endpose(fix_endpose)
 
     box_min_xy = (
         first_corner_m[:2]
@@ -926,7 +933,7 @@ def find_pre_fix(
 
     if best is not None:
 
-        pre_fix_endpose = (
+        pre_fix_endpose = normalize_endpose(
             fix_endpose.copy()
         )
 
@@ -1474,12 +1481,13 @@ def calculate_pick_and_fix(
     # ========================================================
 
     selected = None
+    yaw_candidates = generate_grab_yaw_candidates(
+        grab_position
+    )
+    failed_grab_yaws = []
+    failed_fix_yaws = []
 
-    for candidate in (
-        generate_grab_yaw_candidates(
-            grab_position
-        )
-    ):
+    for candidate in yaw_candidates:
 
         grab_endpose = np.array(
             [
@@ -1497,6 +1505,10 @@ def calculate_pick_and_fix(
             dtype=float,
         )
 
+        grab_endpose = normalize_endpose(
+            grab_endpose
+        )
+
         grab_reachability = (
             reachability_test(
                 grab_endpose
@@ -1506,6 +1518,9 @@ def calculate_pick_and_fix(
         if not grab_reachability[
             "reachable"
         ]:
+            failed_grab_yaws.append(
+                float(grab_endpose[5])
+            )
             continue
 
         # ----------------------------------------------------
@@ -1552,6 +1567,10 @@ def calculate_pick_and_fix(
             )
         )
 
+        fix_endpose = normalize_endpose(
+            fix_endpose
+        )
+
         fix_reachability = (
             reachability_test(
                 fix_endpose
@@ -1561,6 +1580,9 @@ def calculate_pick_and_fix(
         if not fix_reachability[
             "reachable"
         ]:
+            failed_fix_yaws.append(
+                float(grab_endpose[5])
+            )
             continue
 
         selected = (
@@ -1572,10 +1594,21 @@ def calculate_pick_and_fix(
 
         print(
             "Selected first jointly reachable yaw: "
-            f"{candidate['yaw_deg']:.3f} deg"
+            f"{grab_endpose[5]:.3f} deg"
         )
 
         break
+
+    if selected is None:
+        raise RuntimeError(
+            "No jointly reachable grab/fix yaw candidate found. "
+            f"grab_position_mm={np.round(grab_position, 3).tolist()}, "
+            f"yaw_candidate_count={len(yaw_candidates)}, "
+            f"grab_failed_count={len(failed_grab_yaws)}, "
+            f"fix_failed_count={len(failed_fix_yaws)}, "
+            f"failed_grab_yaws_deg={np.round(failed_grab_yaws[:10], 3).tolist()}, "
+            f"failed_fix_yaws_deg={np.round(failed_fix_yaws[:10], 3).tolist()}"
+        )
 
     (
         grab_endpose,

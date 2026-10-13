@@ -27,7 +27,7 @@ arm_gripper_length_z = 142.5 + 2 # mm 末端Z轴朝前伸出方向
 arm_gripper_width_y = 164 # mm  ## 夹爪开合方向
 arm_gripper_thickness =75 # mm
 arm_flange = 10.5+2 # mm
-PREPICK_MIN_OFFSET_M = 0.030
+PREPICK_MIN_OFFSET_M = 0.02
 
 
 def parse_args():

@@ -30,6 +30,7 @@ SCRIPTS = {
     "alignment": GLUE_DIR / "fuse_alignment.py",
     "brush_pick": GLUE_DIR / "glue_servopick_endpose_brush.py",
     "glue_execute": GLUE_DIR / "glue_applicate_endpose_brush_execute_sweep.py",
+    "fix_cal":PICK_AND_PLACE_DIR / "depression_endpose.py",
     "fix_model": PICK_AND_PLACE_DIR / "depression_endpose_ctrl.py",
 }
 
@@ -192,6 +193,31 @@ def validate_glue_output(path, alignment):
     )
     return data
 
+def validate_repair_endpose_output(path):
+    data = load_json(path)
+
+    for key in (
+        "grab_endpose",
+        "fix_endpose",
+        "grab_joint_degrees",
+        "fix_joint_degrees",
+        "pre_fix_joint_degrees",
+    ):
+        require_finite_vector(data.get(key), 6, key)
+
+    leave_clearance = data.get("leave_clearance_joint_degrees")
+    if leave_clearance is False:
+        print("Warning: leave_clearance_joint_degrees is false.")
+    else:
+        require_finite_vector(
+            leave_clearance,
+            6,
+            "leave_clearance_joint_degrees",
+        )
+
+    print("Validated repair-model pick/place endposes.")
+    return data
+
 
 def write_status(path, status):
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -242,10 +268,11 @@ def run_pipeline(args):
         require_file(segments_json, "adaptive glue-brush segments")
         require_file(HAND_EYE_PATH, "right-camera hand-eye calibration")
         require_file(URDF_PATH, "Piper URDF")
-        required_stages = ["alignment", "brush_pick", "glue_execute"]
+
+
+        required_stages = ["alignment", "brush_pick", "fix_cal", "glue_execute"]
         if args.fix_model:
             required_stages.append("fix_model")
-            require_file(repair_endpose_json, "repair-model pick/place endposes")
         for stage in required_stages:
             script = SCRIPTS[stage]
             require_file(script, f"{stage} script")
@@ -297,6 +324,24 @@ def run_pipeline(args):
             validate_brush_pick_output(brush_pick_json)
             set_stage_status(status_path, status, current_stage, "completed")
 
+        if args.fix_model:
+            current_stage = "fix_cal"
+            if not args.dry_run:
+                set_stage_status(status_path, status, current_stage, "running")
+
+            run_script(
+                SCRIPTS[current_stage],
+                "--run-dir", run_dir,
+                dry_run=args.dry_run,
+            )
+
+            if not args.dry_run:
+                require_file(repair_endpose_json, "repair-model pick/place endposes")
+                validate_repair_endpose_output(repair_endpose_json)
+                set_stage_status(status_path, status, current_stage, "completed")
+
+
+
         current_stage = "glue_execute"
         if not args.dry_run:
             set_stage_status(status_path, status, current_stage, "running")
@@ -315,16 +360,19 @@ def run_pipeline(args):
             require_file(glue_output_json, "glue planning/execution result")
             validate_glue_output(glue_output_json, alignment)
             set_stage_status(status_path, status, current_stage, "completed")
+        
 
         if args.fix_model:
             current_stage = "fix_model"
             if not args.dry_run:
                 set_stage_status(status_path, status, current_stage, "running")
+
             run_script(
                 SCRIPTS[current_stage],
                 "--run-dir", run_dir,
                 dry_run=args.dry_run,
             )
+
             if not args.dry_run:
                 set_stage_status(status_path, status, current_stage, "completed")
 

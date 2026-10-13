@@ -218,6 +218,53 @@ def filter_repair_layers_by_uv_column_support(repair_layers: List[dict], min_poi
 
     return filtered_layers, u_keep, v_keep
 
+def extend_last_valid_layer_to_bottom(
+    repair_layers: List[dict],
+    z_bottom: float,
+    layer_step: float,
+    domain_area: int,
+):
+    if len(repair_layers) == 0:
+        return repair_layers, np.empty(0, dtype=float), np.nan
+
+    z_bottom = float(z_bottom)
+    layer_step = float(layer_step)
+
+    last_valid_layer = repair_layers[-1]
+    z_stop = float(last_valid_layer["z"])
+    stop_mask = last_valid_layer["mask"].astype(bool).copy()
+
+    extension_z_values = []
+
+    if z_bottom <= z_stop + 1e-12:
+        return repair_layers, np.empty(0, dtype=float), z_stop
+
+    area_ratio = stop_mask.sum() / (domain_area + 1e-12)
+    z_fill = z_stop + layer_step
+
+    while z_fill < z_bottom - 1e-12:
+        repair_layers.append({
+            "z": float(z_fill),
+            "mask": stop_mask.copy(),
+            "type": "bottom_depth_extension",
+            "point_num": -1,
+            "area_ratio": area_ratio,
+        })
+        extension_z_values.append(float(z_fill))
+        z_fill += layer_step
+
+    repair_layers.append({
+        "z": z_bottom,
+        "mask": stop_mask.copy(),
+        "type": "bottom_depth_extension",
+        "point_num": -1,
+        "area_ratio": area_ratio,
+    })
+
+    extension_z_values.append(z_bottom)
+
+    return repair_layers, np.asarray(extension_z_values), z_stop
+
 
 def estimate_defect_world_y(top_defect_margin_points: np.ndarray) -> str:
     left_count = np.sum(top_defect_margin_points[:, 1] > 0)
@@ -324,6 +371,7 @@ def visualize_results(cfg: CompletionConfig, plane: PlaneData, completion: Compl
     repair_model_pcd = make_colored_pcd(completion.repair_volume_points, [0, 1, 0.0])
     frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.03)
     o3d.visualization.draw_geometries([plane.pcd_raw, repair_model_pcd, frame])
+    o3d.visualization.draw_geometries([ repair_model_pcd])
 
 
 def run_layered_flood_fill_from_saved_barriers(cfg: CompletionConfig, plane: PlaneData, grid: GridData, corner_mode: str) -> CompletionData:
@@ -408,8 +456,10 @@ def run_layered_flood_fill_from_saved_barriers(cfg: CompletionConfig, plane: Pla
             print(f"\n停止：连续 {cfg.max_bad_layers} 层缺陷点数量少于 {cfg.thres_points_num}")
             break
 
+
+    repair_layers, bottom_extension_z_values, z_stop = extend_last_valid_layer_to_bottom(repair_layers=repair_layers, z_bottom=plane.z_bottom,layer_step=cfg.layer_step,domain_area=domain_area,)
     repair_layers, column_keep_mask, column_count_map = filter_repair_layers_by_column_depth(repair_layers, min_column_layers=cfg.min_column_layers)
-    if len(repair_layers) == 0: raise RuntimeError("No repair layers left after column depth filter. Try reducing cfg.min_column_layers.")
+
     repair_layers, uv_column_u_keep, uv_column_v_keep = filter_repair_layers_by_uv_column_support(repair_layers, min_points_per_line=3)
     if len(repair_layers) == 0: raise RuntimeError("No repair layers left after UV column support filter.")
 
@@ -501,6 +551,7 @@ def run_part3(cfg: CompletionConfig):
     completion = run_layered_flood_fill_from_saved_barriers(cfg, plane, grid, corner_mode)
     save_results(cfg, plane, roi, grid, completion, corner_mode)
     visualize_results(cfg, plane, completion)
+
 
 
 if __name__ == "__main__":

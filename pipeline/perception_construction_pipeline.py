@@ -46,7 +46,7 @@ SCRIPTS = {
     "fine_point_extraction": CONSTRUCTION_DIR / "fine_point_extraction.py",
     "fine_icp": CONSTRUCTION_DIR / "fine_icp_add.py",
     "fine_icp_curvature": CONSTRUCTION_DIR / "fine_icp_curvature.py",
-    "completion": PROJECT_ROOT / "pipeline" / "completion_pipeline.py",
+    "completion": PROJECT_ROOT / "pipeline" / "completion_pipeline_modified.py",
 }
 
 
@@ -353,18 +353,21 @@ def run_pipeline(run_fine=False, printing=False, dry_run=False, run_dir=None):
         if run_fine:
             run_fine_reconstruction(dry_run=dry_run)
             completion_args = ["--run-dir", RUN_DIR]
+            
+            piper = connect_right(with_gripper=False)
+            piper.enable()
+            piper.set_speed(20)
+            piper.move_joint(0,0,0,0,0,0 )
+	    
             if printing:
                 completion_args.append("--printing")
             run_script(SCRIPTS["completion"], *completion_args, dry_run=dry_run)
         else:
             print("\nSKIP completion: run_fine is False, fine_fuse.pcd is not available.")
 
-    print("\nPIPELINE COMPLETE")
+    print("\nprinting COMPLETE")
     
-    piper = connect_right(with_gripper=False)
-    piper.enable()
-    piper.set_speed(20)
-    piper.move_joint(0,0,0,0,0,0 )
+
 
 
 def main():

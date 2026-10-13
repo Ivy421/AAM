@@ -43,6 +43,7 @@ DATA_DIR = RUN_DIR / "pickplace"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 FUSE_PCD_PATH = RUN_DIR / "completion"  / "depression" / "fine_fuse_motion.pcd"
+VIEWPOINT_JSON_PATH = DATA_DIR / "fuse_alignment_viewpoint.json"
 IMAGE_PATH = DATA_DIR / "fuse_align.png"
 POSE_PATH = DATA_DIR / "fuse_align.json"
 
@@ -102,10 +103,16 @@ CORRECTED_REPROJECT_PATH = DATA_DIR / "after_alignment.png"
 
 
 def capture_alignment_frame():
+    with open(VIEWPOINT_JSON_PATH, "r", encoding="utf-8") as f:
+        viewpoint_result = json.load(f)
+    joint_degrees = viewpoint_result["joint degrees"]
+    print("Alignment viewpoint exists:", viewpoint_result["best viewpoint exist"])
+    print("Alignment joint degrees:", joint_degrees)
+
     piper = connect_right()
     piper.enable()
     piper.set_speed(15)
-    piper.move_joint( 0, 20, -30, 0,45, 0 )
+    piper.move_joint(*joint_degrees)
     time.sleep(7.0)
 
     camera_functions.camera_syn_endpose_path = str(POSE_PATH)

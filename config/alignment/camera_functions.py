@@ -228,4 +228,4 @@ if __name__ == "__main__":
     calibration_path = '/home/smmg/AAM/config/calibration/right_camera/'
     test_path = '/home/smmg/AAM/data/'
 
-    capture(apriltag_path ,'apriltag',1,1,0,1,True)
+    capture(test_path ,'deformtest2',1,1,0,1,False)

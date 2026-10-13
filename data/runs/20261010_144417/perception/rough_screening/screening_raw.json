@@ -1,3 +1,0 @@
-[
-    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"dark gray rectangular plate\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"the bottom right corner of the dark gray rectangular plate lying on the green table has a jagged broken edge and missing material\",\n      \"short_object_prompt\": \"dark gray rectangular plate\",\n      \"balanced_prompt\": \"broken bottom right corner of the dark gray plate\"\n    },\n    \"description\": \"The dark gray rectangular object resting on the green table exhibits a significant irregular breakage and volume loss at its bottom-right corner, which appears suitable for reconstruction via a 3D printed repair block.\",\n    \"confidence\": 9\n  }\n]"
-]

@@ -109,6 +109,7 @@ class PlaneData:
     top_points: np.ndarray
     points_raw: np.ndarray
     top_uv: np.ndarray
+    z_bottom: float
 
 
 @dataclass
@@ -175,6 +176,42 @@ def normalize(v: np.ndarray) -> np.ndarray:
     return v / (np.linalg.norm(v) + 1e-12)
 
 
+def keep_largest_cluster(
+    pcd: o3d.geometry.PointCloud,
+    eps: float = 0.01,
+    min_points: int = 40,
+):
+    labels = np.asarray(
+        pcd.cluster_dbscan(
+            eps=eps,
+            min_points=min_points,
+            print_progress=False,
+        )
+    )
+
+    valid = labels >= 0
+    if not np.any(valid):
+        raise RuntimeError("No valid cluster found in pcd_raw.")
+
+    cluster_ids, counts = np.unique(
+        labels[valid],
+        return_counts=True,
+    )
+
+    largest_id = cluster_ids[np.argmax(counts)]
+    keep_idx = np.where(labels == largest_id)[0]
+
+    pcd_largest = pcd.select_by_index(keep_idx.tolist())
+
+    print(
+        f"[Raw PCD DBSCAN] clusters={len(cluster_ids)}, "
+        f"largest={largest_id}, "
+        f"points={len(pcd_largest.points)} / {len(pcd.points)}"
+    )
+
+    return pcd_largest
+
+
 def resolve_corner_mode(cfg: CompletionConfig) -> str:
     allowed = {"max_u_max_v", "max_u_min_v"}
     if cfg.corner_mode is not None:
@@ -184,8 +221,6 @@ def resolve_corner_mode(cfg: CompletionConfig) -> str:
             data = json.load(f)
         corner_mode = data.get("corner_mode", "max_u_max_v")
 
-    if corner_mode not in allowed:
-        raise ValueError(f"Wrong corner mode {corner_mode}, from corner_mapping_result.json.")
     return corner_mode
 
 
@@ -195,7 +230,8 @@ def find_plane(
     distance_threshold: float,
     num_iterations: int,
 ):
-    pcd_down = pcd.voxel_down_sample(voxel_size=voxel_size)
+    #pcd_down = pcd.voxel_down_sample(voxel_size=voxel_size)
+    pcd_down=pcd
     plane_model, inliers = pcd_down.segment_plane(
         distance_threshold=distance_threshold,
         ransac_n=3,
@@ -916,6 +952,63 @@ def build_domain_mask_from_fill_origin(
     raise ValueError(f"Unsupported corner_mode: {corner_mode}")
 
 
+def build_domain_mask_from_turn_box(
+    u_grid: np.ndarray,
+    v_grid: np.ndarray,
+    roi: RoiData,
+):
+    """
+    Finite defect ROI defined by:
+        O  = filling origin = (0, 0)
+        P1 = U-side defect turn point
+        P2 = V-side defect turn point
+
+    After frame re-anchoring:
+        P1 = (0, dv)
+        P2 = (du, 0)
+
+    The fourth corner is:
+        P3 = (du, dv)
+    """
+
+    U, V = np.meshgrid(u_grid, v_grid)
+
+    p1 = np.asarray(roi.turn_point_u, dtype=float)
+    p2 = np.asarray(roi.turn_point_v, dtype=float)
+
+    du = float(p2[0])
+    dv = float(p1[1])
+
+    u_lo = min(0.0, du)
+    u_hi = max(0.0, du)
+
+    v_lo = min(0.0, dv)
+    v_hi = max(0.0, dv)
+
+    tol = 0.5 * min(
+        abs(u_grid[1] - u_grid[0]) if len(u_grid) > 1 else 0.0,
+        abs(v_grid[1] - v_grid[0]) if len(v_grid) > 1 else 0.0,
+    )
+
+    domain_mask = (
+        (U >= u_lo - tol)
+        & (U <= u_hi + tol)
+        & (V >= v_lo - tol)
+        & (V <= v_hi + tol)
+    )
+
+    print("\n========== Finite defect ROI ==========")
+    print("origin O:", [0.0, 0.0])
+    print("P1 turn U:", p1)
+    print("P2 turn V:", p2)
+    print("P3:", [du, dv])
+    print(f"U range: [{u_lo:.4f}, {u_hi:.4f}] m")
+    print(f"V range: [{v_lo:.4f}, {v_hi:.4f}] m")
+    print("ROI pixels:", int(domain_mask.sum()))
+
+    return domain_mask
+
+
 def build_corner_roi(H: int, W: int, mode: str, frac_u: float, frac_v: float):
     roi = np.zeros((H, W), dtype=bool)
     h = max(1, int(round(H * frac_v)))
@@ -967,6 +1060,7 @@ def extract_top_defect_margin(
 
 def load_and_prepare_plane(cfg: CompletionConfig) -> PlaneData:
     pcd_raw = o3d.io.read_point_cloud(cfg.fine_pcd_path)
+    pcd_raw = keep_largest_cluster(pcd_raw)
 
     points_raw = np.asarray(pcd_raw.points)
     plane_model, plane_pcd, rest_pcd = find_plane(
@@ -987,6 +1081,13 @@ def load_and_prepare_plane(cfg: CompletionConfig) -> PlaneData:
     origin, u_axis, v_axis = build_plane_basis(top_points, n_axis)
     top_uv = project_to_uv(top_points, origin, u_axis, v_axis)
 
+    rest_points = np.asarray(rest_pcd.points)
+    rest_local = project_to_uvz(rest_points,origin,u_axis, v_axis,n_axis,)
+    rest_z = rest_local[:, 2]
+    rest_z = rest_z[np.isfinite(rest_z)]
+    z_bottom = float(np.quantile(rest_z, 0.98))
+    print(f"z_bottom Q98: {z_bottom:.6f} m ({z_bottom * 1000:.2f} mm)")
+
     return PlaneData(
         pcd_raw=pcd_raw,
         plane_model=plane_model,
@@ -999,6 +1100,7 @@ def load_and_prepare_plane(cfg: CompletionConfig) -> PlaneData:
         top_points=top_points,
         points_raw=points_raw,
         top_uv=top_uv,
+        z_bottom=z_bottom
     )
 
 
@@ -1030,15 +1132,14 @@ def build_grid_and_defect_masks(
     # The fill origin is the intersection of the two defect turn coordinates.
     # PCA axes are unchanged. The domain starts from UV=(0,0) and extends
     # toward the damaged object corner according to corner_mode.
-    domain_mask = build_domain_mask_from_fill_origin(u_grid, v_grid, corner_mode)
+    #domain_mask = build_domain_mask_from_fill_origin(u_grid, v_grid, corner_mode)
+
+    domain_mask = build_domain_mask_from_turn_box(u_grid, v_grid,roi,)
     corner_roi = domain_mask.copy()
 
     defect_mask = domain_mask & (~top_occ_smooth)
     defect_mask = ndimage.binary_closing(defect_mask, iterations=cfg.defect_close_iter)
     defect_mask = keep_largest_component(defect_mask, min_area=cfg.min_component_area_pixels)
-
-    if defect_mask.sum() == 0:
-        raise RuntimeError("No defect_mask generated. Check boundary turn detection or corner_mode.")
 
     top_defect_margin_points, top_defect_margin_uv = extract_top_defect_margin(
         defect_mask=defect_mask,
@@ -1084,6 +1185,46 @@ def build_grid_and_defect_masks(
     )
 
 
+def visualize_filling_start_point(plane: PlaneData):
+    raw_vis = o3d.geometry.PointCloud(plane.pcd_raw)
+    raw_vis.paint_uniform_color([0.7, 0.7, 0.7])
+
+    top_vis = o3d.geometry.PointCloud(plane.plane_pcd)
+    top_vis.paint_uniform_color([1.0, 0.0, 0.0])
+
+    rest_vis = o3d.geometry.PointCloud(plane.rest_pcd)
+    rest_vis.paint_uniform_color([1.0, 0.6, 0.0])
+
+    start_sphere = o3d.geometry.TriangleMesh.create_sphere(radius=0.004)
+    start_sphere.translate(plane.origin)
+    start_sphere.paint_uniform_color([0.0, 1.0, 0.0])
+    start_sphere.compute_vertex_normals()
+
+    frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.03)
+
+    T = np.eye(4)
+    T[:3, :3] = np.column_stack([
+        plane.u_axis,
+        plane.v_axis,
+        plane.n_axis,
+    ])
+    T[:3, 3] = plane.origin
+    frame.transform(T)
+
+    print("\n========== Filling Start Point ==========")
+    print("origin xyz:", plane.origin)
+    print("u_axis:", plane.u_axis)
+    print("v_axis:", plane.v_axis)
+    print("n_axis:", plane.n_axis)
+
+    o3d.visualization.draw_geometries([
+        top_vis,
+        rest_vis,
+        start_sphere,
+        frame,
+    ])
+
+
 PART1_STATE_NAME = "_part1_state.npz"
 PART1_RAW_PCD_NAME = "_part1_raw.pcd"
 PART1_PLANE_PCD_NAME = "_part1_plane.pcd"
@@ -1103,6 +1244,7 @@ def save_part1_state(cfg: CompletionConfig, plane: PlaneData, roi: RoiData, grid
         u_axis=plane.u_axis,
         v_axis=plane.v_axis,
         n_axis=plane.n_axis,
+        z_bottom=np.asarray(plane.z_bottom),
         top_points=plane.top_points,
         points_raw=plane.points_raw,
         top_uv=plane.top_uv,
@@ -1146,7 +1288,7 @@ def load_part1_state(output_dir: str):
     plane = PlaneData(
         pcd_raw=pcd_raw, plane_model=data["plane_model"], plane_pcd=plane_pcd, rest_pcd=rest_pcd,
         origin=data["origin"], u_axis=data["u_axis"], v_axis=data["v_axis"], n_axis=data["n_axis"],
-        top_points=data["top_points"], points_raw=data["points_raw"], top_uv=data["top_uv"],
+        top_points=data["top_points"], points_raw=data["points_raw"], top_uv=data["top_uv"],z_bottom=float(data["z_bottom"]),
     )
     roi = RoiData(
         u_side=str(data["u_side"]), v_side=str(data["v_side"]), boundary_support_uv=data["boundary_support_uv"],
@@ -1156,6 +1298,7 @@ def load_part1_state(output_dir: str):
         turn_idx_u=int(data["turn_idx_u"]), turn_idx_v=int(data["turn_idx_v"]),
         turn_point_u=data["turn_point_u"], turn_point_v=data["turn_point_v"], score_u=data["score_u"], score_v=data["score_v"],
         deviation_u=data["deviation_u"], deviation_v=data["deviation_v"], roi_frac_u=float(data["roi_frac_u"]), roi_frac_v=float(data["roi_frac_v"]),
+        
     )
     grid = GridData(
         u_min=float(data["u_min"]), v_min=float(data["v_min"]), u_max=float(data["u_max"]), v_max=float(data["v_max"]),

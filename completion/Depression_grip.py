@@ -67,16 +67,11 @@ GRIPPER_META = os.path.join(COMPLETION_DIR, "gripper_meta.npz")
 MM = 0.001
 
 # Small overlap into the model to avoid numerical gap at top surface.
-EMBED_DEPTH = 0.3 * MM
+EMBED_DEPTH = 0.5 * MM
 
-BASE_HEIGHT = 1.0 * MM
-BASE_WIDTH_U = 8.0 * MM
-BASE_LENGTH_V = 8.0 * MM
-
-V_NECK_HEIGHT = 2.0 * MM
-V_NECK_MIN_WIDTH_U = 1.0 * MM
-V_NECK_MIN_LENGTH_V = 1.0 * MM
-V_NECK_SECTION_NUM = 15
+NECK_HEIGHT = 2.0 * MM
+NECK_WIDTH_U = 2.0 * MM
+NECK_LENGTH_V = 2.0 * MM
 
 GRIP_BODY_HEIGHT = 15.0 * MM
 GRIP_BODY_WIDTH_U = 3.0 * MM
@@ -187,45 +182,6 @@ def recover_uv_axes(meta: dict):
 # =========================================================
 # Continuous loft gripper construction
 # =========================================================
-def build_v_neck_sections(s0, s1):
-    """
-    Build V-neck sections.
-
-    The size profile is:
-        bottom: same as base block
-        middle: narrow waist
-        top   : same as grip body
-
-    This produces V-shaped / dog-bone shrink-expand transition.
-    """
-    if V_NECK_SECTION_NUM < 3:
-        n_sec = 3
-    else:
-        n_sec = int(V_NECK_SECTION_NUM)
-    if n_sec % 2 == 0:
-        n_sec += 1
-
-    sections = []
-    for i in range(n_sec):
-        t = i / (n_sec - 1)
-        s = s0 + t * (s1 - s0)
-
-        if t <= 0.5:
-            # base -> waist
-            a = t / 0.5
-            size_u = (1.0 - a) * BASE_WIDTH_U + a * V_NECK_MIN_WIDTH_U
-            size_v = (1.0 - a) * BASE_LENGTH_V + a * V_NECK_MIN_LENGTH_V
-        else:
-            # waist -> grip body
-            a = (t - 0.5) / 0.5
-            size_u = (1.0 - a) * V_NECK_MIN_WIDTH_U + a * GRIP_BODY_WIDTH_U
-            size_v = (1.0 - a) * V_NECK_MIN_LENGTH_V + a * GRIP_BODY_LENGTH_V
-
-        sections.append((float(s), float(size_u), float(size_v)))
-
-    return sections
-
-
 def remove_duplicate_s_sections(sections, eps=1e-12):
     """
     Remove repeated sections with the same s value to avoid zero-length faces.
@@ -242,36 +198,19 @@ def remove_duplicate_s_sections(sections, eps=1e-12):
 
 
 def build_gripper_loft_sections():
-    """
-    Build one continuous section list for the whole gripper.
+    neck_s0 = 0.0
+    neck_s1 = NECK_HEIGHT
+    grip_s1 = neck_s1 + GRIP_BODY_HEIGHT
 
-    s = 0 is the model top surface.
-    s < 0 means the gripper is embedded into the repair model.
-    s > 0 means the gripper grows outward along h_axis = -n_axis.
+    sections = [
+        (-EMBED_DEPTH, NECK_WIDTH_U, NECK_LENGTH_V),
+        (0.0, NECK_WIDTH_U, NECK_LENGTH_V),
+        (neck_s1, NECK_WIDTH_U, NECK_LENGTH_V),
+        (grip_s1, GRIP_BODY_WIDTH_U, GRIP_BODY_LENGTH_V),
+    ]
 
-    This is the depression version of hole_grip's create_grip_local():
-    one section list, one side wall connection, only two end caps.
-    """
-    vneck_s0 = BASE_HEIGHT
-    vneck_s1 = BASE_HEIGHT + V_NECK_HEIGHT
-    grip_s1 = vneck_s1 + GRIP_BODY_HEIGHT
+    return remove_duplicate_s_sections(sections), neck_s0, neck_s1, grip_s1
 
-    sections = []
-
-    # Embedded base and lower base block. Keeping s=0 makes the contact plane explicit,
-    # similar to hole_grip's x0=-embed_depth and x1=0.
-    sections.append((-EMBED_DEPTH, BASE_WIDTH_U, BASE_LENGTH_V))
-    sections.append((0.0, BASE_WIDTH_U, BASE_LENGTH_V))
-    sections.append((BASE_HEIGHT, BASE_WIDTH_U, BASE_LENGTH_V))
-
-    # V-neck transition. Exclude the first section because BASE_HEIGHT already exists.
-    vneck_sections = build_v_neck_sections(vneck_s0, vneck_s1)
-    sections.extend(vneck_sections[1:])
-
-    # Grip body constant section. vneck_sections already ends at vneck_s1 with grip-body size.
-    sections.append((grip_s1, GRIP_BODY_WIDTH_U, GRIP_BODY_LENGTH_V))
-
-    return remove_duplicate_s_sections(sections), vneck_s0, vneck_s1, grip_s1
 
 
 def create_rectangular_loft_trimesh(
@@ -452,13 +391,8 @@ def main():
     attach_center = meta["attach_center"]
     u_axis, v_axis = recover_uv_axes(meta)
 
-    if not os.path.exists(INPUT_STL):
-        raise FileNotFoundError(f"Cannot find input STL from repairModel_mesh.py: {INPUT_STL}")
-
     model_mesh = trimesh.load(INPUT_STL, force="mesh", process=True)
     model_mesh = force_consistent_positive_volume(clean_trimesh(model_mesh))
-    if len(model_mesh.vertices) == 0:
-        raise RuntimeError(f"Empty mesh: {INPUT_STL}")
     model_mesh.vertex_normals
 
     gripper_mesh, loft_sections, vneck_s0, vneck_s1, grip_s1 = create_gripper_loft_mesh(
@@ -501,15 +435,9 @@ def main():
         v_axis=v_axis,
         mm=float(MM),
         embed_depth=float(EMBED_DEPTH),
-        base_height=float(BASE_HEIGHT),
-        base_width_u=float(BASE_WIDTH_U),
-        base_length_v=float(BASE_LENGTH_V),
-        v_neck_start_height=float(vneck_s0),
-        v_neck_height=float(V_NECK_HEIGHT),
-        v_neck_end_height=float(vneck_s1),
-        v_neck_min_width_u=float(V_NECK_MIN_WIDTH_U),
-        v_neck_min_length_v=float(V_NECK_MIN_LENGTH_V),
-        v_neck_section_num=int(V_NECK_SECTION_NUM),
+        neck_height=float(NECK_HEIGHT),
+        neck_width_u=float(NECK_WIDTH_U),
+        neck_length_v=float(NECK_LENGTH_V),
         grip_body_height=float(GRIP_BODY_HEIGHT),
         grip_body_width_u=float(GRIP_BODY_WIDTH_U),
         grip_body_length_v=float(GRIP_BODY_LENGTH_V),
@@ -519,20 +447,6 @@ def main():
         gripper_only_stl=GRIPPER_ONLY_STL,
         boolean=bool(BOOLEAN),
     )
-
-    print("\n========== Depression gripper generation loft done ==========")
-    print("input model STL:", INPUT_STL)
-    print("output STL:", OUTPUT_STL)
-    print("gripper only STL:", GRIPPER_ONLY_STL)
-    print("gripper meta:", GRIPPER_META)
-    print("attach center:", attach_center)
-    print("height direction h_axis = -n_axis:", h_axis)
-    print("width direction u_axis:", u_axis)
-    print("length direction v_axis:", v_axis)
-    print("V-neck starts at:", vneck_s0, "model unit")
-    print("V-neck ends at:", vneck_s1, "model unit")
-    print("V-neck waist size [u, v]:", V_NECK_MIN_WIDTH_U, V_NECK_MIN_LENGTH_V)
-    print("Grip top height:", grip_s1, "model unit")
 
     if VISUALIZE:
         model_show = o3d.geometry.TriangleMesh(model_mesh)

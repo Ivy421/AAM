@@ -1,0 +1,1175 @@
+[
+  {
+    "cube_name": "elev_05_view_01_yaw_-75.0",
+    "success": false,
+    "least_squares_success": true,
+    "joint_limit_adjusted": true,
+    "min_joint_limit_margin_deg": 2.0,
+    "raw_min_joint_limit_margin_deg": 0.0,
+    "look_angle_deg": 8.2597,
+    "cube_outside_err_mm": 428.61,
+    "camera_position_base_m": [
+      0.08584,
+      0.08337,
+      0.01074
+    ],
+    "cube_center_base_m": [
+      0.41239,
+      0.5054,
+      0.06739
+    ],
+    "endpose": [
+      81.65,
+      -7.35,
+      32.81,
+      -85.85,
+      13.63,
+      -64.45
+    ],
+    "joint_degrees": [
+      -91.2,
+      176.0,
+      -4.0,
+      79.53,
+      66.0,
+      29.82
+    ],
+    "raw_joint_degrees": [
+      -91.2,
+      178.0,
+      -2.0,
+      79.53,
+      68.0,
+      29.82
+    ],
+    "jointctrl_args": [
+      -91197,
+      176000,
+      -4000,
+      79526,
+      66000,
+      29818
+    ],
+    "score": -2266.785798322652,
+    "idx": 0,
+    "yaw_deg": -75.0,
+    "elevation_deg": 5.0,
+    "radius": 0.4661,
+    "camera_work_distance_dc": 0.3,
+    "bbox_half_diagonal_db": 0.1661,
+    "object_center_base_m": [
+      0.56036,
+      0.06525,
+      0.02676
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "elev_05_view_02_yaw_-45.0",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": true,
+    "min_joint_limit_margin_deg": 2.0,
+    "raw_min_joint_limit_margin_deg": 0.0,
+    "look_angle_deg": 5.3056,
+    "cube_outside_err_mm": 6.4239,
+    "camera_position_base_m": [
+      0.28714,
+      0.29173,
+      0.14532
+    ],
+    "cube_center_base_m": [
+      0.21214,
+      0.37245,
+      0.06739
+    ],
+    "endpose": [
+      235.17,
+      221.34,
+      178.18,
+      -108.48,
+      15.16,
+      -110.45
+    ],
+    "joint_degrees": [
+      58.17,
+      105.15,
+      -49.68,
+      89.23,
+      -66.0,
+      -116.0
+    ],
+    "raw_joint_degrees": [
+      58.17,
+      105.15,
+      -49.68,
+      89.23,
+      -68.0,
+      -118.0
+    ],
+    "jointctrl_args": [
+      58174,
+      105153,
+      -49680,
+      89228,
+      -66000,
+      -116000
+    ],
+    "score": 8535.527848750678,
+    "idx": 1,
+    "yaw_deg": -45.0,
+    "elevation_deg": 5.0,
+    "radius": 0.4661,
+    "camera_work_distance_dc": 0.3,
+    "bbox_half_diagonal_db": 0.1661,
+    "object_center_base_m": [
+      0.56036,
+      0.06525,
+      0.02676
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "elev_05_view_03_yaw_-15.0",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": true,
+    "min_joint_limit_margin_deg": 2.0,
+    "raw_min_joint_limit_margin_deg": 0.0,
+    "look_angle_deg": 3.3819,
+    "cube_outside_err_mm": 12.9993,
+    "camera_position_base_m": [
+      0.08556,
+      0.09873,
+      0.15539
+    ],
+    "cube_center_base_m": [
+      0.1052,
+      0.15718,
+      0.06739
+    ],
+    "endpose": [
+      78.26,
+      22.54,
+      209.03,
+      -102.87,
+      -2.03,
+      -73.02
+    ],
+    "joint_degrees": [
+      21.1,
+      17.07,
+      -4.0,
+      -42.82,
+      6.57,
+      -48.43
+    ],
+    "raw_joint_degrees": [
+      21.1,
+      17.07,
+      -2.0,
+      -42.82,
+      6.57,
+      -48.43
+    ],
+    "jointctrl_args": [
+      21098,
+      17069,
+      -4000,
+      -42819,
+      6574,
+      -48432
+    ],
+    "score": 8917.02160636896,
+    "idx": 2,
+    "yaw_deg": -15.0,
+    "elevation_deg": 5.0,
+    "radius": 0.4661,
+    "camera_work_distance_dc": 0.3,
+    "bbox_half_diagonal_db": 0.1661,
+    "object_center_base_m": [
+      0.56036,
+      0.06525,
+      0.02676
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "elev_05_view_04_yaw_+15.0",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": true,
+    "min_joint_limit_margin_deg": 2.0,
+    "raw_min_joint_limit_margin_deg": 0.2809,
+    "look_angle_deg": 2.3957,
+    "cube_outside_err_mm": 6.3843,
+    "camera_position_base_m": [
+      0.20129,
+      -0.02734,
+      0.14435
+    ],
+    "cube_center_base_m": [
+      0.12021,
+      -0.08271,
+      0.06739
+    ],
+    "endpose": [
+      160.77,
+      55.87,
+      131.35,
+      110.85,
+      -10.21,
+      81.27
+    ],
+    "joint_degrees": [
+      39.75,
+      88.77,
+      -4.0,
+      47.92,
+      -62.41,
+      92.81
+    ],
+    "raw_joint_degrees": [
+      39.75,
+      88.77,
+      -2.28,
+      47.92,
+      -62.41,
+      92.81
+    ],
+    "jointctrl_args": [
+      39746,
+      88770,
+      -4000,
+      47925,
+      -62410,
+      92813
+    ],
+    "score": 9140.017309659921,
+    "idx": 3,
+    "yaw_deg": 15.0,
+    "elevation_deg": 5.0,
+    "radius": 0.4661,
+    "camera_work_distance_dc": 0.3,
+    "bbox_half_diagonal_db": 0.1661,
+    "object_center_base_m": [
+      0.56036,
+      0.06525,
+      0.02676
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "elev_05_view_05_yaw_+45.0",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": true,
+    "min_joint_limit_margin_deg": 2.0,
+    "raw_min_joint_limit_margin_deg": 0.4014,
+    "look_angle_deg": 1.9484,
+    "cube_outside_err_mm": 0.0,
+    "camera_position_base_m": [
+      0.19932,
+      -0.21091,
+      0.14045
+    ],
+    "cube_center_base_m": [
+      0.25317,
+      -0.28296,
+      0.06739
+    ],
+    "endpose": [
+      140.13,
+      -142.61,
+      164.24,
+      123.11,
+      -30.04,
+      91.76
+    ],
+    "joint_degrees": [
+      -69.15,
+      87.9,
+      -25.49,
+      74.66,
+      66.0,
+      -19.26
+    ],
+    "raw_joint_degrees": [
+      -69.15,
+      87.9,
+      -25.49,
+      74.66,
+      67.6,
+      -19.26
+    ],
+    "jointctrl_args": [
+      -69153,
+      87896,
+      -25489,
+      74661,
+      66000,
+      -19260
+    ],
+    "score": 9242.312621411125,
+    "idx": 4,
+    "yaw_deg": 45.0,
+    "elevation_deg": 5.0,
+    "radius": 0.4661,
+    "camera_work_distance_dc": 0.3,
+    "bbox_half_diagonal_db": 0.1661,
+    "object_center_base_m": [
+      0.56036,
+      0.06525,
+      0.02676
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "elev_05_view_06_yaw_+75.0",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": true,
+    "min_joint_limit_margin_deg": 2.0,
+    "raw_min_joint_limit_margin_deg": 0.0,
+    "look_angle_deg": 10.7049,
+    "cube_outside_err_mm": 27.2556,
+    "camera_position_base_m": [
+      0.38322,
+      -0.28981,
+      0.14536
+    ],
+    "cube_center_base_m": [
+      0.46843,
+      -0.38991,
+      0.06739
+    ],
+    "endpose": [
+      302.71,
+      -243.81,
+      157.05,
+      124.84,
+      -19.09,
+      111.95
+    ],
+    "joint_degrees": [
+      -50.17,
+      118.7,
+      -73.22,
+      66.62,
+      66.0,
+      -11.09
+    ],
+    "raw_joint_degrees": [
+      -50.17,
+      118.7,
+      -73.22,
+      66.62,
+      68.0,
+      -11.09
+    ],
+    "jointctrl_args": [
+      -50175,
+      118697,
+      -73218,
+      66616,
+      66000,
+      -11093
+    ],
+    "score": 7445.244921438091,
+    "idx": 5,
+    "yaw_deg": 75.0,
+    "elevation_deg": 5.0,
+    "radius": 0.4661,
+    "camera_work_distance_dc": 0.3,
+    "bbox_half_diagonal_db": 0.1661,
+    "object_center_base_m": [
+      0.56036,
+      0.06525,
+      0.02676
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "elev_25_view_01_yaw_-72.0",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": true,
+    "min_joint_limit_margin_deg": 2.0,
+    "raw_min_joint_limit_margin_deg": 0.0,
+    "look_angle_deg": 10.0558,
+    "cube_outside_err_mm": 27.0583,
+    "camera_position_base_m": [
+      0.3245,
+      0.35659,
+      0.18659
+    ],
+    "cube_center_base_m": [
+      0.40497,
+      0.45809,
+      0.22375
+    ],
+    "endpose": [
+      292.05,
+      293.66,
+      247.59,
+      -120.22,
+      -2.83,
+      -106.98
+    ],
+    "joint_degrees": [
+      55.7,
+      112.94,
+      -85.67,
+      -65.65,
+      66.0,
+      9.5
+    ],
+    "raw_joint_degrees": [
+      55.7,
+      112.94,
+      -85.67,
+      -65.65,
+      68.0,
+      9.5
+    ],
+    "jointctrl_args": [
+      55700,
+      112943,
+      -85667,
+      -65653,
+      66000,
+      9501
+    ],
+    "score": 7575.171551557944,
+    "idx": 6,
+    "yaw_deg": -72.0,
+    "elevation_deg": 25.0,
+    "radius": 0.4661,
+    "camera_work_distance_dc": 0.3,
+    "bbox_half_diagonal_db": 0.1661,
+    "object_center_base_m": [
+      0.56036,
+      0.06525,
+      0.02676
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "elev_25_view_02_yaw_-36.0",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": false,
+    "min_joint_limit_margin_deg": 26.1502,
+    "raw_min_joint_limit_margin_deg": 26.1502,
+    "look_angle_deg": 0.0,
+    "cube_outside_err_mm": 0.0,
+    "camera_position_base_m": [
+      0.27874,
+      0.21673,
+      0.24368
+    ],
+    "cube_center_base_m": [
+      0.20374,
+      0.29173,
+      0.22375
+    ],
+    "endpose": [
+      267.41,
+      145.1,
+      302.63,
+      -126.38,
+      -0.34,
+      -93.91
+    ],
+    "joint_degrees": [
+      37.75,
+      82.1,
+      -60.31,
+      -53.72,
+      41.85,
+      -16.97
+    ],
+    "raw_joint_degrees": [
+      37.75,
+      82.1,
+      -60.31,
+      -53.72,
+      41.85,
+      -16.97
+    ],
+    "jointctrl_args": [
+      37752,
+      82101,
+      -60309,
+      -53723,
+      41850,
+      -16966
+    ],
+    "score": 9999.892078823279,
+    "idx": 7,
+    "yaw_deg": -36.0,
+    "elevation_deg": 25.0,
+    "radius": 0.4661,
+    "camera_work_distance_dc": 0.3,
+    "bbox_half_diagonal_db": 0.1661,
+    "object_center_base_m": [
+      0.56036,
+      0.06525,
+      0.02676
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "elev_25_view_03_yaw_+0.0",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": true,
+    "min_joint_limit_margin_deg": 2.0,
+    "raw_min_joint_limit_margin_deg": 0.0,
+    "look_angle_deg": 3.2324,
+    "cube_outside_err_mm": 0.0,
+    "camera_position_base_m": [
+      0.13152,
+      0.00881,
+      0.28842
+    ],
+    "cube_center_base_m": [
+      0.13873,
+      0.03886,
+      0.22375
+    ],
+    "endpose": [
+      77.39,
+      -1.83,
+      212.97,
+      114.68,
+      65.37,
+      111.17
+    ],
+    "joint_degrees": [
+      -2.34,
+      14.43,
+      -4.0,
+      10.22,
+      4.67,
+      12.29
+    ],
+    "raw_joint_degrees": [
+      -2.34,
+      14.43,
+      -2.0,
+      10.22,
+      4.67,
+      12.29
+    ],
+    "jointctrl_args": [
+      -2341,
+      14427,
+      -4000,
+      10217,
+      4668,
+      12288
+    ],
+    "score": 8953.45256125007,
+    "idx": 8,
+    "yaw_deg": 0.0,
+    "elevation_deg": 25.0,
+    "radius": 0.4661,
+    "camera_work_distance_dc": 0.3,
+    "bbox_half_diagonal_db": 0.1661,
+    "object_center_base_m": [
+      0.56036,
+      0.06525,
+      0.02676
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "elev_25_view_04_yaw_+36.0",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": false,
+    "min_joint_limit_margin_deg": 28.4781,
+    "raw_min_joint_limit_margin_deg": 28.4781,
+    "look_angle_deg": 0.0,
+    "cube_outside_err_mm": 0.0,
+    "camera_position_base_m": [
+      0.24179,
+      -0.12892,
+      0.22089
+    ],
+    "cube_center_base_m": [
+      0.23477,
+      -0.20392,
+      0.22375
+    ],
+    "endpose": [
+      189.99,
+      -53.53,
+      240.07,
+      131.27,
+      -20.18,
+      84.7
+    ],
+    "joint_degrees": [
+      -29.51,
+      62.73,
+      -30.48,
+      61.56,
+      35.9,
+      31.49
+    ],
+    "raw_joint_degrees": [
+      -29.51,
+      62.73,
+      -30.48,
+      61.56,
+      35.9,
+      31.49
+    ],
+    "jointctrl_args": [
+      -29506,
+      62729,
+      -30478,
+      61561,
+      35903,
+      31494
+    ],
+    "score": 9999.924447127594,
+    "idx": 9,
+    "yaw_deg": 36.0,
+    "elevation_deg": 25.0,
+    "radius": 0.4661,
+    "camera_work_distance_dc": 0.3,
+    "bbox_half_diagonal_db": 0.1661,
+    "object_center_base_m": [
+      0.56036,
+      0.06525,
+      0.02676
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "elev_25_view_05_yaw_+72.0",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": true,
+    "min_joint_limit_margin_deg": 2.0,
+    "raw_min_joint_limit_margin_deg": 0.0,
+    "look_angle_deg": 5.4047,
+    "cube_outside_err_mm": 7.449,
+    "camera_position_base_m": [
+      0.37689,
+      -0.26221,
+      0.18327
+    ],
+    "cube_center_base_m": [
+      0.45517,
+      -0.34389,
+      0.22375
+    ],
+    "endpose": [
+      293.91,
+      -219.76,
+      190.21,
+      125.39,
+      -14.95,
+      114.75
+    ],
+    "joint_degrees": [
+      -48.58,
+      110.89,
+      -69.25,
+      64.39,
+      66.0,
+      -11.04
+    ],
+    "raw_joint_degrees": [
+      -48.58,
+      110.89,
+      -69.25,
+      64.39,
+      68.0,
+      -11.04
+    ],
+    "jointctrl_args": [
+      -48579,
+      110886,
+      -69248,
+      64392,
+      66000,
+      -11042
+    ],
+    "score": 8515.208061162606,
+    "idx": 10,
+    "yaw_deg": 72.0,
+    "elevation_deg": 25.0,
+    "radius": 0.4661,
+    "camera_work_distance_dc": 0.3,
+    "bbox_half_diagonal_db": 0.1661,
+    "object_center_base_m": [
+      0.56036,
+      0.06525,
+      0.02676
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "elev_45_view_01_yaw_-67.5",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": true,
+    "min_joint_limit_margin_deg": 2.0,
+    "raw_min_joint_limit_margin_deg": 0.6808,
+    "look_angle_deg": 1.646,
+    "cube_outside_err_mm": 0.0,
+    "camera_position_base_m": [
+      0.34079,
+      0.28925,
+      0.28289
+    ],
+    "cube_center_base_m": [
+      0.41545,
+      0.36129,
+      0.35636
+    ],
+    "endpose": [
+      311.21,
+      218.85,
+      336.78,
+      -130.19,
+      3.79,
+      -110.9
+    ],
+    "joint_degrees": [
+      44.43,
+      100.9,
+      -91.43,
+      -47.76,
+      66.0,
+      -10.3
+    ],
+    "raw_joint_degrees": [
+      44.43,
+      100.9,
+      -91.43,
+      -47.76,
+      67.32,
+      -10.3
+    ],
+    "jointctrl_args": [
+      44430,
+      100897,
+      -91428,
+      -47764,
+      66000,
+      -10304
+    ],
+    "score": 9325.131977739427,
+    "idx": 11,
+    "yaw_deg": -67.5,
+    "elevation_deg": 45.0,
+    "radius": 0.4661,
+    "camera_work_distance_dc": 0.3,
+    "bbox_half_diagonal_db": 0.1661,
+    "object_center_base_m": [
+      0.56036,
+      0.06525,
+      0.02676
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "elev_45_view_02_yaw_-22.5",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": false,
+    "min_joint_limit_margin_deg": 15.3781,
+    "raw_min_joint_limit_margin_deg": 15.3781,
+    "look_angle_deg": 0.0,
+    "cube_outside_err_mm": 0.0,
+    "camera_position_base_m": [
+      0.17408,
+      0.09712,
+      0.28136
+    ],
+    "cube_center_base_m": [
+      0.24856,
+      0.17212,
+      0.35636
+    ],
+    "endpose": [
+      134.13,
+      16.84,
+      254.98,
+      -119.84,
+      54.9,
+      -108.09
+    ],
+    "joint_degrees": [
+      7.38,
+      37.78,
+      -17.38,
+      -14.22,
+      1.26,
+      -17.06
+    ],
+    "raw_joint_degrees": [
+      7.38,
+      37.78,
+      -17.38,
+      -14.22,
+      1.26,
+      -17.06
+    ],
+    "jointctrl_args": [
+      7375,
+      37780,
+      -17378,
+      -14223,
+      1262,
+      -17056
+    ],
+    "score": 9999.870222674663,
+    "idx": 12,
+    "yaw_deg": -22.5,
+    "elevation_deg": 45.0,
+    "radius": 0.4661,
+    "camera_work_distance_dc": 0.3,
+    "bbox_half_diagonal_db": 0.1661,
+    "object_center_base_m": [
+      0.56036,
+      0.06525,
+      0.02676
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "elev_45_view_03_yaw_+22.5",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": false,
+    "min_joint_limit_margin_deg": 6.997,
+    "raw_min_joint_limit_margin_deg": 6.997,
+    "look_angle_deg": 0.0,
+    "cube_outside_err_mm": 0.0,
+    "camera_position_base_m": [
+      0.19282,
+      -0.01349,
+      0.28136
+    ],
+    "cube_center_base_m": [
+      0.26432,
+      -0.07966,
+      0.35636
+    ],
+    "endpose": [
+      128.08,
+      -3.32,
+      214.72,
+      120.29,
+      49.87,
+      111.89
+    ],
+    "joint_degrees": [
+      -0.09,
+      39.36,
+      -9.0,
+      17.22,
+      -6.67,
+      19.61
+    ],
+    "raw_joint_degrees": [
+      -0.09,
+      39.36,
+      -9.0,
+      17.22,
+      -6.67,
+      19.61
+    ],
+    "jointctrl_args": [
+      -95,
+      39357,
+      -8997,
+      17224,
+      -6674,
+      19614
+    ],
+    "score": 9999.87705440123,
+    "idx": 13,
+    "yaw_deg": 22.5,
+    "elevation_deg": 45.0,
+    "radius": 0.4661,
+    "camera_work_distance_dc": 0.3,
+    "bbox_half_diagonal_db": 0.1661,
+    "object_center_base_m": [
+      0.56036,
+      0.06525,
+      0.02676
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "elev_45_view_04_yaw_+67.5",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": false,
+    "min_joint_limit_margin_deg": 12.0054,
+    "raw_min_joint_limit_margin_deg": 12.0054,
+    "look_angle_deg": 0.0,
+    "cube_outside_err_mm": 0.0,
+    "camera_position_base_m": [
+      0.3785,
+      -0.17154,
+      0.28136
+    ],
+    "cube_center_base_m": [
+      0.4535,
+      -0.24654,
+      0.35636
+    ],
+    "endpose": [
+      296.11,
+      -127.48,
+      283.96,
+      135.76,
+      -3.35,
+      112.82
+    ],
+    "joint_degrees": [
+      -33.07,
+      90.28,
+      -67.38,
+      46.47,
+      55.99,
+      13.99
+    ],
+    "raw_joint_degrees": [
+      -33.07,
+      90.28,
+      -67.38,
+      46.47,
+      55.99,
+      13.99
+    ],
+    "jointctrl_args": [
+      -33066,
+      90280,
+      -67378,
+      46474,
+      55995,
+      13988
+    ],
+    "score": 9999.870096051143,
+    "idx": 14,
+    "yaw_deg": 67.5,
+    "elevation_deg": 45.0,
+    "radius": 0.4661,
+    "camera_work_distance_dc": 0.3,
+    "bbox_half_diagonal_db": 0.1661,
+    "object_center_base_m": [
+      0.56036,
+      0.06525,
+      0.02676
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "elev_65_view_01_yaw_-45.0",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": false,
+    "min_joint_limit_margin_deg": 28.3122,
+    "raw_min_joint_limit_margin_deg": 28.3122,
+    "look_angle_deg": 0.0,
+    "cube_outside_err_mm": 0.0,
+    "camera_position_base_m": [
+      0.33763,
+      0.12057,
+      0.37421
+    ],
+    "cube_center_base_m": [
+      0.41263,
+      0.19557,
+      0.44921
+    ],
+    "endpose": [
+      279.74,
+      47.84,
+      364.59,
+      -151.47,
+      43.55,
+      -140.31
+    ],
+    "joint_degrees": [
+      12.41,
+      74.87,
+      -68.71,
+      -13.32,
+      39.69,
+      -9.3
+    ],
+    "raw_joint_degrees": [
+      12.41,
+      74.87,
+      -68.71,
+      -13.32,
+      39.69,
+      -9.3
+    ],
+    "jointctrl_args": [
+      12410,
+      74868,
+      -68713,
+      -13315,
+      39688,
+      -9303
+    ],
+    "score": 9999.870095358823,
+    "idx": 15,
+    "yaw_deg": -45.0,
+    "elevation_deg": 65.0,
+    "radius": 0.4661,
+    "camera_work_distance_dc": 0.3,
+    "bbox_half_diagonal_db": 0.1661,
+    "object_center_base_m": [
+      0.56036,
+      0.06525,
+      0.02676
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "elev_65_view_02_yaw_+45.0",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": false,
+    "min_joint_limit_margin_deg": 32.341,
+    "raw_min_joint_limit_margin_deg": 32.341,
+    "look_angle_deg": 0.0,
+    "cube_outside_err_mm": 0.0,
+    "camera_position_base_m": [
+      0.35504,
+      -0.00747,
+      0.37421
+    ],
+    "cube_center_base_m": [
+      0.43004,
+      -0.08247,
+      0.44921
+    ],
+    "endpose": [
+      270.58,
+      -22.04,
+      336.93,
+      154.48,
+      43.4,
+      148.75
+    ],
+    "joint_degrees": [
+      -7.42,
+      72.56,
+      -60.88,
+      14.27,
+      35.66,
+      5.57
+    ],
+    "raw_joint_degrees": [
+      -7.42,
+      72.56,
+      -60.88,
+      14.27,
+      35.66,
+      5.57
+    ],
+    "jointctrl_args": [
+      -7421,
+      72558,
+      -60879,
+      14271,
+      35659,
+      5574
+    ],
+    "score": 9999.870096189425,
+    "idx": 16,
+    "yaw_deg": 45.0,
+    "elevation_deg": 65.0,
+    "radius": 0.4661,
+    "camera_work_distance_dc": 0.3,
+    "bbox_half_diagonal_db": 0.1661,
+    "object_center_base_m": [
+      0.56036,
+      0.06525,
+      0.02676
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  }
+]

@@ -176,8 +176,7 @@ if __name__ == "__main__":
     print(r_piper.get_joint())
     r_piper.move_gripper(0,1)
     r_piper.move_joint(     
-0,40,-30,0,20,10
+        0,40,-30,0,0,10 
  )  #  0,40,-30,0,20,0 
-    #r_piper.move_gripper(0,1)
 
 
