@@ -907,6 +907,7 @@ def reanchor_frame_to_defect_turn_intersection(plane: PlaneData, roi: RoiData):
     """
     uv_shift = np.array([roi.turn_point_u[0], roi.turn_point_v[1]], dtype=float)
     fill_origin = plane.origin + uv_shift[0] * plane.u_axis + uv_shift[1] * plane.v_axis
+    fill_origin = fill_origin + 0.006* plane.u_axis
 
     plane.origin = fill_origin
     plane.top_uv = project_to_uv(plane.top_points, plane.origin, plane.u_axis, plane.v_axis)

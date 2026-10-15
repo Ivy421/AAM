@@ -224,8 +224,6 @@ def capture_scan_views(scanpose_json, view_mode, dry_run=False):
 
 
 def load_confirmation_result():
-    if not CONFIRMATION_RESULT_PATH.exists():
-        return {}
     with open(CONFIRMATION_RESULT_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
 
@@ -249,6 +247,11 @@ def run_fine_reconstruction(dry_run=False):
         view_mode="fine_all",
         dry_run=dry_run,
     )
+    piper = connect_right(with_gripper=False)
+    piper.enable()
+    piper.set_speed(20)
+    piper.move_joint(0,0,0,0,0,0 )
+
     run_script(SCRIPTS["fine_point_extraction"], "--run-dir", RUN_DIR, dry_run=dry_run)
     #run_script(SCRIPTS["fine_icp"], "--run-dir", RUN_DIR, dry_run=dry_run)
     run_script(SCRIPTS["fine_icp_curvature"], "--run-dir", RUN_DIR, dry_run=dry_run)
@@ -353,11 +356,6 @@ def run_pipeline(run_fine=False, printing=False, dry_run=False, run_dir=None):
         if run_fine:
             run_fine_reconstruction(dry_run=dry_run)
             completion_args = ["--run-dir", RUN_DIR]
-            
-            piper = connect_right(with_gripper=False)
-            piper.enable()
-            piper.set_speed(20)
-            piper.move_joint(0,0,0,0,0,0 )
 	    
             if printing:
                 completion_args.append("--printing")

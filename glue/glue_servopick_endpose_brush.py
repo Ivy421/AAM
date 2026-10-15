@@ -176,7 +176,7 @@ def execute_grasp(output_path):
             *prepick_joint_degrees
         )
 
-        time.sleep(7)
+        time.sleep(3)
 
         # 3. Slowly move to grasp pose
         piper.set_speed(4)
@@ -185,14 +185,14 @@ def execute_grasp(output_path):
             *joint_degrees
         )
 
-        time.sleep(3)
+        time.sleep(2)
 
         # Close gripper
         piper.move_gripper(
             0,
             force=1.5,
         )
-        time.sleep(1)
+        time.sleep(0.5)
         
         print('pull up brush')
         piper.move_joint(*prepick_joint_degrees)

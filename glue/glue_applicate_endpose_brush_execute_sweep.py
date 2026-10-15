@@ -724,12 +724,6 @@ def move_line(piper, endpose):
 # ============================================================
 
 def prepare_after_pick(piper, brush_pick):
-    print("\nHold brush")
-    piper.move_gripper(GRIPPER_HOLD_MM, force=GRIPPER_FORCE)
-    time.sleep(1)
-
-    piper.set_speed(TRAVEL_SPEED)
-
     pick_endpose = np.asarray(brush_pick["endpose"], dtype=float)
     above_pick = pick_endpose.copy()
     above_pick[2] += PICK_ABOVE_Z_MM
@@ -743,7 +737,7 @@ def prepare_after_pick(piper, brush_pick):
     current_joint[SAFE_JOINT2] = SAFE_JOINT2_DEG
     current_joint[SAFE_JOINT3] = SAFE_JOINT3_DEG
     move_joint(piper, current_joint)
-    time.sleep(3)
+    time.sleep(2)
 
 
 # ============================================================
