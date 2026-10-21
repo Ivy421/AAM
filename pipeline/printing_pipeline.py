@@ -17,7 +17,7 @@ DEFAUL_ACCESS_CODE="0d672b20"
 SCRIPTS = {
     "get_gcode": MODEL2PRINT_DIR / "get_gcode.py",
     "printer_control_monitor": MODEL2PRINT_DIR / "printer_control_monitor.py",
-    "fix_pipeline": PROJECT_ROOT / "pipeline" / "fix_pipeline.py",
+    "glue_pipeline": PROJECT_ROOT / "pipeline" / "glue_pipeline.py",
 }
 
 
@@ -165,17 +165,13 @@ def run_printer_control_monitor(args, paths):
 
 
 def should_continue_to_fix(print_result):
-    return bool(
-        print_result.get("success")
-        and print_result.get("finished")
-    )
+    return bool(print_result.get("success") and print_result.get("finished") and print_result.get("cooldown_ready"))
 
 
 def check_print_result_and_reserve_fix(paths, dry_run=False):
     result_json = paths["result_json"]
 
     if dry_run:
-        print("\nDRY RUN: skip reading print_result.json and reserve fix_pipeline call.")
         return
 
     if not result_json.exists():
@@ -187,9 +183,9 @@ def check_print_result_and_reserve_fix(paths, dry_run=False):
 
     if should_continue_to_fix(result):
         print("\nPrint succeeded and cooldown condition reached.")
-        print("Reserved: fix_pipeline.py would be called here, but it is not implemented yet.")
+        print("\n Robotic execution begin!")
         # Future hook:
-        # run_script(SCRIPTS["fix_pipeline"], "--run-dir", paths["run_dir"])
+        run_script(SCRIPTS["glue_pipeline"], "--run-dir", paths["run_dir"])
         return
 
     raise RuntimeError("Print did not finish successfully or cooldown_ready is false.")

@@ -1,0 +1,15 @@
+[
+  {
+    "id": "1",
+    "pose": {
+      "id": 1,
+      "x": 0.0,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-20T15:04:31",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  }
+]

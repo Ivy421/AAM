@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"table corner edge\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"chipped corner of the white table with black edge trim showing exposed material\",\n      \"short_object_prompt\": \"white table corner\",\n      \"balanced_prompt\": \"damaged corner edge of the white table\"\n    },\n    \"description\": \"The front-left corner of the white table has a visible chip or break in the black edge banding and the white substrate, creating an irregular shape suitable for a 3D printed repair block.\",\n    \"confidence\": 8\n  }\n]"
+]
