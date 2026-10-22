@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"plastic syringe\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"translucent white plastic syringe lying on brown cardboard with a broken or missing tip nozzle\",\n      \"short_object_prompt\": \"plastic syringe\",\n      \"balanced_prompt\": \"plastic syringe with damaged tip\"\n    },\n    \"description\": \"A translucent plastic syringe lying on a piece of cardboard. The tip/nozzle area appears to be the target for repair, likely broken or missing, which could be replaced with a 3D printed adapter or tip.\",\n    \"confidence\": 8\n  }\n]"
+]

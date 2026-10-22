@@ -1,0 +1,3 @@
+[
+    "{\n  \"is_defect\": \"yes\",\n  \"defect_type\": \"depression\",\n  \"defect_object\": \"rectangular wooden board with grid of holes\",\n  \"defect_region\": \"irregularly chipped and missing volume at the bottom-left corner, creating a jagged, non-orthogonal edge\",\n  \"segmentation_text_prompt\": {\n    \"long_defect_prompt\": \"wooden board with a chipped corner showing missing material and jagged edges\",\n    \"short_object_prompt\": \"perforated wooden block\",\n    \"balanced_prompt\": \"wooden board with damaged corner requiring volume restoration\"\n  }\n}"
+]

@@ -1,0 +1,11 @@
+{
+    "is_defect": "yes",
+    "defect_type": "depression",
+    "defect_object": "pale yellow curved foam block",
+    "defect_region": "irregular jagged edge and missing volume on the side of the foam block where material has been torn or chipped away",
+    "segmentation_text_prompt": {
+        "long_defect_prompt": "pale yellow foam block with a jagged torn edge and missing chunk on the side",
+        "short_object_prompt": "yellow foam piece",
+        "balanced_prompt": "curved yellow foam block with damaged irregular edge"
+    }
+}

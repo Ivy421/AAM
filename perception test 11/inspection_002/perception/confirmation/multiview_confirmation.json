@@ -1,0 +1,11 @@
+{
+    "is_defect": "yes",
+    "defect_type": "depression",
+    "defect_object": "white desk corner",
+    "defect_region": "chipped and broken front corner of the white desk with jagged edges and missing volume exposing the internal substrate",
+    "segmentation_text_prompt": {
+        "long_defect_prompt": "broken white desk corner with chipped edge and missing material volume",
+        "short_object_prompt": "white desk corner",
+        "balanced_prompt": "damaged white desk corner with chipped breakage"
+    }
+}

@@ -1,0 +1,3 @@
+[
+    "{\n  \"is_defect\": \"yes\",\n  \"defect_type\": \"depression\",\n  \"defect_object\": \"rectangular wooden board with marker dots\",\n  \"defect_region\": \"broken and chipped bottom-left corner with missing material volume and jagged edges\",\n  \"segmentation_text_prompt\": {\n    \"long_defect_prompt\": \"wooden board with a large chunk missing from the bottom left corner showing rough splintered wood\",\n    \"short_object_prompt\": \"dotted wooden block\",\n    \"balanced_prompt\": \"rectangular wooden board with damaged lower corner\"\n  }\n}"
+]

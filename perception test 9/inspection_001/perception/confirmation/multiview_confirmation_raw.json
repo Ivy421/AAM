@@ -1,0 +1,3 @@
+[
+    "{\n  \"is_defect\": \"yes\",\n  \"defect_type\": \"depression\",\n  \"defect_object\": \"small red plastic wedge-shaped clip\",\n  \"defect_region\": \"broken and jagged lower corner edge with missing material volume\",\n  \"segmentation_text_prompt\": {\n    \"long_defect_prompt\": \"red plastic wedge clip with a chipped and jagged broken corner edge\",\n    \"short_object_prompt\": \"red plastic clip\",\n    \"balanced_prompt\": \"red plastic wedge clip with damaged broken corner\"\n  }\n}"
+]

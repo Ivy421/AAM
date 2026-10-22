@@ -1,0 +1,77 @@
+{
+    "source_csv": "/home/smmg/AAM/data/runs/20261022_124743/inspection_001/perception/rough_screening/inspection_001_RoughInspection.csv",
+    "ecT_path": "/home/smmg/AAM/config/calibration/right_camera/ecT.npy",
+    "desired_camera_pose_source": "/home/smmg/AAM/data/runs/20261022_124743/inspection_001/start.json",
+    "chassis_origin_in_arm_base": {
+        "x": -0.23,
+        "y": 0.21,
+        "z": 0.0
+    },
+    "multi_defect_execution_note": "Use target_base_translation_from_initial as the absolute target offset from the initial base pose. For sequential inspection, move by delta_from_previous_target or recompute the delta from current odom.",
+    "commands": [
+        {
+            "id": 1,
+            "object_center_coordinate": {
+                "arm_base_link": {
+                    "x": 0.1189526834561137,
+                    "y": -0.5408857819599249,
+                    "z": 0.13342179202500126,
+                    "distance": 0.5538114932247342
+                },
+                "mark1_chassis_origin": {
+                    "x": 0.34895268345611374,
+                    "y": -0.7508857819599248,
+                    "z": 0.13342179202500126,
+                    "distance": 0.8280081115791019
+                }
+            },
+            "desired_camera_alignment": {
+                "capture_endpose_path": "/home/smmg/AAM/data/runs/20261022_124743/inspection_001/start.json",
+                "camera_center_in_arm_base": [
+                    0.04338653960494029,
+                    -0.20547401155604134,
+                    0.3701014127627527
+                ],
+                "camera_optical_axis_in_arm_base": [
+                    0.0067578031753475825,
+                    -0.8212588256393094,
+                    -0.5705157959301266
+                ],
+                "object_point_on_optical_axis_before_base_motion": [
+                    0.04619002778874077,
+                    -0.5461748804302291,
+                    0.13342179202500126
+                ],
+                "required_base_translation": {
+                    "x": 0.07276265566737294,
+                    "y": 0.005289098470304232,
+                    "z": 0.0
+                }
+            },
+            "target_base_translation_from_initial": {
+                "x": 0.07276265566737294,
+                "y": 0.005289098470304232,
+                "z": 0.0
+            },
+            "delta_from_previous_target": {
+                "x": 0.07276265566737294,
+                "y": 0.005289098470304232,
+                "z": 0.0
+            },
+            "move_control_from_initial": {
+                "vx": 0.08,
+                "vy": 0.005815179142974447,
+                "wz": 0.0,
+                "duration": 0.9095331958421617,
+                "rate_hz": 20
+            },
+            "move_control_from_previous_target": {
+                "vx": 0.08,
+                "vy": 0.005815179142974447,
+                "wz": 0.0,
+                "duration": 0.9095331958421617,
+                "rate_hz": 20
+            }
+        }
+    ]
+}

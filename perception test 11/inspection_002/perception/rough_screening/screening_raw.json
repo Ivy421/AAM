@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"white desk corner\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"chipped and broken white corner of the desk surface with exposed brown particle board underneath\",\n      \"short_object_prompt\": \"white desk corner\",\n      \"balanced_prompt\": \"damaged white desk corner with chipped edge\"\n    },\n    \"description\": \"The front corner of the white desk is physically broken and chipped, exposing the internal material. This missing volume creates an irregular edge that could be repaired by 3D printing a custom filler block.\",\n    \"confidence\": 9\n  }\n]"
+]

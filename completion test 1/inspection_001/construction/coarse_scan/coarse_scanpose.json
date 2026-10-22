@@ -1,0 +1,717 @@
+[
+  {
+    "cube_name": "front_high",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": false,
+    "min_joint_limit_margin_deg": 28.7505,
+    "raw_min_joint_limit_margin_deg": 28.7505,
+    "look_angle_deg": 0.0,
+    "cube_outside_err_mm": 0.0,
+    "camera_position_base_m": [
+      0.31051,
+      -0.01204,
+      0.31872
+    ],
+    "cube_center_base_m": [
+      0.38551,
+      0.0446,
+      0.38647
+    ],
+    "endpose": [
+      247.82,
+      -5.24,
+      249.73,
+      120.3,
+      54.22,
+      110.61
+    ],
+    "joint_degrees": [
+      0.69,
+      70.7,
+      -30.75,
+      16.65,
+      -18.45,
+      17.66
+    ],
+    "raw_joint_degrees": [
+      0.69,
+      70.7,
+      -30.75,
+      16.65,
+      -18.45,
+      17.66
+    ],
+    "jointctrl_args": [
+      690,
+      70702,
+      -30751,
+      16650,
+      -18448,
+      17663
+    ],
+    "score": 9999.883897941274,
+    "idx": 0,
+    "radius": 0.492,
+    "object_center_base_m": [
+      0.7334,
+      0.04709,
+      0.03858
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "left_high",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": false,
+    "min_joint_limit_margin_deg": 41.7645,
+    "raw_min_joint_limit_margin_deg": 41.7645,
+    "look_angle_deg": 0.0,
+    "cube_outside_err_mm": 0.0,
+    "camera_position_base_m": [
+      0.41417,
+      -0.12567,
+      0.31147
+    ],
+    "cube_center_base_m": [
+      0.48917,
+      -0.20067,
+      0.38647
+    ],
+    "endpose": [
+      348.55,
+      -60.48,
+      298.08,
+      128.55,
+      3.48,
+      96.21
+    ],
+    "joint_degrees": [
+      -13.15,
+      89.96,
+      -68.33,
+      30.38,
+      26.24,
+      47.31
+    ],
+    "raw_joint_degrees": [
+      -13.15,
+      89.96,
+      -68.33,
+      30.38,
+      26.24,
+      47.31
+    ],
+    "jointctrl_args": [
+      -13147,
+      89960,
+      -68332,
+      30382,
+      26235,
+      47315
+    ],
+    "score": 9999.870096189223,
+    "idx": 1,
+    "radius": 0.492,
+    "object_center_base_m": [
+      0.7334,
+      0.04709,
+      0.03858
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "right_high",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": false,
+    "min_joint_limit_margin_deg": 25.1787,
+    "raw_min_joint_limit_margin_deg": 25.1787,
+    "look_angle_deg": 0.0,
+    "cube_outside_err_mm": 0.0,
+    "camera_position_base_m": [
+      0.41064,
+      0.21632,
+      0.31147
+    ],
+    "cube_center_base_m": [
+      0.48564,
+      0.29132,
+      0.38647
+    ],
+    "endpose": [
+      389.91,
+      137.83,
+      357.78,
+      -125.61,
+      9.03,
+      -99.7
+    ],
+    "joint_degrees": [
+      24.25,
+      101.71,
+      -95.91,
+      -33.8,
+      42.82,
+      -36.1
+    ],
+    "raw_joint_degrees": [
+      24.25,
+      101.71,
+      -95.91,
+      -33.8,
+      42.82,
+      -36.1
+    ],
+    "jointctrl_args": [
+      24247,
+      101715,
+      -95913,
+      -33803,
+      42821,
+      -36098
+    ],
+    "score": 9999.870095633583,
+    "idx": 2,
+    "radius": 0.492,
+    "object_center_base_m": [
+      0.7334,
+      0.04709,
+      0.03858
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "right_mid",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": false,
+    "min_joint_limit_margin_deg": 14.4854,
+    "raw_min_joint_limit_margin_deg": 14.4854,
+    "look_angle_deg": 0.0,
+    "cube_outside_err_mm": 0.0,
+    "camera_position_base_m": [
+      0.36155,
+      0.29666,
+      0.22262
+    ],
+    "cube_center_base_m": [
+      0.40414,
+      0.37166,
+      0.20685
+    ],
+    "endpose": [
+      336.45,
+      235.97,
+      289.12,
+      -117.0,
+      -8.23,
+      -98.48
+    ],
+    "joint_degrees": [
+      44.63,
+      106.11,
+      -83.8,
+      -69.22,
+      53.51,
+      -6.8
+    ],
+    "raw_joint_degrees": [
+      44.63,
+      106.11,
+      -83.8,
+      -69.22,
+      53.51,
+      -6.8
+    ],
+    "jointctrl_args": [
+      44633,
+      106105,
+      -83797,
+      -69217,
+      53515,
+      -6797
+    ],
+    "score": 9999.912322322647,
+    "idx": 3,
+    "radius": 0.492,
+    "object_center_base_m": [
+      0.7334,
+      0.04709,
+      0.03858
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "right_grazing",
+    "success": false,
+    "least_squares_success": true,
+    "joint_limit_adjusted": true,
+    "min_joint_limit_margin_deg": 2.0,
+    "raw_min_joint_limit_margin_deg": 0.0,
+    "look_angle_deg": 4.2045,
+    "cube_outside_err_mm": 530.4139,
+    "camera_position_base_m": [
+      0.09228,
+      0.07633,
+      0.01416
+    ],
+    "cube_center_base_m": [
+      0.56441,
+      0.5012,
+      0.12401
+    ],
+    "endpose": [
+      80.37,
+      -14.1,
+      34.57,
+      -84.7,
+      14.21,
+      -68.87
+    ],
+    "joint_degrees": [
+      -96.27,
+      176.0,
+      -4.0,
+      78.26,
+      66.0,
+      30.97
+    ],
+    "raw_joint_degrees": [
+      -96.27,
+      178.0,
+      -2.0,
+      78.26,
+      68.0,
+      30.97
+    ],
+    "jointctrl_args": [
+      -96270,
+      176000,
+      -4000,
+      78261,
+      66000,
+      30967
+    ],
+    "score": -1506.7588177918014,
+    "idx": 4,
+    "radius": 0.492,
+    "object_center_base_m": [
+      0.7334,
+      0.04709,
+      0.03858
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "right_edge",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": true,
+    "min_joint_limit_margin_deg": 2.0,
+    "raw_min_joint_limit_margin_deg": 0.0,
+    "look_angle_deg": 11.7917,
+    "cube_outside_err_mm": 29.0637,
+    "camera_position_base_m": [
+      0.40533,
+      0.36945,
+      0.12369
+    ],
+    "cube_center_base_m": [
+      0.48434,
+      0.4714,
+      0.03858
+    ],
+    "endpose": [
+      346.9,
+      299.09,
+      142.94,
+      -101.21,
+      22.09,
+      -110.09
+    ],
+    "joint_degrees": [
+      51.12,
+      131.0,
+      -84.01,
+      82.21,
+      -66.0,
+      -116.0
+    ],
+    "raw_joint_degrees": [
+      51.12,
+      131.0,
+      -84.01,
+      82.21,
+      -68.0,
+      -118.0
+    ],
+    "jointctrl_args": [
+      51122,
+      131002,
+      -84011,
+      82213,
+      -66000,
+      -116000
+    ],
+    "score": 7226.976883547343,
+    "idx": 5,
+    "radius": 0.492,
+    "object_center_base_m": [
+      0.7334,
+      0.04709,
+      0.03858
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "top_front",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": false,
+    "min_joint_limit_margin_deg": 22.1668,
+    "raw_min_joint_limit_margin_deg": 22.1668,
+    "look_angle_deg": 0.0,
+    "cube_outside_err_mm": 0.0,
+    "camera_position_base_m": [
+      0.49013,
+      0.03445,
+      0.42591
+    ],
+    "cube_center_base_m": [
+      0.56513,
+      0.04589,
+      0.50091
+    ],
+    "endpose": [
+      410.25,
+      1.42,
+      390.35,
+      172.27,
+      51.28,
+      168.51
+    ],
+    "joint_degrees": [
+      0.58,
+      101.3,
+      -103.79,
+      -2.41,
+      45.83,
+      9.2
+    ],
+    "raw_joint_degrees": [
+      0.58,
+      101.3,
+      -103.79,
+      -2.41,
+      45.83,
+      9.2
+    ],
+    "jointctrl_args": [
+      582,
+      101303,
+      -103788,
+      -2409,
+      45833,
+      9201
+    ],
+    "score": 9999.893318936838,
+    "idx": 6,
+    "radius": 0.492,
+    "object_center_base_m": [
+      0.7334,
+      0.04709,
+      0.03858
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "front_mid",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": false,
+    "min_joint_limit_margin_deg": 12.1758,
+    "raw_min_joint_limit_margin_deg": 12.1758,
+    "look_angle_deg": 0.0,
+    "cube_outside_err_mm": 0.0,
+    "camera_position_base_m": [
+      0.16831,
+      0.00407,
+      0.11358
+    ],
+    "cube_center_base_m": [
+      0.24141,
+      0.04356,
+      0.03858
+    ],
+    "endpose": [
+      167.6,
+      -0.26,
+      206.94,
+      -129.07,
+      -49.52,
+      -42.78
+    ],
+    "joint_degrees": [
+      -14.35,
+      57.15,
+      -14.18,
+      -70.13,
+      -28.9,
+      -92.14
+    ],
+    "raw_joint_degrees": [
+      -14.35,
+      57.15,
+      -14.18,
+      -70.13,
+      -28.9,
+      -92.14
+    ],
+    "jointctrl_args": [
+      -14353,
+      57150,
+      -14176,
+      -70126,
+      -28902,
+      -92138
+    ],
+    "score": 9999.8880711215,
+    "idx": 7,
+    "radius": 0.492,
+    "object_center_base_m": [
+      0.7334,
+      0.04709,
+      0.03858
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "left_mid",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": false,
+    "min_joint_limit_margin_deg": 22.1141,
+    "raw_min_joint_limit_margin_deg": 22.1141,
+    "look_angle_deg": 0.0,
+    "cube_outside_err_mm": 0.0,
+    "camera_position_base_m": [
+      0.33383,
+      -0.20716,
+      0.28185
+    ],
+    "cube_center_base_m": [
+      0.40883,
+      -0.28216,
+      0.20685
+    ],
+    "endpose": [
+      278.12,
+      -133.53,
+      296.36,
+      129.23,
+      -17.99,
+      87.97
+    ],
+    "joint_degrees": [
+      -35.72,
+      84.19,
+      -61.15,
+      55.58,
+      45.89,
+      33.7
+    ],
+    "raw_joint_degrees": [
+      -35.72,
+      84.19,
+      -61.15,
+      55.58,
+      45.89,
+      33.7
+    ],
+    "jointctrl_args": [
+      -35716,
+      84193,
+      -61153,
+      55575,
+      45886,
+      33704
+    ],
+    "score": 9999.870096444538,
+    "idx": 8,
+    "radius": 0.492,
+    "object_center_base_m": [
+      0.7334,
+      0.04709,
+      0.03858
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "left_grazing",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": true,
+    "min_joint_limit_margin_deg": 2.0,
+    "raw_min_joint_limit_margin_deg": 0.0,
+    "look_angle_deg": 6.1751,
+    "cube_outside_err_mm": 11.3577,
+    "camera_position_base_m": [
+      0.48958,
+      -0.32499,
+      0.17743
+    ],
+    "cube_center_base_m": [
+      0.57095,
+      -0.40939,
+      0.12401
+    ],
+    "endpose": [
+      408.02,
+      -279.99,
+      169.69,
+      115.86,
+      -10.69,
+      115.09
+    ],
+    "joint_degrees": [
+      -43.65,
+      135.56,
+      -105.93,
+      71.82,
+      66.0,
+      -5.24
+    ],
+    "raw_joint_degrees": [
+      -43.65,
+      135.56,
+      -105.93,
+      71.82,
+      68.0,
+      -5.24
+    ],
+    "jointctrl_args": [
+      -43647,
+      135559,
+      -105930,
+      71823,
+      66000,
+      -5237
+    ],
+    "score": 8359.169894913983,
+    "idx": 9,
+    "radius": 0.492,
+    "object_center_base_m": [
+      0.7334,
+      0.04709,
+      0.03858
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  },
+  {
+    "cube_name": "left_edge",
+    "success": true,
+    "least_squares_success": true,
+    "joint_limit_adjusted": true,
+    "min_joint_limit_margin_deg": 2.0,
+    "raw_min_joint_limit_margin_deg": 0.0,
+    "look_angle_deg": 2.5854,
+    "cube_outside_err_mm": 1.0798,
+    "camera_position_base_m": [
+      0.41438,
+      -0.30986,
+      0.11198
+    ],
+    "cube_center_base_m": [
+      0.49046,
+      -0.38075,
+      0.03858
+    ],
+    "endpose": [
+      341.75,
+      -254.25,
+      131.17,
+      116.49,
+      -30.83,
+      105.59
+    ],
+    "joint_degrees": [
+      -47.77,
+      127.7,
+      -79.14,
+      81.08,
+      66.0,
+      -5.51
+    ],
+    "raw_joint_degrees": [
+      -47.77,
+      127.7,
+      -79.14,
+      81.08,
+      68.0,
+      -5.51
+    ],
+    "jointctrl_args": [
+      -47769,
+      127703,
+      -79140,
+      81078,
+      66000,
+      -5508
+    ],
+    "score": 9082.261608219183,
+    "idx": 10,
+    "radius": 0.492,
+    "object_center_base_m": [
+      0.7334,
+      0.04709,
+      0.03858
+    ],
+    "cube_size_m": [
+      0.15,
+      0.15,
+      0.15
+    ]
+  }
+]

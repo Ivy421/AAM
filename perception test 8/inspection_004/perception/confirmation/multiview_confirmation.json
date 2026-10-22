@@ -1,0 +1,11 @@
+{
+    "is_defect": "yes",
+    "defect_type": "depression",
+    "defect_object": "thick wooden board with metal inserts",
+    "defect_region": "chipped and jagged front-right corner with missing wood volume and irregular broken edge",
+    "segmentation_text_prompt": {
+        "long_defect_prompt": "thick wooden board with a chipped and jagged front-right corner showing missing material volume",
+        "short_object_prompt": "wooden board with metal inserts",
+        "balanced_prompt": "wooden board with damaged chipped front-right corner"
+    }
+}

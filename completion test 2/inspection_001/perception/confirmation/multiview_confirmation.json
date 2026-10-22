@@ -1,0 +1,11 @@
+{
+    "is_defect": "yes",
+    "defect_type": "depression",
+    "defect_object": "rectangular wooden board with embedded markers",
+    "defect_region": "bottom-left corner exhibiting significant chipping, jagged edges, and missing material volume compared to the straight edges of the rest of the board",
+    "segmentation_text_prompt": {
+        "long_defect_prompt": "wooden board with a chipped and irregular bottom-left corner missing material volume",
+        "short_object_prompt": "marker-embedded wooden board",
+        "balanced_prompt": "rectangular wooden board with damaged bottom-left corner"
+    }
+}

@@ -1,0 +1,54 @@
+[
+  {
+    "id": "1",
+    "pose": {
+      "id": 1,
+      "x": 0.0,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-22T12:28:19",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "2",
+    "pose": {
+      "id": 2,
+      "x": 0.3,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-22T12:28:39",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "3",
+    "pose": {
+      "id": 3,
+      "x": 0.6,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-22T12:28:59",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "4",
+    "pose": {
+      "id": 4,
+      "x": 0.9,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-22T12:29:19",
+    "success": true,
+    "reason": "confirmed",
+    "status": "defect_confirmed"
+  }
+]

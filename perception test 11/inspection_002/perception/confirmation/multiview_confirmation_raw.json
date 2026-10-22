@@ -1,0 +1,3 @@
+[
+    "{\n  \"is_defect\": \"yes\",\n  \"defect_type\": \"depression\",\n  \"defect_object\": \"white desk corner\",\n  \"defect_region\": \"chipped and broken front corner of the white desk with jagged edges and missing volume exposing the internal substrate\",\n  \"segmentation_text_prompt\": {\n    \"long_defect_prompt\": \"broken white desk corner with chipped edge and missing material volume\",\n    \"short_object_prompt\": \"white desk corner\",\n    \"balanced_prompt\": \"damaged white desk corner with chipped breakage\"\n  }\n}"
+]

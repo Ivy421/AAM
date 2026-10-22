@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"wooden board\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"light-colored wooden board on green desk with a missing triangular corner section on the front-left edge\",\n      \"short_object_prompt\": \"wooden board with holes\",\n      \"balanced_prompt\": \"wooden board with missing corner piece\"\n    },\n    \"description\": \"A rectangular wooden board with drilled holes has a noticeable irregular missing volume at one of its corners, creating a non-orthogonal edge that could be repaired with a custom 3D printed filler block.\",\n    \"confidence\": 9\n  }\n]"
+]
