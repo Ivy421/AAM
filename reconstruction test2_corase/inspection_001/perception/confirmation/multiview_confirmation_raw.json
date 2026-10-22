@@ -1,0 +1,3 @@
+[
+    "{\n  \"is_defect\": \"yes\",\n  \"defect_type\": \"depression\",\n  \"defect_object\": \"rectangular wooden board with marker dots\",\n  \"defect_region\": \"broken front-left corner with jagged edge and missing wood volume\",\n  \"segmentation_text_prompt\": {\n    \"long_defect_prompt\": \"wooden board with a chipped and jagged front-left corner where material is missing\",\n    \"short_object_prompt\": \"wooden board with dots\",\n    \"balanced_prompt\": \"rectangular wooden board with broken front-left corner\"\n  }\n}"
+]

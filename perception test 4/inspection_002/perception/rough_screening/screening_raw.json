@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"black rectangular block\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"long black rectangular block with a chipped and irregular corner on the left side resting on the green table\",\n      \"short_object_prompt\": \"black rectangular block\",\n      \"balanced_prompt\": \"black rectangular block with damaged corner\"\n    },\n    \"description\": \"A long black object, likely a prototype or part, has a visibly broken or incomplete corner on the left end, representing a missing volume suitable for 3D printing repair.\",\n    \"confidence\": 9\n  }\n]"
+]

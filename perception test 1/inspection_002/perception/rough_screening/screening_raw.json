@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"table leg cable holder\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"black plastic cable management clip attached to the side of the dark grey table leg holding wires\",\n      \"short_object_prompt\": \"table leg cable holder\",\n      \"balanced_prompt\": \"black cable organizer clip on table leg\"\n    },\n    \"description\": \"A small black plastic component attached to the vertical table leg used for cable management. These parts are prone to breaking or losing tension, making them suitable candidates for 3D printed replacement.\",\n    \"confidence\": 8\n  }\n]"
+]

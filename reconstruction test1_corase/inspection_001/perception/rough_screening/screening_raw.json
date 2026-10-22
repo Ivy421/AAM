@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"wooden board\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"chipped corner of the light-colored wooden board with grid holes on the front left edge\",\n      \"short_object_prompt\": \"wooden board\",\n      \"balanced_prompt\": \"damaged corner of the perforated wooden board\"\n    },\n    \"description\": \"The front-left corner of the rectangular wooden board is broken and irregular, missing a triangular chunk of material which could be restored with a 3D printed repair block.\",\n    \"confidence\": 9\n  }\n]"
+]

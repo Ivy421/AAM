@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"red plastic fragment\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"small irregular red plastic broken piece lying on the green table surface to the left of the white projector\",\n      \"short_object_prompt\": \"red plastic fragment\",\n      \"balanced_prompt\": \"broken red plastic part on green table\"\n    },\n    \"description\": \"A small, irregular red plastic fragment is visible on the table, likely a broken-off piece from a larger object that could be repaired or replaced via 3D printing.\",\n    \"confidence\": 8\n  }\n]"
+]

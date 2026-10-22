@@ -1,0 +1,11 @@
+{
+    "is_defect": "yes",
+    "defect_type": "depression",
+    "defect_object": "rectangular wooden board with grid of black circular markers",
+    "defect_region": "front-left corner exhibiting a large irregular chip and missing volume with jagged broken edges",
+    "segmentation_text_prompt": {
+        "long_defect_prompt": "wooden board with a chipped and broken front-left corner missing a triangular chunk of material",
+        "short_object_prompt": "marked wooden board",
+        "balanced_prompt": "rectangular wooden board with damaged front-left corner"
+    }
+}

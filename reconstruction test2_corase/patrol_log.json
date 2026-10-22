@@ -1,0 +1,15 @@
+[
+  {
+    "id": "1",
+    "pose": {
+      "id": 1,
+      "x": 0.0,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-21T16:16:42",
+    "success": true,
+    "reason": "confirmed",
+    "status": "defect_confirmed"
+  }
+]

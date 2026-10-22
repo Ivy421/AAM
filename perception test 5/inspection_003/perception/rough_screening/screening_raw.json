@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"black rectangular cover\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"black rectangular plastic cover on the white table edge with a jagged broken corner and rough texture\",\n      \"short_object_prompt\": \"black plastic cover\",\n      \"balanced_prompt\": \"black rectangular cover with damaged corner on table edge\"\n    },\n    \"description\": \"A black rectangular object, likely a protective cover or cap, resting on the table edge exhibits a significant irregular breakage and missing volume at its front-left corner, suitable for reconstruction via 3D printing.\",\n    \"confidence\": 9\n  }\n]"
+]
