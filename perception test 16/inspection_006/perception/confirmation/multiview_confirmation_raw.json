@@ -1,0 +1,3 @@
+[
+    "{\n  \"is_defect\": \"yes\",\n  \"defect_type\": \"depression\",\n  \"defect_object\": \"black rectangular plastic cover or housing block\",\n  \"defect_region\": \"irregularly broken and jagged corner edge with missing material volume\",\n  \"segmentation_text_prompt\": {\n    \"long_defect_prompt\": \"black plastic block with a chipped and jagged broken corner requiring volume restoration\",\n    \"short_object_prompt\": \"black plastic cover\",\n    \"balanced_prompt\": \"black plastic housing with damaged irregular corner edge\"\n  }\n}"
+]

@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"black plastic cover\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"black rectangular plastic component on the green table with a jagged broken edge and missing corner piece\",\n      \"short_object_prompt\": \"black plastic housing part\",\n      \"balanced_prompt\": \"broken black plastic cover with damaged edge\"\n    },\n    \"description\": \"A black plastic component, likely a cover or housing, sitting on the desk. It exhibits a clear structural defect where a corner or side section is broken off, leaving an irregular, jagged edge suitable for volume reconstruction via 3D printing.\",\n    \"confidence\": 9\n  }\n]"
+]

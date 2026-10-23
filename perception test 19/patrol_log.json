@@ -1,0 +1,41 @@
+[
+  {
+    "id": "1",
+    "pose": {
+      "id": 1,
+      "x": 0.0,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T10:08:26",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "2",
+    "pose": {
+      "id": 2,
+      "x": 0.25,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T10:08:43",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "3",
+    "pose": {
+      "id": 3,
+      "x": 0.5,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T10:09:08",
+    "success": true,
+    "reason": "confirmed",
+    "status": "defect_confirmed"
+  }
+]

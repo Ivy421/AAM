@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"black rectangular block\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"black rectangular block on green table with a missing corner piece on the bottom right side\",\n      \"short_object_prompt\": \"black rectangular block\",\n      \"balanced_prompt\": \"black block with damaged corner\"\n    },\n    \"description\": \"A black rectangular object, likely a foam or plastic block, sitting on a green workbench. The bottom-right corner appears chipped or broken off, creating an irregular edge that could be repaired by 3D printing a replacement corner.\",\n    \"confidence\": 8\n  }\n]"
+]

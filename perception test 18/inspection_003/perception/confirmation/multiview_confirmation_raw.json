@@ -1,0 +1,3 @@
+[
+    "{\n  \"is_defect\": \"yes\",\n  \"defect_type\": \"depression\",\n  \"defect_object\": \"translucent white plastic bracket component\",\n  \"defect_region\": \"irregular jagged broken edge and missing volume along the curved boundary of the translucent part\",\n  \"segmentation_text_prompt\": {\n    \"long_defect_prompt\": \"translucent white plastic bracket with a jagged broken edge and missing material volume\",\n    \"short_object_prompt\": \"translucent plastic bracket\",\n    \"balanced_prompt\": \"broken translucent plastic bracket with irregular damaged edge\"\n  }\n}"
+]

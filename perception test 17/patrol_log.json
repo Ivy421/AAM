@@ -1,0 +1,93 @@
+[
+  {
+    "id": "1",
+    "pose": {
+      "id": 1,
+      "x": 0.0,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T09:24:34",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "2",
+    "pose": {
+      "id": 2,
+      "x": 0.25,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T09:24:51",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "3",
+    "pose": {
+      "id": 3,
+      "x": 0.5,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T09:25:12",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "4",
+    "pose": {
+      "id": 4,
+      "x": 0.75,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T09:25:34",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "5",
+    "pose": {
+      "id": 5,
+      "x": 1.0,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T09:25:56",
+    "success": false,
+    "reason": "RuntimeError: No device connected",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "5",
+    "pose": {
+      "id": 5,
+      "x": 1.25,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T09:26:25",
+    "success": false,
+    "reason": "RuntimeError: No device connected",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "5",
+    "pose": {
+      "id": 5,
+      "x": 1.4,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T09:26:53",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  }
+]

@@ -1,0 +1,11 @@
+{
+    "is_defect": "yes",
+    "defect_type": "depression",
+    "defect_object": "rectangular wooden board with grid of holes",
+    "defect_region": "front-left corner is chipped and missing, creating an irregular jagged boundary and lost volume",
+    "segmentation_text_prompt": {
+        "long_defect_prompt": "wooden board with a chipped front-left corner showing missing material and irregular edge",
+        "short_object_prompt": "perforated wooden board",
+        "balanced_prompt": "wooden board with damaged front-left corner"
+    }
+}

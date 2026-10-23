@@ -1,0 +1,80 @@
+[
+  {
+    "id": "1",
+    "pose": {
+      "id": 1,
+      "x": 0.0,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T09:10:53",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "2",
+    "pose": {
+      "id": 2,
+      "x": 0.25,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T09:11:10",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "3",
+    "pose": {
+      "id": 3,
+      "x": 0.5,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T09:11:31",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "4",
+    "pose": {
+      "id": 4,
+      "x": 0.75,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T09:11:52",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "5",
+    "pose": {
+      "id": 5,
+      "x": 1.0,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T09:12:13",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "5",
+    "pose": {
+      "id": 5,
+      "x": 1.25,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T09:12:34",
+    "success": true,
+    "reason": "confirmed",
+    "status": "defect_confirmed"
+  }
+]

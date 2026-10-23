@@ -1,0 +1,17 @@
+{
+    "run_id": "20261023_100310",
+    "created_at": "2026-10-23T10:03:10",
+    "project_root": "/home/smmg/AAM",
+    "waypoints_path": "/home/smmg/AAM/config/patrol/waypoints.json",
+    "inspection_joint_degrees": [
+        0,
+        30,
+        -40,
+        0,
+        30,
+        0
+    ],
+    "inspection_data_layout": "inspection_xxx/start.png, start.npy, start.json, camera_config.npy",
+    "patrol_log_path": "/home/smmg/AAM/data/runs/20261023_100310/patrol_log.json",
+    "status": "initialized"
+}

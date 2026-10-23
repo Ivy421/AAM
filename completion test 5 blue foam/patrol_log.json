@@ -1,0 +1,15 @@
+[
+  {
+    "id": "1",
+    "pose": {
+      "id": 1,
+      "x": 0.0,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T12:31:36",
+    "success": true,
+    "reason": "CalledProcessError: Command '['/home/smmg/miniforge3/envs/AAM/bin/python', '/home/smmg/AAM/pipeline/perception_construction_pipeline.py', '--run-dir', '/home/smmg/AAM/data/runs/20261023_123136/inspection_001', '--run-fine']' returned non-zero exit status 1.",
+    "status": "reconstruction_failed"
+  }
+]

@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"blue rectangular block\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"light blue rectangular foam or plastic block on the green desk with a jagged broken edge and missing corner piece\",\n      \"short_object_prompt\": \"blue rectangular block\",\n      \"balanced_prompt\": \"broken light blue rectangular block on desk\"\n    },\n    \"description\": \"A light blue rectangular object, likely foam or plastic, sitting on the green desk surface. It exhibits a clear volumetric defect where one end is irregularly broken or chipped, indicating a missing volume that could be restored via 3D printing.\",\n    \"confidence\": 9\n  }\n]"
+]

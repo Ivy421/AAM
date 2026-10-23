@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"wooden board\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"chipped corner of the light-colored wooden board with visible raw wood grain on the front right edge\",\n      \"short_object_prompt\": \"wooden board\",\n      \"balanced_prompt\": \"damaged corner edge of the wooden board\"\n    },\n    \"description\": \"The front-right corner of the rectangular wooden board is chipped and irregular, missing its original beveled shape, which could be restored with a custom 3D printed filler block.\",\n    \"confidence\": 9\n  }\n]"
+]

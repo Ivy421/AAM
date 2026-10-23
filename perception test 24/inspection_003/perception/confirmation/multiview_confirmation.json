@@ -1,0 +1,11 @@
+{
+    "is_defect": "yes",
+    "defect_type": "depression",
+    "defect_object": "rectangular wooden board with metal rivets",
+    "defect_region": "chipped and missing material at the front corner edge, creating an irregular jagged boundary",
+    "segmentation_text_prompt": {
+        "long_defect_prompt": "wooden board with a chipped corner and missing volume at the edge",
+        "short_object_prompt": "riveted wooden block",
+        "balanced_prompt": "wooden board with damaged corner edge"
+    }
+}

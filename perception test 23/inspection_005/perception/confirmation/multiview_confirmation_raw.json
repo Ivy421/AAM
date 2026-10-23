@@ -1,0 +1,3 @@
+[
+    "{\n  \"is_defect\": \"yes\",\n  \"defect_type\": \"depression\",\n  \"defect_object\": \"rectangular wooden board with screw holes\",\n  \"defect_region\": \"chipped and irregular lower-left corner with missing wood volume and jagged edge\",\n  \"segmentation_text_prompt\": {\n    \"long_defect_prompt\": \"wooden board with a chipped and jagged lower-left corner showing missing material volume\",\n    \"short_object_prompt\": \"wooden board with screws\",\n    \"balanced_prompt\": \"rectangular wooden board with damaged chipped corner\"\n  }\n}"
+]

@@ -1,0 +1,11 @@
+{
+    "is_defect": "yes",
+    "defect_type": "depression",
+    "defect_object": "blue rectangular foam block",
+    "defect_region": "irregular chipped and jagged damage on the front-left corner with missing volume",
+    "segmentation_text_prompt": {
+        "long_defect_prompt": "blue rectangular foam block with a jagged chipped corner and missing material volume",
+        "short_object_prompt": "blue foam block",
+        "balanced_prompt": "blue foam block with damaged irregular corner"
+    }
+}

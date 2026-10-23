@@ -1,0 +1,3 @@
+[
+    "{\n  \"is_defect\": \"yes\",\n  \"defect_type\": \"depression\",\n  \"defect_object\": \"blue rectangular foam block\",\n  \"defect_region\": \"irregular jagged breakage and missing volume along the lower corner and side edge of the block\",\n  \"segmentation_text_prompt\": {\n    \"long_defect_prompt\": \"blue foam block with a large irregular chunk broken off the corner creating a jagged missing volume\",\n    \"short_object_prompt\": \"blue foam block\",\n    \"balanced_prompt\": \"blue foam block with damaged jagged corner and missing material\"\n  }\n}"
+]

@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"black foam block\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"irregular black foam block with a jagged broken edge resting on top of a cardboard box\",\n      \"short_object_prompt\": \"black foam block\",\n      \"balanced_prompt\": \"broken black foam piece on cardboard box\"\n    },\n    \"description\": \"A black rectangular foam or rubber object sitting on a cardboard box appears to have a damaged, irregular edge or corner that is missing material, suitable for volume reconstruction via 3D printing.\",\n    \"confidence\": 8\n  }\n]"
+]

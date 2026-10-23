@@ -1,0 +1,492 @@
+{
+  "object_center_base_m": [
+    0.775924,
+    0.045605,
+    0.012445
+  ],
+  "object_size_base_m": [
+    0.307494,
+    0.15598,
+    0.04216
+  ],
+  "valid_png_names": [
+    "coarse_scan_1",
+    "coarse_scan_2",
+    "coarse_scan_3",
+    "coarse_scan_4",
+    "coarse_scan_5",
+    "coarse_scan_6",
+    "coarse_scan_7",
+    "coarse_scan_8",
+    "coarse_scan_9",
+    "coarse_scan_10",
+    "coarse_scan_11",
+    "coarse_scan_12",
+    "coarse_scan_13",
+    "coarse_scan_14",
+    "coarse_scan_15",
+    "coarse_scan_16",
+    "coarse_scan_17"
+  ],
+  "records": [
+    {
+      "name": "coarse_scan_1",
+      "success": true,
+      "segmentation_mode": "point_fallback",
+      "text_prompt": "a dark wooden block",
+      "point_prompts_xy": [
+        [
+          319.68,
+          255.41
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9883,
+      "selected_box_xyxy": [
+        205.0,
+        174.0,
+        433.0,
+        329.0
+      ],
+      "raw_points_count": 19588,
+      "filtered_points_count": 14687,
+      "min_valid_depth_points": 500,
+      "max_valid_depth_points": 100000,
+      "cluster_eps": 0.015,
+      "cluster_min_points": 30,
+      "reason": "ok"
+    },
+    {
+      "name": "coarse_scan_2",
+      "success": true,
+      "segmentation_mode": "point_fallback",
+      "text_prompt": "a dark wooden block",
+      "point_prompts_xy": [
+        [
+          320.76,
+          256.14
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9922,
+      "selected_box_xyxy": [
+        203.0,
+        174.0,
+        422.0,
+        341.0
+      ],
+      "raw_points_count": 25723,
+      "filtered_points_count": 19382,
+      "min_valid_depth_points": 500,
+      "max_valid_depth_points": 100000,
+      "cluster_eps": 0.015,
+      "cluster_min_points": 30,
+      "reason": "ok"
+    },
+    {
+      "name": "coarse_scan_3",
+      "success": true,
+      "segmentation_mode": "point_fallback",
+      "text_prompt": "a dark wooden block",
+      "point_prompts_xy": [
+        [
+          320.06,
+          255.41
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9805,
+      "selected_box_xyxy": [
+        304.0,
+        80.0,
+        431.0,
+        468.0
+      ],
+      "raw_points_count": 19084,
+      "filtered_points_count": 12615,
+      "min_valid_depth_points": 500,
+      "max_valid_depth_points": 100000,
+      "cluster_eps": 0.015,
+      "cluster_min_points": 30,
+      "reason": "ok"
+    },
+    {
+      "name": "coarse_scan_4",
+      "success": true,
+      "segmentation_mode": "point_fallback",
+      "text_prompt": "a dark wooden block",
+      "point_prompts_xy": [
+        [
+          319.32,
+          287.03
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9297,
+      "selected_box_xyxy": [
+        160.0,
+        0.0,
+        434.0,
+        360.0
+      ],
+      "raw_points_count": 1420,
+      "filtered_points_count": 173,
+      "min_valid_depth_points": 500,
+      "max_valid_depth_points": 100000,
+      "cluster_eps": 0.015,
+      "cluster_min_points": 30,
+      "reason": "ok"
+    },
+    {
+      "name": "coarse_scan_5",
+      "success": true,
+      "segmentation_mode": "point_fallback",
+      "text_prompt": "a dark wooden block",
+      "point_prompts_xy": [
+        [
+          324.45,
+          336.25
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9102,
+      "selected_box_xyxy": [
+        172.0,
+        0.0,
+        412.0,
+        413.0
+      ],
+      "raw_points_count": 516,
+      "filtered_points_count": 168,
+      "min_valid_depth_points": 500,
+      "max_valid_depth_points": 100000,
+      "cluster_eps": 0.015,
+      "cluster_min_points": 30,
+      "reason": "ok"
+    },
+    {
+      "name": "coarse_scan_6",
+      "success": true,
+      "segmentation_mode": "point_fallback",
+      "text_prompt": "a dark wooden block",
+      "point_prompts_xy": [
+        [
+          324.38,
+          251.13
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9883,
+      "selected_box_xyxy": [
+        264.0,
+        117.0,
+        419.0,
+        402.0
+      ],
+      "raw_points_count": 10898,
+      "filtered_points_count": 3633,
+      "min_valid_depth_points": 500,
+      "max_valid_depth_points": 100000,
+      "cluster_eps": 0.015,
+      "cluster_min_points": 30,
+      "reason": "ok"
+    },
+    {
+      "name": "coarse_scan_7",
+      "success": true,
+      "segmentation_mode": "point_fallback",
+      "text_prompt": "a dark wooden block",
+      "point_prompts_xy": [
+        [
+          321.44,
+          255.8
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9805,
+      "selected_box_xyxy": [
+        214.0,
+        237.0,
+        448.0,
+        347.0
+      ],
+      "raw_points_count": 8049,
+      "filtered_points_count": 2888,
+      "min_valid_depth_points": 500,
+      "max_valid_depth_points": 100000,
+      "cluster_eps": 0.015,
+      "cluster_min_points": 30,
+      "reason": "ok"
+    },
+    {
+      "name": "coarse_scan_8",
+      "success": true,
+      "segmentation_mode": "point_fallback",
+      "text_prompt": "a dark wooden block",
+      "point_prompts_xy": [
+        [
+          319.55,
+          254.82
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9883,
+      "selected_box_xyxy": [
+        153.0,
+        92.0,
+        487.0,
+        479.0
+      ],
+      "raw_points_count": 39138,
+      "filtered_points_count": 21286,
+      "min_valid_depth_points": 500,
+      "max_valid_depth_points": 100000,
+      "cluster_eps": 0.015,
+      "cluster_min_points": 30,
+      "reason": "ok"
+    },
+    {
+      "name": "coarse_scan_9",
+      "success": true,
+      "segmentation_mode": "point_fallback",
+      "text_prompt": "a dark wooden block",
+      "point_prompts_xy": [
+        [
+          327.45,
+          277.94
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9883,
+      "selected_box_xyxy": [
+        139.0,
+        81.0,
+        503.0,
+        479.0
+      ],
+      "raw_points_count": 57980,
+      "filtered_points_count": 25742,
+      "min_valid_depth_points": 500,
+      "max_valid_depth_points": 100000,
+      "cluster_eps": 0.015,
+      "cluster_min_points": 30,
+      "reason": "ok"
+    },
+    {
+      "name": "coarse_scan_10",
+      "success": true,
+      "segmentation_mode": "point_fallback",
+      "text_prompt": "a dark wooden block",
+      "point_prompts_xy": [
+        [
+          319.16,
+          255.89
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9883,
+      "selected_box_xyxy": [
+        171.0,
+        84.0,
+        508.0,
+        443.0
+      ],
+      "raw_points_count": 53344,
+      "filtered_points_count": 29277,
+      "min_valid_depth_points": 500,
+      "max_valid_depth_points": 100000,
+      "cluster_eps": 0.015,
+      "cluster_min_points": 30,
+      "reason": "ok"
+    },
+    {
+      "name": "coarse_scan_11",
+      "success": true,
+      "segmentation_mode": "point_fallback",
+      "text_prompt": "a dark wooden block",
+      "point_prompts_xy": [
+        [
+          319.91,
+          257.36
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9883,
+      "selected_box_xyxy": [
+        261.0,
+        94.0,
+        453.0,
+        455.0
+      ],
+      "raw_points_count": 32016,
+      "filtered_points_count": 19038,
+      "min_valid_depth_points": 500,
+      "max_valid_depth_points": 100000,
+      "cluster_eps": 0.015,
+      "cluster_min_points": 30,
+      "reason": "ok"
+    },
+    {
+      "name": "coarse_scan_12",
+      "success": true,
+      "segmentation_mode": "point_fallback",
+      "text_prompt": "a dark wooden block",
+      "point_prompts_xy": [
+        [
+          320.05,
+          257.8
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9922,
+      "selected_box_xyxy": [
+        183.0,
+        129.0,
+        493.0,
+        370.0
+      ],
+      "raw_points_count": 22670,
+      "filtered_points_count": 15160,
+      "min_valid_depth_points": 500,
+      "max_valid_depth_points": 100000,
+      "cluster_eps": 0.015,
+      "cluster_min_points": 30,
+      "reason": "ok"
+    },
+    {
+      "name": "coarse_scan_13",
+      "success": true,
+      "segmentation_mode": "point_fallback",
+      "text_prompt": "a dark wooden block",
+      "point_prompts_xy": [
+        [
+          320.52,
+          256.89
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9766,
+      "selected_box_xyxy": [
+        294.0,
+        163.0,
+        388.0,
+        408.0
+      ],
+      "raw_points_count": 6259,
+      "filtered_points_count": 4141,
+      "min_valid_depth_points": 500,
+      "max_valid_depth_points": 100000,
+      "cluster_eps": 0.015,
+      "cluster_min_points": 30,
+      "reason": "ok"
+    },
+    {
+      "name": "coarse_scan_14",
+      "success": true,
+      "segmentation_mode": "point_fallback",
+      "text_prompt": "a dark wooden block",
+      "point_prompts_xy": [
+        [
+          332.8,
+          290.44
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9883,
+      "selected_box_xyxy": [
+        197.0,
+        82.0,
+        509.0,
+        479.0
+      ],
+      "raw_points_count": 59138,
+      "filtered_points_count": 27692,
+      "min_valid_depth_points": 500,
+      "max_valid_depth_points": 100000,
+      "cluster_eps": 0.015,
+      "cluster_min_points": 30,
+      "reason": "ok"
+    },
+    {
+      "name": "coarse_scan_15",
+      "success": true,
+      "segmentation_mode": "point_fallback",
+      "text_prompt": "a dark wooden block",
+      "point_prompts_xy": [
+        [
+          322.99,
+          345.21
+        ]
+      ],
+      "selected_mask_idx": 1,
+      "selected_score": 0.9766,
+      "selected_box_xyxy": [
+        183.0,
+        153.0,
+        518.0,
+        478.0
+      ],
+      "raw_points_count": 41295,
+      "filtered_points_count": 23662,
+      "min_valid_depth_points": 500,
+      "max_valid_depth_points": 100000,
+      "cluster_eps": 0.015,
+      "cluster_min_points": 30,
+      "reason": "ok"
+    },
+    {
+      "name": "coarse_scan_16",
+      "success": true,
+      "segmentation_mode": "point_fallback",
+      "text_prompt": "a dark wooden block",
+      "point_prompts_xy": [
+        [
+          339.96,
+          330.85
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.9102,
+      "selected_box_xyxy": [
+        247.0,
+        0.0,
+        409.0,
+        413.0
+      ],
+      "raw_points_count": 20907,
+      "filtered_points_count": 10607,
+      "min_valid_depth_points": 500,
+      "max_valid_depth_points": 100000,
+      "cluster_eps": 0.015,
+      "cluster_min_points": 30,
+      "reason": "ok"
+    },
+    {
+      "name": "coarse_scan_17",
+      "success": true,
+      "segmentation_mode": "point_fallback",
+      "text_prompt": "a dark wooden block",
+      "point_prompts_xy": [
+        [
+          319.36,
+          254.93
+        ]
+      ],
+      "selected_mask_idx": 2,
+      "selected_score": 0.918,
+      "selected_box_xyxy": [
+        195.0,
+        0.0,
+        355.0,
+        478.0
+      ],
+      "raw_points_count": 23806,
+      "filtered_points_count": 10773,
+      "min_valid_depth_points": 500,
+      "max_valid_depth_points": 100000,
+      "cluster_eps": 0.015,
+      "cluster_min_points": 30,
+      "reason": "ok"
+    }
+  ]
+}

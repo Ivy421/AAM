@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"blue foam block\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"light blue rectangular foam block on the green desk with a jagged broken corner and missing volume on the right side\",\n      \"short_object_prompt\": \"blue foam block\",\n      \"balanced_prompt\": \"blue foam block with broken corner\"\n    },\n    \"description\": \"A light blue rectangular foam or sponge object lying on the desk has a significant irregular breakage on its right end, where a chunk of material is missing or fractured, creating a candidate region for volumetric repair.\",\n    \"confidence\": 9\n  }\n]"
+]

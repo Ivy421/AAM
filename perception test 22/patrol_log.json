@@ -1,0 +1,67 @@
+[
+  {
+    "id": "1",
+    "pose": {
+      "id": 1,
+      "x": 0.0,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T10:27:07",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "2",
+    "pose": {
+      "id": 2,
+      "x": 0.25,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T10:27:25",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "3",
+    "pose": {
+      "id": 3,
+      "x": 0.5,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T10:27:46",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "4",
+    "pose": {
+      "id": 4,
+      "x": 0.75,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T10:28:07",
+    "success": false,
+    "reason": "no_suspect",
+    "status": "next_waypoint"
+  },
+  {
+    "id": "5",
+    "pose": {
+      "id": 5,
+      "x": 1.0,
+      "y": 0.0,
+      "yaw": 0.0
+    },
+    "time": "2026-10-23T10:28:29",
+    "success": true,
+    "reason": "confirmed",
+    "status": "defect_confirmed"
+  }
+]

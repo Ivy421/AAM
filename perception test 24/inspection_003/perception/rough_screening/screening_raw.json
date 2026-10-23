@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"wooden board\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"light brown rectangular wooden board on white table with a chipped and irregular missing corner on the front right edge\",\n      \"short_object_prompt\": \"wooden board\",\n      \"balanced_prompt\": \"wooden board with damaged front right corner\"\n    },\n    \"description\": \"A rectangular wooden block or board sitting on a desk has a visible volume defect where the front-right corner is broken off or missing, creating an irregular edge that could be repaired with a custom 3D printed filler or corner piece.\",\n    \"confidence\": 9\n  }\n]"
+]

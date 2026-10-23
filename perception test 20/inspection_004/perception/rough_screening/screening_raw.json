@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"blue foam block\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"irregularly shaped blue foam block with jagged broken edges and missing volume sitting on white paper\",\n      \"short_object_prompt\": \"blue foam block\",\n      \"balanced_prompt\": \"damaged blue foam block with irregular broken shape\"\n    },\n    \"description\": \"A blue rectangular foam or plastic block that appears to have a significant portion broken off or cut irregularly, resulting in a non-geometric, jagged shape suitable for volume reconstruction.\",\n    \"confidence\": 8\n  }\n]"
+]

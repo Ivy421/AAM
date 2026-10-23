@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"table leg protective cap\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"black L-shaped plastic corner guard with a broken missing tip on the table leg\",\n      \"short_object_prompt\": \"black table leg corner protector\",\n      \"balanced_prompt\": \"damaged black plastic corner guard on table leg\"\n    },\n    \"description\": \"The black protective cap on the corner of the grey table leg appears to have a broken or missing end piece, creating an irregular shape suitable for repair via a 3D printed replacement block.\",\n    \"confidence\": 8\n  }\n]"
+]
