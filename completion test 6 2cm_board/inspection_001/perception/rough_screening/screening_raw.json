@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"wooden board\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"light-colored rectangular wooden board on green desk with a jagged missing chunk on the bottom-left corner edge\",\n      \"short_object_prompt\": \"wooden board\",\n      \"balanced_prompt\": \"wooden board with broken corner edge\"\n    },\n    \"description\": \"A light-colored wooden plank resting on a green workbench surface has a significant irregular notch or missing volume on its front-left corner, suitable for filling with a 3D printed repair block.\",\n    \"confidence\": 9\n  }\n]"
+]

@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"wooden board\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"light-colored rectangular wooden board on green desk with a distinct irregular notch missing from the bottom-left corner edge\",\n      \"short_object_prompt\": \"wooden board\",\n      \"balanced_prompt\": \"wooden board with missing corner section\"\n    },\n    \"description\": \"A rectangular piece of light wood lying on a green workbench surface. There is a visible geometric chunk missing from one of the corners (bottom-left in view), creating an irregular L-shaped profile that could be repaired by 3D printing a filler block.\",\n    \"confidence\": 9\n  }\n]"
+]

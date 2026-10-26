@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"white rectangular plastic strip\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"white rectangular plastic strip lying on the table with a small yellow fragment attached to its surface near the center\",\n      \"short_object_prompt\": \"white plastic strip\",\n      \"balanced_prompt\": \"white rectangular plastic strip with yellow fragment\"\n    },\n    \"description\": \"A white rectangular plastic object, likely a 3D printed part or prototype, has a small irregular yellow piece attached or broken off on its top surface, indicating a potential volume defect repairable by 3D printing.\",\n    \"confidence\": 8\n  }\n]"
+]

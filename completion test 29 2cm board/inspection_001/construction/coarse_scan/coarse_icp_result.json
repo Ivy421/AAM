@@ -1,0 +1,3394 @@
+{
+  "mode": "sequential_cumulative_curvature_icp",
+  "coarse_point_file": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/coarse_point_result.npz",
+  "coarse_seq_file": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/coarse_png_sequence.json",
+  "coarse_scanpose_file": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/coarse_scanpose.json",
+  "output_fused_pcd": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/coarse_fuse.pcd",
+  "output_transforms_npz": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/coarse_icp_transforms.npz",
+  "debug_dir": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug",
+  "target_index": 0,
+  "target_name": "coarse_scan_1",
+  "target_global_name": "coarse:coarse_scan_1",
+  "target_selection": {
+    "rule": "front_high preferred",
+    "selected_cube_name": "front_high",
+    "selected_frame": "coarse_scan_1",
+    "front_high_raw_points": 41046,
+    "front_high_processed_points": 41046
+  },
+  "processing_order": [
+    "coarse_scan_2",
+    "coarse_scan_3",
+    "coarse_scan_4",
+    "coarse_scan_5",
+    "coarse_scan_6",
+    "coarse_scan_8",
+    "coarse_scan_9",
+    "coarse_scan_10",
+    "coarse_scan_11"
+  ],
+  "accepted_frames": [
+    "coarse_scan_1",
+    "coarse_scan_2",
+    "coarse_scan_3",
+    "coarse_scan_4",
+    "coarse_scan_5",
+    "coarse_scan_9"
+  ],
+  "rejected_frames": [
+    "coarse_scan_6",
+    "coarse_scan_8",
+    "coarse_scan_10",
+    "coarse_scan_11"
+  ],
+  "final_fused_points": 197648,
+  "filter_rule": {
+    "max_final_translation_mm": 35.0,
+    "max_final_rotation_deg": 15.0,
+    "max_final_rmse_mm": 5.0,
+    "overlap_distance_threshold_m": 0.01,
+    "note": "overlap is diagnostic only"
+  },
+  "algorithm_parameters": {
+    "global_dist_m": 0.015,
+    "normal_radius_m": 0.015,
+    "normal_max_nn": 30,
+    "curv_k": 30,
+    "curv_percentile": 85,
+    "curv_similarity_threshold": 0.85,
+    "candidate_k": 10,
+    "refine_dist_m": 0.01,
+    "refine_max_iter": 50,
+    "feature_weight": 5.0,
+    "plane_weight": 1.0,
+    "plane_sample_step": 5
+  },
+  "records": [
+    {
+      "step": 1,
+      "source_index": 1,
+      "source": "coarse_scan_2",
+      "source_global_name": "coarse:coarse_scan_2",
+      "target_frames_before_registration": [
+        "coarse_scan_1"
+      ],
+      "target_points_before_registration": 41046,
+      "global_fitness": 0.9971418438236705,
+      "global_rmse_mm": 2.0008905891390625,
+      "global_translation_mm": 17.426138363492722,
+      "global_rotation_deg": 1.8926242870871197,
+      "T_global": [
+        [
+          0.9994576328663107,
+          -0.03273688925527537,
+          0.003568779505442228,
+          0.0028703399613433803
+        ],
+        [
+          0.032745754770719,
+          0.9994606995529122,
+          -0.0024547084756639634,
+          -0.017032581567255053
+        ],
+        [
+          -0.0034864953415375865,
+          0.002570239500979953,
+          0.9999906190655696,
+          0.002307078655943819
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "delta_T_curvature_similarity": [
+        [
+          0.9999925966350528,
+          -0.0038463076250025907,
+          0.00011221737541558379,
+          -0.0002505221019893124
+        ],
+        [
+          0.0038460603930188597,
+          0.9999903440770087,
+          0.002125928549996233,
+          -0.002832215512849619
+        ],
+        [
+          -0.00012039326704530964,
+          -0.0021254812161683304,
+          0.9999977339149633,
+          -0.0002442487891361667
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "refinement_translation_mm": 2.853745522257662,
+      "refinement_rotation_deg": 0.25187607923106753,
+      "T_final": [
+        [
+          0.9993238920250876,
+          -0.03658059177618678,
+          0.003690410971103981,
+          0.00268556805184707
+        ],
+        [
+          0.036582000956514135,
+          0.9993306049297446,
+          -0.0003150504248807559,
+          -0.019848688429587136
+        ],
+        [
+          -0.003676415897211227,
+          0.00044984003445084795,
+          0.999993140781523,
+          0.00209868150134981
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "final_translation_mm": 20.13919492383039,
+      "final_rotation_deg": 2.107141153180623,
+      "final_rmse_mm": 2.018075048770816,
+      "final_fitness": 0.9975799553543487,
+      "final_overlap_ratio": 0.989172386456095,
+      "source_curvature_threshold": 128.03527790013425,
+      "target_curvature_threshold": 95.06322665780013,
+      "refinement_iterations": [
+        {
+          "iteration": 1,
+          "correspondences": 14448,
+          "feature_correspondences": 6448,
+          "plane_correspondences": 8000,
+          "mean_similarity": 0.9923599414454161,
+          "median_point_to_plane_mm": 0.6225407300186461,
+          "translation_mm": 1.8918055186096212,
+          "rotation_deg": 0.1825651626222237
+        },
+        {
+          "iteration": 2,
+          "correspondences": 14459,
+          "feature_correspondences": 6449,
+          "plane_correspondences": 8010,
+          "mean_similarity": 0.9923326402243411,
+          "median_point_to_plane_mm": 0.618449899770103,
+          "translation_mm": 0.9320724145721647,
+          "rotation_deg": 0.0740267656429259
+        },
+        {
+          "iteration": 3,
+          "correspondences": 14461,
+          "feature_correspondences": 6449,
+          "plane_correspondences": 8012,
+          "mean_similarity": 0.9923186553965763,
+          "median_point_to_plane_mm": 0.6205622261185033,
+          "translation_mm": 0.02040525629978602,
+          "rotation_deg": 0.0009137953253114727
+        },
+        {
+          "iteration": 4,
+          "correspondences": 14462,
+          "feature_correspondences": 6450,
+          "plane_correspondences": 8012,
+          "mean_similarity": 0.9923191387403683,
+          "median_point_to_plane_mm": 0.6197175707688487,
+          "translation_mm": 0.03750660055035219,
+          "rotation_deg": 0.002622734532810129
+        },
+        {
+          "iteration": 5,
+          "correspondences": 14464,
+          "feature_correspondences": 6452,
+          "plane_correspondences": 8012,
+          "mean_similarity": 0.9923353561011417,
+          "median_point_to_plane_mm": 0.6192386529490235,
+          "translation_mm": 0.00846996941138652,
+          "rotation_deg": 0.0007726144888082415
+        }
+      ],
+      "transformed_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_2_transformed.pcd",
+      "after_global_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_2_after_global_icp.pcd",
+      "source_high_curvature_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_2_high_curvature.pcd",
+      "target_high_curvature_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/target_before_scan_2_high_curvature.pcd",
+      "kept": true,
+      "reject_reasons": [],
+      "target_points_after_registration": 88979
+    },
+    {
+      "step": 2,
+      "source_index": 2,
+      "source": "coarse_scan_3",
+      "source_global_name": "coarse:coarse_scan_3",
+      "target_frames_before_registration": [
+        "coarse_scan_1",
+        "coarse_scan_2"
+      ],
+      "target_points_before_registration": 88979,
+      "global_fitness": 0.9739183874139626,
+      "global_rmse_mm": 3.101596821522336,
+      "global_translation_mm": 25.412135877234686,
+      "global_rotation_deg": 3.0118448611381714,
+      "T_global": [
+        [
+          0.9986502281966673,
+          -0.05192114985419924,
+          0.0013841678232184328,
+          0.00971503519543313
+        ],
+        [
+          0.05190851535784038,
+          0.9986199594382096,
+          0.00798014066132148,
+          -0.02347878598379316
+        ],
+        [
+          -0.0017965956946121265,
+          -0.007897519195760839,
+          0.9999672001793173,
+          0.0003759650539234451
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "delta_T_curvature_similarity": [
+        [
+          0.9999891545243531,
+          0.004422086789667004,
+          0.0014614999469876372,
+          0.0008971499557106284
+        ],
+        [
+          -0.004419865191839573,
+          0.9999890773933406,
+          -0.0015198308133336793,
+          0.0016369982400304597
+        ],
+        [
+          -0.0014682048073607556,
+          0.0015133546973020386,
+          0.9999977770636315,
+          0.000720527968044087
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "refinement_translation_mm": 2.000950232671504,
+      "refinement_rotation_deg": 0.2806386037346413,
+      "T_final": [
+        [
+          0.9988663155954602,
+          -0.04751614483798937,
+          0.002880893695909577,
+          0.010508804030536166
+        ],
+        [
+          0.047496779520611536,
+          0.998850539281174,
+          0.00645415469904691,
+          -0.021885041843390046
+        ],
+        [
+          -0.003184258771257717,
+          -0.0063100045518231776,
+          0.9999750218573633,
+          0.001046696793788004
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "final_translation_mm": 24.29990931705862,
+      "final_rotation_deg": 2.7529220064936415,
+      "final_rmse_mm": 2.9957771051117486,
+      "final_fitness": 0.9829400196656833,
+      "final_overlap_ratio": 0.9494837758112095,
+      "source_curvature_threshold": 106.06632757741748,
+      "target_curvature_threshold": 252.57415482768585,
+      "refinement_iterations": [
+        {
+          "iteration": 1,
+          "correspondences": 11380,
+          "feature_correspondences": 4813,
+          "plane_correspondences": 6567,
+          "mean_similarity": 0.9930674985089818,
+          "median_point_to_plane_mm": 0.5049282813752723,
+          "translation_mm": 1.2031064432102847,
+          "rotation_deg": 0.06222792566491871
+        },
+        {
+          "iteration": 2,
+          "correspondences": 11529,
+          "feature_correspondences": 4928,
+          "plane_correspondences": 6601,
+          "mean_similarity": 0.992826969141486,
+          "median_point_to_plane_mm": 0.4850583194031268,
+          "translation_mm": 0.569725501341504,
+          "rotation_deg": 0.08925311703925753
+        },
+        {
+          "iteration": 3,
+          "correspondences": 11568,
+          "feature_correspondences": 4957,
+          "plane_correspondences": 6611,
+          "mean_similarity": 0.9927850466640007,
+          "median_point_to_plane_mm": 0.48818093532629037,
+          "translation_mm": 0.5842104745720725,
+          "rotation_deg": 0.06124864001636561
+        },
+        {
+          "iteration": 4,
+          "correspondences": 11590,
+          "feature_correspondences": 4971,
+          "plane_correspondences": 6619,
+          "mean_similarity": 0.992734497950765,
+          "median_point_to_plane_mm": 0.49169643036698274,
+          "translation_mm": 0.33340179137235304,
+          "rotation_deg": 0.03061991294532751
+        },
+        {
+          "iteration": 5,
+          "correspondences": 11598,
+          "feature_correspondences": 4977,
+          "plane_correspondences": 6621,
+          "mean_similarity": 0.9926953507099816,
+          "median_point_to_plane_mm": 0.4930289275326854,
+          "translation_mm": 0.3271710173951282,
+          "rotation_deg": 0.02662311049312269
+        },
+        {
+          "iteration": 6,
+          "correspondences": 11605,
+          "feature_correspondences": 4980,
+          "plane_correspondences": 6625,
+          "mean_similarity": 0.9926716518957199,
+          "median_point_to_plane_mm": 0.49464000013524356,
+          "translation_mm": 0.23580359342789248,
+          "rotation_deg": 0.021609630645536674
+        },
+        {
+          "iteration": 7,
+          "correspondences": 11606,
+          "feature_correspondences": 4980,
+          "plane_correspondences": 6626,
+          "mean_similarity": 0.9926462712020405,
+          "median_point_to_plane_mm": 0.4958592700409781,
+          "translation_mm": 0.23131619795447747,
+          "rotation_deg": 0.01925881015950068
+        },
+        {
+          "iteration": 8,
+          "correspondences": 11601,
+          "feature_correspondences": 4973,
+          "plane_correspondences": 6628,
+          "mean_similarity": 0.9926577690572553,
+          "median_point_to_plane_mm": 0.4959847124937491,
+          "translation_mm": 0.1879208643763524,
+          "rotation_deg": 0.01766323453811767
+        },
+        {
+          "iteration": 9,
+          "correspondences": 11600,
+          "feature_correspondences": 4972,
+          "plane_correspondences": 6628,
+          "mean_similarity": 0.9926380465196667,
+          "median_point_to_plane_mm": 0.49514183199480005,
+          "translation_mm": 0.015474022756940662,
+          "rotation_deg": 0.0010530507230879186
+        },
+        {
+          "iteration": 10,
+          "correspondences": 11599,
+          "feature_correspondences": 4971,
+          "plane_correspondences": 6628,
+          "mean_similarity": 0.9926397694131355,
+          "median_point_to_plane_mm": 0.49527217502192267,
+          "translation_mm": 0.0155969101724444,
+          "rotation_deg": 0.001148396060141053
+        },
+        {
+          "iteration": 11,
+          "correspondences": 11599,
+          "feature_correspondences": 4971,
+          "plane_correspondences": 6628,
+          "mean_similarity": 0.9926397773905192,
+          "median_point_to_plane_mm": 0.49543519010407855,
+          "translation_mm": 0.007765635891383729,
+          "rotation_deg": 0.0006432284753703654
+        }
+      ],
+      "transformed_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_3_transformed.pcd",
+      "after_global_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_3_after_global_icp.pcd",
+      "source_high_curvature_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_3_high_curvature.pcd",
+      "target_high_curvature_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/target_before_scan_3_high_curvature.pcd",
+      "kept": true,
+      "reject_reasons": [],
+      "target_points_after_registration": 129659
+    },
+    {
+      "step": 3,
+      "source_index": 3,
+      "source": "coarse_scan_4",
+      "source_global_name": "coarse:coarse_scan_4",
+      "target_frames_before_registration": [
+        "coarse_scan_1",
+        "coarse_scan_2",
+        "coarse_scan_3"
+      ],
+      "target_points_before_registration": 129659,
+      "global_fitness": 1.0,
+      "global_rmse_mm": 0.9802759503612657,
+      "global_translation_mm": 28.7609124620776,
+      "global_rotation_deg": 3.4547750309482126,
+      "T_global": [
+        [
+          0.9985181202324771,
+          -0.05376763862564038,
+          0.008402654581888196,
+          0.006081419229839882
+        ],
+        [
+          0.053531884793714894,
+          0.9982240970080527,
+          0.02613406709431624,
+          -0.02731779593400621
+        ],
+        [
+          -0.009792899357821357,
+          -0.02564552961200707,
+          0.9996231319517809,
+          0.006629061103219509
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "delta_T_curvature_similarity": [
+        [
+          0.9999912173960678,
+          -0.0005713448711737303,
+          0.004151950838924687,
+          0.0007206643478498627
+        ],
+        [
+          0.0005952006147084369,
+          0.9999833103989086,
+          -0.005746708611707029,
+          0.00029277006028866895
+        ],
+        [
+          -0.0041485981920300055,
+          0.005749129384332943,
+          0.999974868006373,
+          0.0021337084988741766
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "refinement_translation_mm": 2.2710753771355083,
+      "refinement_rotation_deg": 0.40758371559565326,
+      "T_final": [
+        [
+          0.9984381058387826,
+          -0.05444397560206078,
+          0.012538035320819495,
+          0.006845161585400764
+        ],
+        [
+          0.05418158690594508,
+          0.9983228119003855,
+          0.02039408933148501,
+          -0.027059045568666215
+        ],
+        [
+          -0.01362734197917649,
+          -0.019682905272070034,
+          0.9997133983250567,
+          0.00858032009243099
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "final_translation_mm": 29.200515014396167,
+      "final_rotation_deg": 3.4025784009433435,
+      "final_rmse_mm": 1.090818210132984,
+      "final_fitness": 1.0,
+      "final_overlap_ratio": 1.0,
+      "source_curvature_threshold": 90.01121632362599,
+      "target_curvature_threshold": 337.7954478346618,
+      "refinement_iterations": [
+        {
+          "iteration": 1,
+          "correspondences": 9310,
+          "feature_correspondences": 4188,
+          "plane_correspondences": 5122,
+          "mean_similarity": 0.9933306118334714,
+          "median_point_to_plane_mm": 0.4766347973538755,
+          "translation_mm": 1.3495557110961587,
+          "rotation_deg": 0.2976867206499508
+        },
+        {
+          "iteration": 2,
+          "correspondences": 9323,
+          "feature_correspondences": 4201,
+          "plane_correspondences": 5122,
+          "mean_similarity": 0.9934446176404971,
+          "median_point_to_plane_mm": 0.4220412897052928,
+          "translation_mm": 0.5740706854960085,
+          "rotation_deg": 0.08731967537084073
+        },
+        {
+          "iteration": 3,
+          "correspondences": 9319,
+          "feature_correspondences": 4197,
+          "plane_correspondences": 5122,
+          "mean_similarity": 0.9933881374988284,
+          "median_point_to_plane_mm": 0.42248412937692215,
+          "translation_mm": 0.2616923523265743,
+          "rotation_deg": 0.02262414955325521
+        },
+        {
+          "iteration": 4,
+          "correspondences": 9326,
+          "feature_correspondences": 4204,
+          "plane_correspondences": 5122,
+          "mean_similarity": 0.9933510998179236,
+          "median_point_to_plane_mm": 0.42584380344110456,
+          "translation_mm": 0.10154888322661222,
+          "rotation_deg": 0.009326517807949975
+        },
+        {
+          "iteration": 5,
+          "correspondences": 9325,
+          "feature_correspondences": 4203,
+          "plane_correspondences": 5122,
+          "mean_similarity": 0.9933770860037454,
+          "median_point_to_plane_mm": 0.4262322321928788,
+          "translation_mm": 0.02126081118157975,
+          "rotation_deg": 0.0011823301313988093
+        },
+        {
+          "iteration": 6,
+          "correspondences": 9327,
+          "feature_correspondences": 4205,
+          "plane_correspondences": 5122,
+          "mean_similarity": 0.9933424016162499,
+          "median_point_to_plane_mm": 0.4274560067149365,
+          "translation_mm": 0.011030902922226452,
+          "rotation_deg": 0.0011036724442622578
+        },
+        {
+          "iteration": 7,
+          "correspondences": 9325,
+          "feature_correspondences": 4203,
+          "plane_correspondences": 5122,
+          "mean_similarity": 0.9933293054347909,
+          "median_point_to_plane_mm": 0.42780844577643,
+          "translation_mm": 0.0072772810642128824,
+          "rotation_deg": 0.00046002894258155027
+        }
+      ],
+      "transformed_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_4_transformed.pcd",
+      "after_global_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_4_after_global_icp.pcd",
+      "source_high_curvature_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_4_high_curvature.pcd",
+      "target_high_curvature_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/target_before_scan_4_high_curvature.pcd",
+      "kept": true,
+      "reject_reasons": [],
+      "target_points_after_registration": 159872
+    },
+    {
+      "step": 4,
+      "source_index": 4,
+      "source": "coarse_scan_5",
+      "source_global_name": "coarse:coarse_scan_5",
+      "target_frames_before_registration": [
+        "coarse_scan_1",
+        "coarse_scan_2",
+        "coarse_scan_3",
+        "coarse_scan_4"
+      ],
+      "target_points_before_registration": 159872,
+      "global_fitness": 1.0,
+      "global_rmse_mm": 1.3608455648475553,
+      "global_translation_mm": 21.99326199660002,
+      "global_rotation_deg": 3.335555016348766,
+      "T_global": [
+        [
+          0.9988926353392636,
+          -0.04433403959930446,
+          0.015747888677185195,
+          -0.004682939616728038
+        ],
+        [
+          0.04376848508754022,
+          0.9984421881675926,
+          0.03460515279914556,
+          -0.020026354476473336
+        ],
+        [
+          -0.017257542644405745,
+          -0.033877571045128806,
+          0.999276982323699,
+          0.0077922253676216266
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "delta_T_curvature_similarity": [
+        [
+          0.9999976458034828,
+          -0.0007315816232930682,
+          0.002042835240708554,
+          0.0014085921934219726
+        ],
+        [
+          0.0007575535287738262,
+          0.9999185309755821,
+          -0.012741959201262854,
+          0.001021324609168237
+        ],
+        [
+          -0.0020333470297180527,
+          0.012743476761232173,
+          0.9999167311830984,
+          -0.0004409919779737055
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "refinement_translation_mm": 1.7949122121427379,
+      "refinement_rotation_deg": 0.7406338102898133,
+      "T_final": [
+        [
+          0.998823009214049,
+          -0.04513358348104737,
+          0.017763893344421165,
+          -0.003243767253244869
+        ],
+        [
+          0.044741528856816405,
+          0.9987589272765366,
+          0.021881516880215696,
+          -0.019106234134896222
+        ],
+        [
+          -0.01872943832973404,
+          -0.021060978789786217,
+          0.9996027427494726,
+          0.007104901198737416
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "final_translation_mm": 20.64097453742235,
+      "final_rotation_deg": 3.0404476618457856,
+      "final_rmse_mm": 1.4632807405337993,
+      "final_fitness": 1.0,
+      "final_overlap_ratio": 1.0,
+      "source_curvature_threshold": 227.37189790411495,
+      "target_curvature_threshold": 407.2024188839783,
+      "refinement_iterations": [
+        {
+          "iteration": 1,
+          "correspondences": 2217,
+          "feature_correspondences": 1013,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9953404853572112,
+          "median_point_to_plane_mm": 0.6188301719899963,
+          "translation_mm": 1.2710226339126036,
+          "rotation_deg": 0.3543913113100453
+        },
+        {
+          "iteration": 2,
+          "correspondences": 2219,
+          "feature_correspondences": 1015,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9951345557318465,
+          "median_point_to_plane_mm": 0.6189656808271309,
+          "translation_mm": 0.7705516612553399,
+          "rotation_deg": 0.21978886224949679
+        },
+        {
+          "iteration": 3,
+          "correspondences": 2221,
+          "feature_correspondences": 1017,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9949793487534225,
+          "median_point_to_plane_mm": 0.6065476807454069,
+          "translation_mm": 0.39250111311703817,
+          "rotation_deg": 0.10516937171274156
+        },
+        {
+          "iteration": 4,
+          "correspondences": 2217,
+          "feature_correspondences": 1013,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9950307536703912,
+          "median_point_to_plane_mm": 0.6091576653272883,
+          "translation_mm": 0.5280614460030542,
+          "rotation_deg": 0.04976261546494072
+        },
+        {
+          "iteration": 5,
+          "correspondences": 2217,
+          "feature_correspondences": 1013,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9950632195746,
+          "median_point_to_plane_mm": 0.6050510803148546,
+          "translation_mm": 0.41142684717531275,
+          "rotation_deg": 0.04303758111070625
+        },
+        {
+          "iteration": 6,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9950893263869582,
+          "median_point_to_plane_mm": 0.6026660283133982,
+          "translation_mm": 0.14776367619206962,
+          "rotation_deg": 0.013832850823039764
+        },
+        {
+          "iteration": 7,
+          "correspondences": 2217,
+          "feature_correspondences": 1013,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9950464245337856,
+          "median_point_to_plane_mm": 0.6055265015227361,
+          "translation_mm": 0.08160711361986124,
+          "rotation_deg": 0.0063232920834026445
+        },
+        {
+          "iteration": 8,
+          "correspondences": 2216,
+          "feature_correspondences": 1012,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9950977200109857,
+          "median_point_to_plane_mm": 0.6007083014543495,
+          "translation_mm": 0.06941345230004589,
+          "rotation_deg": 0.01142156718892228
+        },
+        {
+          "iteration": 9,
+          "correspondences": 2217,
+          "feature_correspondences": 1013,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9950230803830464,
+          "median_point_to_plane_mm": 0.6044545754685475,
+          "translation_mm": 0.2720821353073467,
+          "rotation_deg": 0.02073357532872452
+        },
+        {
+          "iteration": 10,
+          "correspondences": 2218,
+          "feature_correspondences": 1014,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.995144048238691,
+          "median_point_to_plane_mm": 0.6050788043880886,
+          "translation_mm": 0.3749728201688038,
+          "rotation_deg": 0.026860314182165012
+        },
+        {
+          "iteration": 11,
+          "correspondences": 2217,
+          "feature_correspondences": 1013,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9950977927738286,
+          "median_point_to_plane_mm": 0.6022847156701852,
+          "translation_mm": 0.1651863901185237,
+          "rotation_deg": 0.019620248526609433
+        },
+        {
+          "iteration": 12,
+          "correspondences": 2217,
+          "feature_correspondences": 1013,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9950217697518579,
+          "median_point_to_plane_mm": 0.6028492272901304,
+          "translation_mm": 0.2294513503432146,
+          "rotation_deg": 0.02072149433528779
+        },
+        {
+          "iteration": 13,
+          "correspondences": 2219,
+          "feature_correspondences": 1015,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.995306903163737,
+          "median_point_to_plane_mm": 0.6036473277536378,
+          "translation_mm": 0.3840900113618446,
+          "rotation_deg": 0.027990282635657664
+        },
+        {
+          "iteration": 14,
+          "correspondences": 2216,
+          "feature_correspondences": 1012,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.995185409754294,
+          "median_point_to_plane_mm": 0.599325183644135,
+          "translation_mm": 0.1904732523835687,
+          "rotation_deg": 0.01631146846592284
+        },
+        {
+          "iteration": 15,
+          "correspondences": 2218,
+          "feature_correspondences": 1014,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9950536183780654,
+          "median_point_to_plane_mm": 0.6054005392131733,
+          "translation_mm": 0.34631218857604745,
+          "rotation_deg": 0.026725028966362696
+        },
+        {
+          "iteration": 16,
+          "correspondences": 2217,
+          "feature_correspondences": 1013,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9953477955419228,
+          "median_point_to_plane_mm": 0.6058525803284519,
+          "translation_mm": 0.37831397712040266,
+          "rotation_deg": 0.027503030815869217
+        },
+        {
+          "iteration": 17,
+          "correspondences": 2219,
+          "feature_correspondences": 1015,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9953622450039052,
+          "median_point_to_plane_mm": 0.6023604789247715,
+          "translation_mm": 0.024680744267315,
+          "rotation_deg": 0.00436858267935705
+        },
+        {
+          "iteration": 18,
+          "correspondences": 2217,
+          "feature_correspondences": 1013,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9953718531175736,
+          "median_point_to_plane_mm": 0.6023411714237761,
+          "translation_mm": 0.10404266254453554,
+          "rotation_deg": 0.011618421220752616
+        },
+        {
+          "iteration": 19,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954120089000172,
+          "median_point_to_plane_mm": 0.5984220500560057,
+          "translation_mm": 0.16700310478332728,
+          "rotation_deg": 0.0142479617039766
+        },
+        {
+          "iteration": 20,
+          "correspondences": 2218,
+          "feature_correspondences": 1014,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9953633421585583,
+          "median_point_to_plane_mm": 0.6031911519638399,
+          "translation_mm": 0.06819959629796139,
+          "rotation_deg": 0.005544589371371503
+        },
+        {
+          "iteration": 21,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954311600912086,
+          "median_point_to_plane_mm": 0.5996072761127867,
+          "translation_mm": 0.016891627350957398,
+          "rotation_deg": 0.0008528857922946151
+        },
+        {
+          "iteration": 22,
+          "correspondences": 2217,
+          "feature_correspondences": 1013,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9953712927118828,
+          "median_point_to_plane_mm": 0.6025854755802706,
+          "translation_mm": 0.07250009694575918,
+          "rotation_deg": 0.008010303008756985
+        },
+        {
+          "iteration": 23,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954119410138503,
+          "median_point_to_plane_mm": 0.5981854600337737,
+          "translation_mm": 0.0915500583656367,
+          "rotation_deg": 0.01090151660793271
+        },
+        {
+          "iteration": 24,
+          "correspondences": 2217,
+          "feature_correspondences": 1013,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9953618125724357,
+          "median_point_to_plane_mm": 0.6038057353695759,
+          "translation_mm": 0.11635055986997828,
+          "rotation_deg": 0.012591989927949822
+        },
+        {
+          "iteration": 25,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954120089000172,
+          "median_point_to_plane_mm": 0.5994783153143564,
+          "translation_mm": 0.15063882776956708,
+          "rotation_deg": 0.013791531196954776
+        },
+        {
+          "iteration": 26,
+          "correspondences": 2219,
+          "feature_correspondences": 1015,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9953654274920092,
+          "median_point_to_plane_mm": 0.6027099884400116,
+          "translation_mm": 0.05243054933505127,
+          "rotation_deg": 0.006135397956083216
+        },
+        {
+          "iteration": 27,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954271594064308,
+          "median_point_to_plane_mm": 0.5975728575402461,
+          "translation_mm": 0.05214506054505488,
+          "rotation_deg": 0.006601263973661588
+        },
+        {
+          "iteration": 28,
+          "correspondences": 2216,
+          "feature_correspondences": 1012,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.995370715402641,
+          "median_point_to_plane_mm": 0.6010050962153316,
+          "translation_mm": 0.03830645020692816,
+          "rotation_deg": 0.008468701850410194
+        },
+        {
+          "iteration": 29,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954271594064308,
+          "median_point_to_plane_mm": 0.5974423921258281,
+          "translation_mm": 0.03256925143592717,
+          "rotation_deg": 0.008300192327468038
+        },
+        {
+          "iteration": 30,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954099834805572,
+          "median_point_to_plane_mm": 0.6014263449809334,
+          "translation_mm": 0.0558281147107223,
+          "rotation_deg": 0.006527485970898154
+        },
+        {
+          "iteration": 31,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954262861672171,
+          "median_point_to_plane_mm": 0.6001727467790702,
+          "translation_mm": 0.06853536554358113,
+          "rotation_deg": 0.0054441430285727625
+        },
+        {
+          "iteration": 32,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954088346094392,
+          "median_point_to_plane_mm": 0.6003687357373904,
+          "translation_mm": 0.06933673455548046,
+          "rotation_deg": 0.005585035373945472
+        },
+        {
+          "iteration": 33,
+          "correspondences": 2217,
+          "feature_correspondences": 1013,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9953877060409791,
+          "median_point_to_plane_mm": 0.6006423138751765,
+          "translation_mm": 0.21853278944410542,
+          "rotation_deg": 0.015614883834365809
+        },
+        {
+          "iteration": 34,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954112361949276,
+          "median_point_to_plane_mm": 0.5986440876236234,
+          "translation_mm": 0.20810721421375333,
+          "rotation_deg": 0.015753876809321075
+        },
+        {
+          "iteration": 35,
+          "correspondences": 2219,
+          "feature_correspondences": 1015,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.995365423445309,
+          "median_point_to_plane_mm": 0.6023779364926134,
+          "translation_mm": 0.05871349168647943,
+          "rotation_deg": 0.005968678804132374
+        },
+        {
+          "iteration": 36,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954272331307821,
+          "median_point_to_plane_mm": 0.5982495614295116,
+          "translation_mm": 0.040988829236162455,
+          "rotation_deg": 0.00623130861155014
+        },
+        {
+          "iteration": 37,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954099834805572,
+          "median_point_to_plane_mm": 0.6014273425138874,
+          "translation_mm": 0.05275206066279603,
+          "rotation_deg": 0.006461775745571244
+        },
+        {
+          "iteration": 38,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954262861672171,
+          "median_point_to_plane_mm": 0.600172750000714,
+          "translation_mm": 0.06850055096852377,
+          "rotation_deg": 0.005442114541906675
+        },
+        {
+          "iteration": 39,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954088346094392,
+          "median_point_to_plane_mm": 0.6003687357331675,
+          "translation_mm": 0.06933677225702486,
+          "rotation_deg": 0.005585037314520094
+        },
+        {
+          "iteration": 40,
+          "correspondences": 2217,
+          "feature_correspondences": 1013,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9953877060409791,
+          "median_point_to_plane_mm": 0.6006423138751906,
+          "translation_mm": 0.21853278894565872,
+          "rotation_deg": 0.015614883797462786
+        },
+        {
+          "iteration": 41,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954112361949276,
+          "median_point_to_plane_mm": 0.5986440876236033,
+          "translation_mm": 0.20810721421468176,
+          "rotation_deg": 0.015753876809392792
+        },
+        {
+          "iteration": 42,
+          "correspondences": 2219,
+          "feature_correspondences": 1015,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.995365423445309,
+          "median_point_to_plane_mm": 0.6023779364928261,
+          "translation_mm": 0.058713491686471365,
+          "rotation_deg": 0.00596867880413297
+        },
+        {
+          "iteration": 43,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954272331307821,
+          "median_point_to_plane_mm": 0.5982495614296256,
+          "translation_mm": 0.04098882923618617,
+          "rotation_deg": 0.006231308611550642
+        },
+        {
+          "iteration": 44,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954099834805572,
+          "median_point_to_plane_mm": 0.6014273425139124,
+          "translation_mm": 0.0527520606628407,
+          "rotation_deg": 0.006461775745572759
+        },
+        {
+          "iteration": 45,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954262861672171,
+          "median_point_to_plane_mm": 0.600172750000698,
+          "translation_mm": 0.06850055096854595,
+          "rotation_deg": 0.005442114541908234
+        },
+        {
+          "iteration": 46,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954088346094392,
+          "median_point_to_plane_mm": 0.6003687357331452,
+          "translation_mm": 0.06933677225699683,
+          "rotation_deg": 0.0055850373145191635
+        },
+        {
+          "iteration": 47,
+          "correspondences": 2217,
+          "feature_correspondences": 1013,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9953877060409791,
+          "median_point_to_plane_mm": 0.600642313875167,
+          "translation_mm": 0.218532788945633,
+          "rotation_deg": 0.015614883797460379
+        },
+        {
+          "iteration": 48,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954112361949276,
+          "median_point_to_plane_mm": 0.5986440876236258,
+          "translation_mm": 0.20810721421464173,
+          "rotation_deg": 0.015753876809390346
+        },
+        {
+          "iteration": 49,
+          "correspondences": 2219,
+          "feature_correspondences": 1015,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.995365423445309,
+          "median_point_to_plane_mm": 0.6023779364929583,
+          "translation_mm": 0.058713491686464774,
+          "rotation_deg": 0.005968678804132297
+        },
+        {
+          "iteration": 50,
+          "correspondences": 2215,
+          "feature_correspondences": 1011,
+          "plane_correspondences": 1204,
+          "mean_similarity": 0.9954272331307821,
+          "median_point_to_plane_mm": 0.5982495614297227,
+          "translation_mm": 0.040988829236160575,
+          "rotation_deg": 0.006231308611550468
+        }
+      ],
+      "transformed_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_5_transformed.pcd",
+      "after_global_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_5_after_global_icp.pcd",
+      "source_high_curvature_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_5_high_curvature.pcd",
+      "target_high_curvature_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/target_before_scan_5_high_curvature.pcd",
+      "kept": true,
+      "reject_reasons": [],
+      "target_points_after_registration": 167034
+    },
+    {
+      "step": 5,
+      "source_index": 5,
+      "source": "coarse_scan_6",
+      "source_global_name": "coarse:coarse_scan_6",
+      "target_frames_before_registration": [
+        "coarse_scan_1",
+        "coarse_scan_2",
+        "coarse_scan_3",
+        "coarse_scan_4",
+        "coarse_scan_5"
+      ],
+      "target_points_before_registration": 167034,
+      "global_fitness": 0.0,
+      "global_rmse_mm": 0.0,
+      "global_translation_mm": 35.96959890872593,
+      "global_rotation_deg": 12.273750314741935,
+      "T_global": [
+        [
+          0.9955744610033546,
+          0.09374217705257715,
+          -0.006625468988951472,
+          -0.009603824806234187
+        ],
+        [
+          -0.09074296256540201,
+          0.9772650807955094,
+          0.1916211799426159,
+          -0.03452796223480891
+        ],
+        [
+          0.024437826064000162,
+          -0.19017193825375384,
+          0.9814465989334702,
+          0.0030656840439595018
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "delta_T_curvature_similarity": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "refinement_translation_mm": 0.0,
+      "refinement_rotation_deg": 0.0,
+      "T_final": [
+        [
+          0.9955744610033546,
+          0.09374217705257715,
+          -0.006625468988951472,
+          -0.009603824806234187
+        ],
+        [
+          -0.09074296256540201,
+          0.9772650807955094,
+          0.1916211799426159,
+          -0.03452796223480891
+        ],
+        [
+          0.024437826064000162,
+          -0.19017193825375384,
+          0.9814465989334702,
+          0.0030656840439595018
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "final_translation_mm": 35.96959890872593,
+      "final_rotation_deg": 12.273750314741935,
+      "final_rmse_mm": 0.0,
+      "final_fitness": 0.0,
+      "final_overlap_ratio": 0.0,
+      "source_curvature_threshold": 262.7506895614884,
+      "target_curvature_threshold": 419.26005210698423,
+      "refinement_iterations": [],
+      "transformed_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_6_transformed.pcd",
+      "after_global_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_6_after_global_icp.pcd",
+      "source_high_curvature_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_6_high_curvature.pcd",
+      "target_high_curvature_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/target_before_scan_6_high_curvature.pcd",
+      "kept": false,
+      "reject_reasons": [
+        "final translation 35.970 mm > 35.0 mm"
+      ],
+      "target_points_after_registration": 167034
+    },
+    {
+      "step": 6,
+      "source_index": 6,
+      "source": "coarse_scan_8",
+      "source_global_name": "coarse:coarse_scan_8",
+      "target_frames_before_registration": [
+        "coarse_scan_1",
+        "coarse_scan_2",
+        "coarse_scan_3",
+        "coarse_scan_4",
+        "coarse_scan_5"
+      ],
+      "target_points_before_registration": 167034,
+      "global_fitness": 0.9998274076630997,
+      "global_rmse_mm": 2.5874376517232847,
+      "global_translation_mm": 104.22082956511755,
+      "global_rotation_deg": 8.60559773686825,
+      "T_global": [
+        [
+          0.9887540000854679,
+          -0.036114076841372966,
+          0.1451251210813665,
+          0.0017614033085346396
+        ],
+        [
+          0.03539376799673212,
+          0.9993449769752711,
+          0.007543088312363038,
+          -0.013721914039838166
+        ],
+        [
+          -0.14530247245652553,
+          -0.002321733875795359,
+          0.9893845567067595,
+          0.10329853749550018
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "delta_T_curvature_similarity": [
+        [
+          0.9997627963895007,
+          -0.010322048770631882,
+          0.0191782758512132,
+          -0.0008271565893538926
+        ],
+        [
+          0.009785066469480656,
+          0.999563231466327,
+          0.027885458124062415,
+          -0.00833345889322783
+        ],
+        [
+          -0.0194577344425392,
+          -0.02769118288874069,
+          0.999427133392219,
+          0.011157304225179231
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "refinement_translation_mm": 13.950489694689283,
+      "refinement_rotation_deg": 2.023253699493093,
+      "T_final": [
+        [
+          0.9853674769686788,
+          -0.046465324895704194,
+          0.16398752670468297,
+          0.003056555021017637
+        ],
+        [
+          0.04100150671437504,
+          0.9984903732798988,
+          0.036549294309554475,
+          -0.019151617142730393
+        ],
+        [
+          -0.16543824158740775,
+          -0.029290750241535456,
+          0.9857850882270218,
+          0.11474236855135268
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "final_translation_mm": 116.36983332699536,
+      "final_rotation_deg": 9.995473272729228,
+      "final_rmse_mm": 3.0128135585988587,
+      "final_fitness": 0.9981014842940974,
+      "final_overlap_ratio": 0.9779081808767691,
+      "source_curvature_threshold": 205.25101096763603,
+      "target_curvature_threshold": 419.26005210698423,
+      "refinement_iterations": [
+        {
+          "iteration": 1,
+          "correspondences": 1780,
+          "feature_correspondences": 813,
+          "plane_correspondences": 967,
+          "mean_similarity": 0.9941013263458442,
+          "median_point_to_plane_mm": 0.9651545729701305,
+          "translation_mm": 7.509911338829629,
+          "rotation_deg": 0.7446560757557908
+        },
+        {
+          "iteration": 2,
+          "correspondences": 1770,
+          "feature_correspondences": 809,
+          "plane_correspondences": 961,
+          "mean_similarity": 0.9945000608441511,
+          "median_point_to_plane_mm": 0.8894142497898853,
+          "translation_mm": 7.561456162076819,
+          "rotation_deg": 0.8464876081785689
+        },
+        {
+          "iteration": 3,
+          "correspondences": 1767,
+          "feature_correspondences": 811,
+          "plane_correspondences": 956,
+          "mean_similarity": 0.994278983990093,
+          "median_point_to_plane_mm": 0.8899312845198339,
+          "translation_mm": 6.652645896288832,
+          "rotation_deg": 0.7248187370199223
+        },
+        {
+          "iteration": 4,
+          "correspondences": 1763,
+          "feature_correspondences": 809,
+          "plane_correspondences": 954,
+          "mean_similarity": 0.9943282681435218,
+          "median_point_to_plane_mm": 0.8888647963060536,
+          "translation_mm": 1.9874051201621874,
+          "rotation_deg": 0.2466045101603209
+        },
+        {
+          "iteration": 5,
+          "correspondences": 1757,
+          "feature_correspondences": 806,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9945116899081041,
+          "median_point_to_plane_mm": 0.8838761454032168,
+          "translation_mm": 0.7441831776621801,
+          "rotation_deg": 0.07766724638073479
+        },
+        {
+          "iteration": 6,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943279579362484,
+          "median_point_to_plane_mm": 0.8868234821869097,
+          "translation_mm": 0.42783662990233445,
+          "rotation_deg": 0.08717869192624227
+        },
+        {
+          "iteration": 7,
+          "correspondences": 1751,
+          "feature_correspondences": 803,
+          "plane_correspondences": 948,
+          "mean_similarity": 0.9944349936812721,
+          "median_point_to_plane_mm": 0.8884731720332456,
+          "translation_mm": 0.4185563347244308,
+          "rotation_deg": 0.04843584798287774
+        },
+        {
+          "iteration": 8,
+          "correspondences": 1751,
+          "feature_correspondences": 803,
+          "plane_correspondences": 948,
+          "mean_similarity": 0.9944734379462438,
+          "median_point_to_plane_mm": 0.8907149556449782,
+          "translation_mm": 0.3046049695353004,
+          "rotation_deg": 0.02888631221736547
+        },
+        {
+          "iteration": 9,
+          "correspondences": 1753,
+          "feature_correspondences": 805,
+          "plane_correspondences": 948,
+          "mean_similarity": 0.9945097370303468,
+          "median_point_to_plane_mm": 0.8887161536834003,
+          "translation_mm": 0.6112321587713464,
+          "rotation_deg": 0.059491905202759196
+        },
+        {
+          "iteration": 10,
+          "correspondences": 1754,
+          "feature_correspondences": 805,
+          "plane_correspondences": 949,
+          "mean_similarity": 0.9943875953524219,
+          "median_point_to_plane_mm": 0.8911095600231511,
+          "translation_mm": 0.6750528799574889,
+          "rotation_deg": 0.06333419508761128
+        },
+        {
+          "iteration": 11,
+          "correspondences": 1755,
+          "feature_correspondences": 805,
+          "plane_correspondences": 950,
+          "mean_similarity": 0.9944374480859891,
+          "median_point_to_plane_mm": 0.8929789372566788,
+          "translation_mm": 0.2668535628865628,
+          "rotation_deg": 0.02822548077678285
+        },
+        {
+          "iteration": 12,
+          "correspondences": 1755,
+          "feature_correspondences": 805,
+          "plane_correspondences": 950,
+          "mean_similarity": 0.9943394250233871,
+          "median_point_to_plane_mm": 0.8928829053116787,
+          "translation_mm": 0.1395650134833335,
+          "rotation_deg": 0.019586630771407217
+        },
+        {
+          "iteration": 13,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943404380986289,
+          "median_point_to_plane_mm": 0.8915056989236604,
+          "translation_mm": 0.21341894223602204,
+          "rotation_deg": 0.01912710875014196
+        },
+        {
+          "iteration": 14,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.994422087021203,
+          "median_point_to_plane_mm": 0.8900987937255608,
+          "translation_mm": 0.189730352309426,
+          "rotation_deg": 0.017372480171563925
+        },
+        {
+          "iteration": 15,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943349578705089,
+          "median_point_to_plane_mm": 0.8914310056382104,
+          "translation_mm": 0.24151642180900892,
+          "rotation_deg": 0.021537681496251737
+        },
+        {
+          "iteration": 16,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943780560781003,
+          "median_point_to_plane_mm": 0.8910635155941878,
+          "translation_mm": 0.2526511333114196,
+          "rotation_deg": 0.023146057546471584
+        },
+        {
+          "iteration": 17,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943400329507424,
+          "median_point_to_plane_mm": 0.8911141424240223,
+          "translation_mm": 0.254490247115855,
+          "rotation_deg": 0.02327594907187254
+        },
+        {
+          "iteration": 18,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943780560781003,
+          "median_point_to_plane_mm": 0.8909074748491264,
+          "translation_mm": 0.2536754952295428,
+          "rotation_deg": 0.02324657130151467
+        },
+        {
+          "iteration": 19,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943349578705089,
+          "median_point_to_plane_mm": 0.891563839865162,
+          "translation_mm": 0.25083172182254365,
+          "rotation_deg": 0.022938321507934723
+        },
+        {
+          "iteration": 20,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943780560781003,
+          "median_point_to_plane_mm": 0.8909118450736362,
+          "translation_mm": 0.25112344858194285,
+          "rotation_deg": 0.022963386722899957
+        },
+        {
+          "iteration": 21,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943349578705089,
+          "median_point_to_plane_mm": 0.8915637182594786,
+          "translation_mm": 0.251082577707525,
+          "rotation_deg": 0.02295989128630766
+        },
+        {
+          "iteration": 22,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943780560781003,
+          "median_point_to_plane_mm": 0.8909119355488536,
+          "translation_mm": 0.2510883631744112,
+          "rotation_deg": 0.02296038607348399
+        },
+        {
+          "iteration": 23,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943349578705089,
+          "median_point_to_plane_mm": 0.8915637158343782,
+          "translation_mm": 0.25108754823075047,
+          "rotation_deg": 0.022960316393413786
+        },
+        {
+          "iteration": 24,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943780560781003,
+          "median_point_to_plane_mm": 0.8909119373531648,
+          "translation_mm": 0.2510876636016256,
+          "rotation_deg": 0.022960326260117632
+        },
+        {
+          "iteration": 25,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943349578705089,
+          "median_point_to_plane_mm": 0.8915637157860452,
+          "translation_mm": 0.2510876473500255,
+          "rotation_deg": 0.022960324870559157
+        },
+        {
+          "iteration": 26,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943780560781003,
+          "median_point_to_plane_mm": 0.8909119373891948,
+          "translation_mm": 0.2510876496509211,
+          "rotation_deg": 0.0229603250673361
+        },
+        {
+          "iteration": 27,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943349578705089,
+          "median_point_to_plane_mm": 0.8915637157850632,
+          "translation_mm": 0.25108764932710337,
+          "rotation_deg": 0.02296032503964867
+        },
+        {
+          "iteration": 28,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943780560781003,
+          "median_point_to_plane_mm": 0.8909119373899314,
+          "translation_mm": 0.2510876493730404,
+          "rotation_deg": 0.02296032504357842
+        },
+        {
+          "iteration": 29,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943349578705089,
+          "median_point_to_plane_mm": 0.8915637157850583,
+          "translation_mm": 0.25108764936680245,
+          "rotation_deg": 0.022960325043045158
+        },
+        {
+          "iteration": 30,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943780560781003,
+          "median_point_to_plane_mm": 0.8909119373899154,
+          "translation_mm": 0.25108764936773587,
+          "rotation_deg": 0.0229603250431247
+        },
+        {
+          "iteration": 31,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943349578705089,
+          "median_point_to_plane_mm": 0.8915637157849791,
+          "translation_mm": 0.2510876493675683,
+          "rotation_deg": 0.022960325043109686
+        },
+        {
+          "iteration": 32,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943780560781003,
+          "median_point_to_plane_mm": 0.8909119373898713,
+          "translation_mm": 0.2510876493675213,
+          "rotation_deg": 0.022960325043105998
+        },
+        {
+          "iteration": 33,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943349578705089,
+          "median_point_to_plane_mm": 0.8915637157850373,
+          "translation_mm": 0.2510876493675797,
+          "rotation_deg": 0.022960325043110453
+        },
+        {
+          "iteration": 34,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943780560781003,
+          "median_point_to_plane_mm": 0.8909119373898736,
+          "translation_mm": 0.2510876493674509,
+          "rotation_deg": 0.02296032504310031
+        },
+        {
+          "iteration": 35,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943349578705089,
+          "median_point_to_plane_mm": 0.8915637157849619,
+          "translation_mm": 0.2510876493676021,
+          "rotation_deg": 0.02296032504311199
+        },
+        {
+          "iteration": 36,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943780560781003,
+          "median_point_to_plane_mm": 0.890911937389849,
+          "translation_mm": 0.2510876493675682,
+          "rotation_deg": 0.022960325043110734
+        },
+        {
+          "iteration": 37,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943349578705089,
+          "median_point_to_plane_mm": 0.8915637157848876,
+          "translation_mm": 0.2510876493675948,
+          "rotation_deg": 0.022960325043111702
+        },
+        {
+          "iteration": 38,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943780560781003,
+          "median_point_to_plane_mm": 0.8909119373898117,
+          "translation_mm": 0.2510876493675404,
+          "rotation_deg": 0.022960325043107757
+        },
+        {
+          "iteration": 39,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943349578705089,
+          "median_point_to_plane_mm": 0.8915637157849463,
+          "translation_mm": 0.251087649367537,
+          "rotation_deg": 0.022960325043106654
+        },
+        {
+          "iteration": 40,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943780560781003,
+          "median_point_to_plane_mm": 0.8909119373898345,
+          "translation_mm": 0.2510876493675329,
+          "rotation_deg": 0.02296032504310737
+        },
+        {
+          "iteration": 41,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943349578705089,
+          "median_point_to_plane_mm": 0.8915637157848687,
+          "translation_mm": 0.25108764936750166,
+          "rotation_deg": 0.022960325043103302
+        },
+        {
+          "iteration": 42,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943780560781003,
+          "median_point_to_plane_mm": 0.8909119373898271,
+          "translation_mm": 0.2510876493675901,
+          "rotation_deg": 0.022960325043112306
+        },
+        {
+          "iteration": 43,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943349578705089,
+          "median_point_to_plane_mm": 0.8915637157848799,
+          "translation_mm": 0.2510876493675022,
+          "rotation_deg": 0.022960325043103785
+        },
+        {
+          "iteration": 44,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943780560781003,
+          "median_point_to_plane_mm": 0.8909119373898382,
+          "translation_mm": 0.25108764936754663,
+          "rotation_deg": 0.022960325043108538
+        },
+        {
+          "iteration": 45,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943349578705089,
+          "median_point_to_plane_mm": 0.8915637157848026,
+          "translation_mm": 0.2510876493674473,
+          "rotation_deg": 0.02296032504309878
+        },
+        {
+          "iteration": 46,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943780560781003,
+          "median_point_to_plane_mm": 0.8909119373898318,
+          "translation_mm": 0.2510876493675519,
+          "rotation_deg": 0.02296032504310822
+        },
+        {
+          "iteration": 47,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943349578705089,
+          "median_point_to_plane_mm": 0.891563715784816,
+          "translation_mm": 0.2510876493674861,
+          "rotation_deg": 0.022960325043102005
+        },
+        {
+          "iteration": 48,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943780560781003,
+          "median_point_to_plane_mm": 0.8909119373898442,
+          "translation_mm": 0.2510876493675913,
+          "rotation_deg": 0.022960325043112573
+        },
+        {
+          "iteration": 49,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943349578705089,
+          "median_point_to_plane_mm": 0.8915637157847441,
+          "translation_mm": 0.25108764936750194,
+          "rotation_deg": 0.022960325043103056
+        },
+        {
+          "iteration": 50,
+          "correspondences": 1756,
+          "feature_correspondences": 805,
+          "plane_correspondences": 951,
+          "mean_similarity": 0.9943780560781003,
+          "median_point_to_plane_mm": 0.8909119373898367,
+          "translation_mm": 0.25108764936749745,
+          "rotation_deg": 0.02296032504310398
+        }
+      ],
+      "transformed_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_8_transformed.pcd",
+      "after_global_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_8_after_global_icp.pcd",
+      "source_high_curvature_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_8_high_curvature.pcd",
+      "target_high_curvature_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/target_before_scan_8_high_curvature.pcd",
+      "kept": false,
+      "reject_reasons": [
+        "final translation 116.370 mm > 35.0 mm"
+      ],
+      "target_points_after_registration": 167034
+    },
+    {
+      "step": 7,
+      "source_index": 7,
+      "source": "coarse_scan_9",
+      "source_global_name": "coarse:coarse_scan_9",
+      "target_frames_before_registration": [
+        "coarse_scan_1",
+        "coarse_scan_2",
+        "coarse_scan_3",
+        "coarse_scan_4",
+        "coarse_scan_5"
+      ],
+      "target_points_before_registration": 167034,
+      "global_fitness": 1.0,
+      "global_rmse_mm": 0.7040150774651164,
+      "global_translation_mm": 15.099284188334376,
+      "global_rotation_deg": 1.5990206777574811,
+      "T_global": [
+        [
+          0.9996215249019441,
+          -0.027339060010036238,
+          -0.0030631275649291917,
+          0.0004631613449587354
+        ],
+        [
+          0.027324436383214648,
+          0.9996154822719387,
+          -0.00471834489825008,
+          -0.015089769238318063
+        ],
+        [
+          0.00319094485239847,
+          0.004632860887920476,
+          0.9999841771102893,
+          -0.00026968296744597157
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "delta_T_curvature_similarity": [
+        [
+          0.9999921109618642,
+          -0.002065380905082119,
+          0.0033929656278858674,
+          -0.00019586899659018766
+        ],
+        [
+          0.0020703105448696747,
+          0.9999968056073605,
+          -0.0014500308007367277,
+          -0.0011982850898189898
+        ],
+        [
+          -0.003389959923493816,
+          0.0014570438539062344,
+          0.9999931925742919,
+          0.0022400821764886002
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "refinement_translation_mm": 2.5479835120600085,
+      "refinement_rotation_deg": 0.24234748778400297,
+      "T_final": [
+        [
+          0.9995680302466695,
+          -0.029387711922906647,
+          0.00033955372102236533,
+          0.0002975397906789816
+        ],
+        [
+          0.02938924911379996,
+          0.9995489709723911,
+          -0.006174679308361112,
+          -0.01628665618906359
+        ],
+        [
+          -0.00015794087570730232,
+          0.006181991262558025,
+          0.9999808788365454,
+          0.001946844490966318
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "final_translation_mm": 16.40530107068464,
+      "final_rotation_deg": 1.720961284653062,
+      "final_rmse_mm": 0.7184809935608091,
+      "final_fitness": 1.0,
+      "final_overlap_ratio": 1.0,
+      "source_curvature_threshold": 101.4113073106669,
+      "target_curvature_threshold": 419.26005210698423,
+      "refinement_iterations": [
+        {
+          "iteration": 1,
+          "correspondences": 9564,
+          "feature_correspondences": 4320,
+          "plane_correspondences": 5244,
+          "mean_similarity": 0.9954722063364124,
+          "median_point_to_plane_mm": 0.3015318944157173,
+          "translation_mm": 1.4593421320014432,
+          "rotation_deg": 0.13979199520492674
+        },
+        {
+          "iteration": 2,
+          "correspondences": 9567,
+          "feature_correspondences": 4323,
+          "plane_correspondences": 5244,
+          "mean_similarity": 0.9954555340300076,
+          "median_point_to_plane_mm": 0.300390119161934,
+          "translation_mm": 0.6827073550790531,
+          "rotation_deg": 0.0629021670949186
+        },
+        {
+          "iteration": 3,
+          "correspondences": 9571,
+          "feature_correspondences": 4327,
+          "plane_correspondences": 5244,
+          "mean_similarity": 0.9954709596823842,
+          "median_point_to_plane_mm": 0.2991837763010557,
+          "translation_mm": 0.27765816893032313,
+          "rotation_deg": 0.02586639437761564
+        },
+        {
+          "iteration": 4,
+          "correspondences": 9570,
+          "feature_correspondences": 4326,
+          "plane_correspondences": 5244,
+          "mean_similarity": 0.9954506535702587,
+          "median_point_to_plane_mm": 0.2999895556980115,
+          "translation_mm": 0.12742090318335375,
+          "rotation_deg": 0.011974149803630865
+        },
+        {
+          "iteration": 5,
+          "correspondences": 9571,
+          "feature_correspondences": 4327,
+          "plane_correspondences": 5244,
+          "mean_similarity": 0.995457661421191,
+          "median_point_to_plane_mm": 0.30013945623333266,
+          "translation_mm": 0.0944840848064477,
+          "rotation_deg": 0.0070079574008992404
+        },
+        {
+          "iteration": 6,
+          "correspondences": 9570,
+          "feature_correspondences": 4326,
+          "plane_correspondences": 5244,
+          "mean_similarity": 0.9954755592604302,
+          "median_point_to_plane_mm": 0.2993257657974153,
+          "translation_mm": 0.017617052737695434,
+          "rotation_deg": 0.0017964149648431224
+        },
+        {
+          "iteration": 7,
+          "correspondences": 9570,
+          "feature_correspondences": 4326,
+          "plane_correspondences": 5244,
+          "mean_similarity": 0.9954641057081065,
+          "median_point_to_plane_mm": 0.29973500259705915,
+          "translation_mm": 0.004683388932514955,
+          "rotation_deg": 0.0008108961040795497
+        }
+      ],
+      "transformed_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_9_transformed.pcd",
+      "after_global_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_9_after_global_icp.pcd",
+      "source_high_curvature_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_9_high_curvature.pcd",
+      "target_high_curvature_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/target_before_scan_9_high_curvature.pcd",
+      "kept": true,
+      "reject_reasons": [],
+      "target_points_after_registration": 197648
+    },
+    {
+      "step": 8,
+      "source_index": 8,
+      "source": "coarse_scan_10",
+      "source_global_name": "coarse:coarse_scan_10",
+      "target_frames_before_registration": [
+        "coarse_scan_1",
+        "coarse_scan_2",
+        "coarse_scan_3",
+        "coarse_scan_4",
+        "coarse_scan_5",
+        "coarse_scan_9"
+      ],
+      "target_points_before_registration": 197648,
+      "global_fitness": 1.0,
+      "global_rmse_mm": 4.195482171366554,
+      "global_translation_mm": 68.10491353036126,
+      "global_rotation_deg": 9.383842028228942,
+      "T_global": [
+        [
+          0.9970781888949787,
+          -0.04673828287747092,
+          -0.06042034544401688,
+          0.008873314966250424
+        ],
+        [
+          0.05497119175221083,
+          0.9882381805413298,
+          0.14270061877127058,
+          -0.048831372656035064
+        ],
+        [
+          0.05304011036235211,
+          -0.14560505291378917,
+          0.987919994361245,
+          -0.04663733025179648
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "delta_T_curvature_similarity": [
+        [
+          0.9998123928946807,
+          0.00560710600757297,
+          0.018540209719172192,
+          -0.001425163972877726
+        ],
+        [
+          -0.00473786624871573,
+          0.9989023928261375,
+          -0.04660002392300933,
+          0.004463029731347489
+        ],
+        [
+          -0.018781151126071285,
+          0.04650344039354078,
+          0.9987415573580302,
+          0.012608734249157759
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "refinement_translation_mm": 13.451018775481808,
+      "refinement_rotation_deg": 2.890000644540953,
+      "T_final": [
+        [
+          0.9981827340113464,
+          -0.04388790642167923,
+          -0.041292628779888076,
+          0.006308017729849003
+        ],
+        [
+          0.04771516146752704,
+          0.9941601219069445,
+          0.0967931576925543,
+          -0.04218348513380458
+        ],
+        [
+          0.03680343581460213,
+          -0.0985875432287964,
+          0.9944475870715108,
+          -0.036407383494557306
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "final_translation_mm": 56.07793753905153,
+      "final_rotation_deg": 6.58879634558043,
+      "final_rmse_mm": 5.82699753216118,
+      "final_fitness": 0.9994654312188168,
+      "final_overlap_ratio": 0.8749109052031362,
+      "source_curvature_threshold": 174.6198690450034,
+      "target_curvature_threshold": 476.2544754468969,
+      "refinement_iterations": [
+        {
+          "iteration": 1,
+          "correspondences": 1720,
+          "feature_correspondences": 781,
+          "plane_correspondences": 939,
+          "mean_similarity": 0.997289034776097,
+          "median_point_to_plane_mm": 1.7908912673150417,
+          "translation_mm": 8.500045551040232,
+          "rotation_deg": 0.6744338050921659
+        },
+        {
+          "iteration": 2,
+          "correspondences": 1721,
+          "feature_correspondences": 783,
+          "plane_correspondences": 938,
+          "mean_similarity": 0.9970061890421633,
+          "median_point_to_plane_mm": 1.7963710856351849,
+          "translation_mm": 2.532120782736271,
+          "rotation_deg": 0.20093285025587465
+        },
+        {
+          "iteration": 3,
+          "correspondences": 1705,
+          "feature_correspondences": 771,
+          "plane_correspondences": 934,
+          "mean_similarity": 0.996814465874656,
+          "median_point_to_plane_mm": 1.7494460159729235,
+          "translation_mm": 0.5688543147829577,
+          "rotation_deg": 0.2407774657307297
+        },
+        {
+          "iteration": 4,
+          "correspondences": 1678,
+          "feature_correspondences": 749,
+          "plane_correspondences": 929,
+          "mean_similarity": 0.9966577394441952,
+          "median_point_to_plane_mm": 1.6822739055327591,
+          "translation_mm": 1.3745694718001207,
+          "rotation_deg": 0.42170207880951865
+        },
+        {
+          "iteration": 5,
+          "correspondences": 1646,
+          "feature_correspondences": 718,
+          "plane_correspondences": 928,
+          "mean_similarity": 0.9968041284196055,
+          "median_point_to_plane_mm": 1.6660527631612003,
+          "translation_mm": 2.318107491403994,
+          "rotation_deg": 0.4167775877216161
+        },
+        {
+          "iteration": 6,
+          "correspondences": 1609,
+          "feature_correspondences": 688,
+          "plane_correspondences": 921,
+          "mean_similarity": 0.9966197646063426,
+          "median_point_to_plane_mm": 1.6143157444700178,
+          "translation_mm": 4.748709634353895,
+          "rotation_deg": 0.6625134355504672
+        },
+        {
+          "iteration": 7,
+          "correspondences": 1559,
+          "feature_correspondences": 651,
+          "plane_correspondences": 908,
+          "mean_similarity": 0.9965957702872755,
+          "median_point_to_plane_mm": 1.5209256039667975,
+          "translation_mm": 4.991284223404393,
+          "rotation_deg": 0.536019194015133
+        },
+        {
+          "iteration": 8,
+          "correspondences": 1520,
+          "feature_correspondences": 631,
+          "plane_correspondences": 889,
+          "mean_similarity": 0.9967411520516329,
+          "median_point_to_plane_mm": 1.472103360719228,
+          "translation_mm": 6.185654065457629,
+          "rotation_deg": 0.628005595838983
+        },
+        {
+          "iteration": 9,
+          "correspondences": 1492,
+          "feature_correspondences": 618,
+          "plane_correspondences": 874,
+          "mean_similarity": 0.9966618533716725,
+          "median_point_to_plane_mm": 1.3755811427406808,
+          "translation_mm": 2.4544774119699473,
+          "rotation_deg": 0.3289731024790108
+        },
+        {
+          "iteration": 10,
+          "correspondences": 1475,
+          "feature_correspondences": 610,
+          "plane_correspondences": 865,
+          "mean_similarity": 0.9967686664738268,
+          "median_point_to_plane_mm": 1.3630386638934746,
+          "translation_mm": 1.4220164773262938,
+          "rotation_deg": 0.13795930279510216
+        },
+        {
+          "iteration": 11,
+          "correspondences": 1469,
+          "feature_correspondences": 609,
+          "plane_correspondences": 860,
+          "mean_similarity": 0.9968472009311029,
+          "median_point_to_plane_mm": 1.3689867832452562,
+          "translation_mm": 0.862821760097193,
+          "rotation_deg": 0.08199141440029344
+        },
+        {
+          "iteration": 12,
+          "correspondences": 1465,
+          "feature_correspondences": 608,
+          "plane_correspondences": 857,
+          "mean_similarity": 0.9968018474224736,
+          "median_point_to_plane_mm": 1.354286757218997,
+          "translation_mm": 0.4139091713312752,
+          "rotation_deg": 0.049814683611987744
+        },
+        {
+          "iteration": 13,
+          "correspondences": 1465,
+          "feature_correspondences": 608,
+          "plane_correspondences": 857,
+          "mean_similarity": 0.9967551544208841,
+          "median_point_to_plane_mm": 1.3597789240800533,
+          "translation_mm": 0.19229873728453686,
+          "rotation_deg": 0.03606628117652173
+        },
+        {
+          "iteration": 14,
+          "correspondences": 1464,
+          "feature_correspondences": 607,
+          "plane_correspondences": 857,
+          "mean_similarity": 0.9968667653283261,
+          "median_point_to_plane_mm": 1.3668556558915248,
+          "translation_mm": 0.45620923600782926,
+          "rotation_deg": 0.035185822307101655
+        },
+        {
+          "iteration": 15,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969542567870922,
+          "median_point_to_plane_mm": 1.3554321885550233,
+          "translation_mm": 0.16289354468393935,
+          "rotation_deg": 0.020063018396292317
+        },
+        {
+          "iteration": 16,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969629545392614,
+          "median_point_to_plane_mm": 1.3517167486200654,
+          "translation_mm": 0.07554562021109555,
+          "rotation_deg": 0.011377312510265735
+        },
+        {
+          "iteration": 17,
+          "correspondences": 1462,
+          "feature_correspondences": 606,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.996990365594225,
+          "median_point_to_plane_mm": 1.3473527037727515,
+          "translation_mm": 0.0904742480552123,
+          "rotation_deg": 0.019771074138498445
+        },
+        {
+          "iteration": 18,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969513274988843,
+          "median_point_to_plane_mm": 1.3524088258780742,
+          "translation_mm": 0.041151644283594004,
+          "rotation_deg": 0.005512647416228905
+        },
+        {
+          "iteration": 19,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969653744396925,
+          "median_point_to_plane_mm": 1.3503597094561488,
+          "translation_mm": 0.020521067372198817,
+          "rotation_deg": 0.007318519723033449
+        },
+        {
+          "iteration": 20,
+          "correspondences": 1462,
+          "feature_correspondences": 606,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969741325944911,
+          "median_point_to_plane_mm": 1.348249483774675,
+          "translation_mm": 0.02548487604970541,
+          "rotation_deg": 0.006592802034968288
+        },
+        {
+          "iteration": 21,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969513274988843,
+          "median_point_to_plane_mm": 1.3521912095206474,
+          "translation_mm": 0.025730562633553333,
+          "rotation_deg": 0.0029217820626054416
+        },
+        {
+          "iteration": 22,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969491181243912,
+          "median_point_to_plane_mm": 1.3501740674485927,
+          "translation_mm": 0.03229149316888791,
+          "rotation_deg": 0.008779401933049123
+        },
+        {
+          "iteration": 23,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.996948950941287,
+          "median_point_to_plane_mm": 1.3528067020869443,
+          "translation_mm": 0.09845568010417188,
+          "rotation_deg": 0.01357785610551622
+        },
+        {
+          "iteration": 24,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.996964291223603,
+          "median_point_to_plane_mm": 1.3505704820642546,
+          "translation_mm": 0.058140725814997817,
+          "rotation_deg": 0.006346580128589081
+        },
+        {
+          "iteration": 25,
+          "correspondences": 1462,
+          "feature_correspondences": 606,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969904057505773,
+          "median_point_to_plane_mm": 1.3488451576186595,
+          "translation_mm": 0.06230906354672879,
+          "rotation_deg": 0.011638443001689886
+        },
+        {
+          "iteration": 26,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969506579916816,
+          "median_point_to_plane_mm": 1.3534232021161643,
+          "translation_mm": 0.11202648401224714,
+          "rotation_deg": 0.012597436366781657
+        },
+        {
+          "iteration": 27,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.996954396930422,
+          "median_point_to_plane_mm": 1.350263931500242,
+          "translation_mm": 0.0584223637204191,
+          "rotation_deg": 0.004863301401649462
+        },
+        {
+          "iteration": 28,
+          "correspondences": 1462,
+          "feature_correspondences": 606,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969892414808692,
+          "median_point_to_plane_mm": 1.3497160987487413,
+          "translation_mm": 0.03532748011007596,
+          "rotation_deg": 0.005773665674853186
+        },
+        {
+          "iteration": 29,
+          "correspondences": 1462,
+          "feature_correspondences": 606,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969760777897198,
+          "median_point_to_plane_mm": 1.3518259748235275,
+          "translation_mm": 0.02762101498694458,
+          "rotation_deg": 0.013700211708719151
+        },
+        {
+          "iteration": 30,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969664931482242,
+          "median_point_to_plane_mm": 1.353699324816348,
+          "translation_mm": 0.1172856519739782,
+          "rotation_deg": 0.017238437533348857
+        },
+        {
+          "iteration": 31,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969534020455333,
+          "median_point_to_plane_mm": 1.3514641230420914,
+          "translation_mm": 0.06715190839463259,
+          "rotation_deg": 0.011476970053229476
+        },
+        {
+          "iteration": 32,
+          "correspondences": 1462,
+          "feature_correspondences": 606,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969743695717117,
+          "median_point_to_plane_mm": 1.3479905749979508,
+          "translation_mm": 0.08819275073882885,
+          "rotation_deg": 0.020704270586649684
+        },
+        {
+          "iteration": 33,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969508890892786,
+          "median_point_to_plane_mm": 1.3541256217987425,
+          "translation_mm": 0.1140081854735151,
+          "rotation_deg": 0.012470750350666025
+        },
+        {
+          "iteration": 34,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969638299359398,
+          "median_point_to_plane_mm": 1.3505209532439655,
+          "translation_mm": 0.054636992689673786,
+          "rotation_deg": 0.00415807520694552
+        },
+        {
+          "iteration": 35,
+          "correspondences": 1462,
+          "feature_correspondences": 606,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969904057505773,
+          "median_point_to_plane_mm": 1.348845523971917,
+          "translation_mm": 0.06077782348188635,
+          "rotation_deg": 0.011355909482364713
+        },
+        {
+          "iteration": 36,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969506579916816,
+          "median_point_to_plane_mm": 1.3534230893168178,
+          "translation_mm": 0.11208023878776575,
+          "rotation_deg": 0.012607343578648744
+        },
+        {
+          "iteration": 37,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.996954396930422,
+          "median_point_to_plane_mm": 1.3502639243678567,
+          "translation_mm": 0.05842030372966232,
+          "rotation_deg": 0.004863409666278218
+        },
+        {
+          "iteration": 38,
+          "correspondences": 1462,
+          "feature_correspondences": 606,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969892414808692,
+          "median_point_to_plane_mm": 1.3497160986870116,
+          "translation_mm": 0.035327395712408935,
+          "rotation_deg": 0.005773642233938436
+        },
+        {
+          "iteration": 39,
+          "correspondences": 1462,
+          "feature_correspondences": 606,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969760777897198,
+          "median_point_to_plane_mm": 1.3518259748331478,
+          "translation_mm": 0.027621010343005122,
+          "rotation_deg": 0.013700210451675158
+        },
+        {
+          "iteration": 40,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969664931482242,
+          "median_point_to_plane_mm": 1.3536993248156013,
+          "translation_mm": 0.11728565223836503,
+          "rotation_deg": 0.01723843759629245
+        },
+        {
+          "iteration": 41,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969534020455333,
+          "median_point_to_plane_mm": 1.3514641230419322,
+          "translation_mm": 0.06715190838104715,
+          "rotation_deg": 0.011476970055724896
+        },
+        {
+          "iteration": 42,
+          "correspondences": 1462,
+          "feature_correspondences": 606,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969743695717117,
+          "median_point_to_plane_mm": 1.3479905749979615,
+          "translation_mm": 0.0881927507382248,
+          "rotation_deg": 0.020704270586471233
+        },
+        {
+          "iteration": 43,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969508890892786,
+          "median_point_to_plane_mm": 1.3541256217988038,
+          "translation_mm": 0.11400818547349018,
+          "rotation_deg": 0.012470750350665052
+        },
+        {
+          "iteration": 44,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969638299359398,
+          "median_point_to_plane_mm": 1.350520953244052,
+          "translation_mm": 0.05463699268966546,
+          "rotation_deg": 0.004158075206944452
+        },
+        {
+          "iteration": 45,
+          "correspondences": 1462,
+          "feature_correspondences": 606,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969904057505773,
+          "median_point_to_plane_mm": 1.3488455239719266,
+          "translation_mm": 0.0607778234818972,
+          "rotation_deg": 0.011355909482363733
+        },
+        {
+          "iteration": 46,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969506579916816,
+          "median_point_to_plane_mm": 1.3534230893168666,
+          "translation_mm": 0.11208023878775514,
+          "rotation_deg": 0.012607343578644965
+        },
+        {
+          "iteration": 47,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.996954396930422,
+          "median_point_to_plane_mm": 1.3502639243677617,
+          "translation_mm": 0.058420303729743196,
+          "rotation_deg": 0.004863409666281418
+        },
+        {
+          "iteration": 48,
+          "correspondences": 1462,
+          "feature_correspondences": 606,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969892414808692,
+          "median_point_to_plane_mm": 1.3497160986870347,
+          "translation_mm": 0.03532739571237623,
+          "rotation_deg": 0.005773642233935821
+        },
+        {
+          "iteration": 49,
+          "correspondences": 1462,
+          "feature_correspondences": 606,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969760777897198,
+          "median_point_to_plane_mm": 1.3518259748331363,
+          "translation_mm": 0.02762101034303565,
+          "rotation_deg": 0.013700210451682215
+        },
+        {
+          "iteration": 50,
+          "correspondences": 1463,
+          "feature_correspondences": 607,
+          "plane_correspondences": 856,
+          "mean_similarity": 0.9969664931482242,
+          "median_point_to_plane_mm": 1.353699324815731,
+          "translation_mm": 0.11728565223833307,
+          "rotation_deg": 0.017238437596284076
+        }
+      ],
+      "transformed_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_10_transformed.pcd",
+      "after_global_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_10_after_global_icp.pcd",
+      "source_high_curvature_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_10_high_curvature.pcd",
+      "target_high_curvature_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/target_before_scan_10_high_curvature.pcd",
+      "kept": false,
+      "reject_reasons": [
+        "final translation 56.078 mm > 35.0 mm",
+        "final RMSE 5.827 mm > 5.0 mm"
+      ],
+      "target_points_after_registration": 197648
+    },
+    {
+      "step": 9,
+      "source_index": 9,
+      "source": "coarse_scan_11",
+      "source_global_name": "coarse:coarse_scan_11",
+      "target_frames_before_registration": [
+        "coarse_scan_1",
+        "coarse_scan_2",
+        "coarse_scan_3",
+        "coarse_scan_4",
+        "coarse_scan_5",
+        "coarse_scan_9"
+      ],
+      "target_points_before_registration": 197648,
+      "global_fitness": 1.0,
+      "global_rmse_mm": 3.664545292961916,
+      "global_translation_mm": 53.221588548491965,
+      "global_rotation_deg": 5.699259485165919,
+      "T_global": [
+        [
+          0.9973831985334254,
+          -0.06015989823244154,
+          -0.04009416326469669,
+          0.007706718009382344
+        ],
+        [
+          0.06275480708003325,
+          0.995780472758751,
+          0.06695583813757737,
+          -0.04591958575960955
+        ],
+        [
+          0.03589692844216175,
+          -0.06929672948285466,
+          0.9969500357647815,
+          -0.025778588572974617
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "delta_T_curvature_similarity": [
+        [
+          0.9999798652685808,
+          -0.00632274212176927,
+          0.0005403605211045514,
+          -0.0004927272965754346
+        ],
+        [
+          0.006344081334326523,
+          0.9980557263522974,
+          -0.06200419120843297,
+          -0.002020622750122945
+        ],
+        [
+          -0.00014727340090331677,
+          0.062006370861791914,
+          0.9980757427585832,
+          -0.000258213906329421
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "refinement_translation_mm": 2.0957983940557945,
+      "refinement_rotation_deg": 3.573496207501339,
+      "T_final": [
+        [
+          0.9969857313114916,
+          -0.0664921952850497,
+          -0.03997798803673764,
+          0.007490243507651515
+        ],
+        [
+          0.06673451468042443,
+          0.997759431404192,
+          0.00475621639033004,
+          -0.04620365568839218
+        ],
+        [
+          0.039572163343175204,
+          -0.007409791505720492,
+          0.9991892407738315,
+          -0.02883563970257024
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "final_translation_mm": 54.97613722181521,
+      "final_rotation_deg": 4.463434980592455,
+      "final_rmse_mm": 4.845170915618722,
+      "final_fitness": 0.9949229374433364,
+      "final_overlap_ratio": 0.9281958295557571,
+      "source_curvature_threshold": 180.90388348536385,
+      "target_curvature_threshold": 476.2544754468969,
+      "refinement_iterations": [
+        {
+          "iteration": 1,
+          "correspondences": 1722,
+          "feature_correspondences": 788,
+          "plane_correspondences": 934,
+          "mean_similarity": 0.9966499840644885,
+          "median_point_to_plane_mm": 1.641361338458677,
+          "translation_mm": 15.203958109201109,
+          "rotation_deg": 1.8662150506095387
+        },
+        {
+          "iteration": 2,
+          "correspondences": 1676,
+          "feature_correspondences": 762,
+          "plane_correspondences": 914,
+          "mean_similarity": 0.9965380568585124,
+          "median_point_to_plane_mm": 1.5764858767257488,
+          "translation_mm": 2.2732750234536994,
+          "rotation_deg": 1.13572070851547
+        },
+        {
+          "iteration": 3,
+          "correspondences": 1644,
+          "feature_correspondences": 741,
+          "plane_correspondences": 903,
+          "mean_similarity": 0.9962381872165741,
+          "median_point_to_plane_mm": 1.5243756048515658,
+          "translation_mm": 6.146703946612785,
+          "rotation_deg": 0.8653504985242906
+        },
+        {
+          "iteration": 4,
+          "correspondences": 1628,
+          "feature_correspondences": 741,
+          "plane_correspondences": 887,
+          "mean_similarity": 0.9965838604355076,
+          "median_point_to_plane_mm": 1.4902714095620275,
+          "translation_mm": 4.070963325120007,
+          "rotation_deg": 0.38943336081829383
+        },
+        {
+          "iteration": 5,
+          "correspondences": 1614,
+          "feature_correspondences": 738,
+          "plane_correspondences": 876,
+          "mean_similarity": 0.9967421262713815,
+          "median_point_to_plane_mm": 1.4935443100607244,
+          "translation_mm": 0.8758984439341054,
+          "rotation_deg": 0.12272195711753194
+        },
+        {
+          "iteration": 6,
+          "correspondences": 1607,
+          "feature_correspondences": 735,
+          "plane_correspondences": 872,
+          "mean_similarity": 0.9966632243491699,
+          "median_point_to_plane_mm": 1.4865937267744427,
+          "translation_mm": 0.4094084351368491,
+          "rotation_deg": 0.03574636499229844
+        },
+        {
+          "iteration": 7,
+          "correspondences": 1605,
+          "feature_correspondences": 735,
+          "plane_correspondences": 870,
+          "mean_similarity": 0.9966646641041227,
+          "median_point_to_plane_mm": 1.490217973713875,
+          "translation_mm": 0.23413581271271688,
+          "rotation_deg": 0.0263757694336045
+        },
+        {
+          "iteration": 8,
+          "correspondences": 1604,
+          "feature_correspondences": 734,
+          "plane_correspondences": 870,
+          "mean_similarity": 0.9967322046675261,
+          "median_point_to_plane_mm": 1.4775618894418086,
+          "translation_mm": 0.12694735351618225,
+          "rotation_deg": 0.013266622795332283
+        },
+        {
+          "iteration": 9,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9966964731872364,
+          "median_point_to_plane_mm": 1.4759910788655348,
+          "translation_mm": 0.17435928050736682,
+          "rotation_deg": 0.015176274352938652
+        },
+        {
+          "iteration": 10,
+          "correspondences": 1601,
+          "feature_correspondences": 733,
+          "plane_correspondences": 868,
+          "mean_similarity": 0.9967863880043719,
+          "median_point_to_plane_mm": 1.476330814641676,
+          "translation_mm": 0.3081659927206678,
+          "rotation_deg": 0.027376311587397905
+        },
+        {
+          "iteration": 11,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9967042775747399,
+          "median_point_to_plane_mm": 1.4823934106328416,
+          "translation_mm": 0.2616761836892432,
+          "rotation_deg": 0.020997133188688063
+        },
+        {
+          "iteration": 12,
+          "correspondences": 1603,
+          "feature_correspondences": 734,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9967903469418452,
+          "median_point_to_plane_mm": 1.4762734690508799,
+          "translation_mm": 0.20842485528716945,
+          "rotation_deg": 0.016399055769711863
+        },
+        {
+          "iteration": 13,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9966976045815404,
+          "median_point_to_plane_mm": 1.4897543540132168,
+          "translation_mm": 0.1661486686062758,
+          "rotation_deg": 0.015756001358860714
+        },
+        {
+          "iteration": 14,
+          "correspondences": 1604,
+          "feature_correspondences": 734,
+          "plane_correspondences": 870,
+          "mean_similarity": 0.9967315703965407,
+          "median_point_to_plane_mm": 1.4778515234529879,
+          "translation_mm": 0.16200716970639445,
+          "rotation_deg": 0.014922453612863948
+        },
+        {
+          "iteration": 15,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9966721590811277,
+          "median_point_to_plane_mm": 1.4810835406130758,
+          "translation_mm": 0.12108478374916151,
+          "rotation_deg": 0.009519126518696462
+        },
+        {
+          "iteration": 16,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9966977962676797,
+          "median_point_to_plane_mm": 1.4760487430195397,
+          "translation_mm": 0.23813054873242281,
+          "rotation_deg": 0.020820609957278653
+        },
+        {
+          "iteration": 17,
+          "correspondences": 1601,
+          "feature_correspondences": 733,
+          "plane_correspondences": 868,
+          "mean_similarity": 0.9967863880043719,
+          "median_point_to_plane_mm": 1.4763385611497146,
+          "translation_mm": 0.29470784464582406,
+          "rotation_deg": 0.0256260584564136
+        },
+        {
+          "iteration": 18,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9967042775747399,
+          "median_point_to_plane_mm": 1.482393566266945,
+          "translation_mm": 0.2613742962792655,
+          "rotation_deg": 0.020973481157019566
+        },
+        {
+          "iteration": 19,
+          "correspondences": 1603,
+          "feature_correspondences": 734,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9967903469418452,
+          "median_point_to_plane_mm": 1.4762734724171596,
+          "translation_mm": 0.20842183931171882,
+          "rotation_deg": 0.016398862768858512
+        },
+        {
+          "iteration": 20,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9966976045815404,
+          "median_point_to_plane_mm": 1.489754353904047,
+          "translation_mm": 0.16614865723554376,
+          "rotation_deg": 0.015755996599803663
+        },
+        {
+          "iteration": 21,
+          "correspondences": 1604,
+          "feature_correspondences": 734,
+          "plane_correspondences": 870,
+          "mean_similarity": 0.9967315703965407,
+          "median_point_to_plane_mm": 1.477851523453108,
+          "translation_mm": 0.16200717089280353,
+          "rotation_deg": 0.014922453855973326
+        },
+        {
+          "iteration": 22,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9966721590811277,
+          "median_point_to_plane_mm": 1.4810835406130254,
+          "translation_mm": 0.12108478376387748,
+          "rotation_deg": 0.009519126520821009
+        },
+        {
+          "iteration": 23,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9966977962676797,
+          "median_point_to_plane_mm": 1.4760487430195883,
+          "translation_mm": 0.23813054873264514,
+          "rotation_deg": 0.020820609957362474
+        },
+        {
+          "iteration": 24,
+          "correspondences": 1601,
+          "feature_correspondences": 733,
+          "plane_correspondences": 868,
+          "mean_similarity": 0.9967863880043719,
+          "median_point_to_plane_mm": 1.4763385611497188,
+          "translation_mm": 0.29470784464592603,
+          "rotation_deg": 0.025626058456421907
+        },
+        {
+          "iteration": 25,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9967042775747399,
+          "median_point_to_plane_mm": 1.4823935662668744,
+          "translation_mm": 0.2613742962792949,
+          "rotation_deg": 0.020973481157022786
+        },
+        {
+          "iteration": 26,
+          "correspondences": 1603,
+          "feature_correspondences": 734,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9967903469418452,
+          "median_point_to_plane_mm": 1.4762734724171638,
+          "translation_mm": 0.20842183931172092,
+          "rotation_deg": 0.01639886276885928
+        },
+        {
+          "iteration": 27,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9966976045815404,
+          "median_point_to_plane_mm": 1.4897543539041187,
+          "translation_mm": 0.1661486572355272,
+          "rotation_deg": 0.015755996599803323
+        },
+        {
+          "iteration": 28,
+          "correspondences": 1604,
+          "feature_correspondences": 734,
+          "plane_correspondences": 870,
+          "mean_similarity": 0.9967315703965407,
+          "median_point_to_plane_mm": 1.4778515234531322,
+          "translation_mm": 0.16200717089277492,
+          "rotation_deg": 0.014922453855970704
+        },
+        {
+          "iteration": 29,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9966721590811277,
+          "median_point_to_plane_mm": 1.481083540613008,
+          "translation_mm": 0.12108478376392116,
+          "rotation_deg": 0.009519126520824995
+        },
+        {
+          "iteration": 30,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9966977962676797,
+          "median_point_to_plane_mm": 1.4760487430196316,
+          "translation_mm": 0.23813054873266587,
+          "rotation_deg": 0.020820609957364802
+        },
+        {
+          "iteration": 31,
+          "correspondences": 1601,
+          "feature_correspondences": 733,
+          "plane_correspondences": 868,
+          "mean_similarity": 0.9967863880043719,
+          "median_point_to_plane_mm": 1.4763385611496462,
+          "translation_mm": 0.29470784464595245,
+          "rotation_deg": 0.025626058456424093
+        },
+        {
+          "iteration": 32,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9967042775747399,
+          "median_point_to_plane_mm": 1.4823935662668593,
+          "translation_mm": 0.2613742962792444,
+          "rotation_deg": 0.0209734811570185
+        },
+        {
+          "iteration": 33,
+          "correspondences": 1603,
+          "feature_correspondences": 734,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9967903469418452,
+          "median_point_to_plane_mm": 1.476273472417087,
+          "translation_mm": 0.20842183931171482,
+          "rotation_deg": 0.01639886276885814
+        },
+        {
+          "iteration": 34,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9966976045815404,
+          "median_point_to_plane_mm": 1.4897543539042222,
+          "translation_mm": 0.16614865723549768,
+          "rotation_deg": 0.01575599659979862
+        },
+        {
+          "iteration": 35,
+          "correspondences": 1604,
+          "feature_correspondences": 734,
+          "plane_correspondences": 870,
+          "mean_similarity": 0.9967315703965407,
+          "median_point_to_plane_mm": 1.4778515234531315,
+          "translation_mm": 0.1620071708927554,
+          "rotation_deg": 0.014922453855967467
+        },
+        {
+          "iteration": 36,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9966721590811277,
+          "median_point_to_plane_mm": 1.4810835406130454,
+          "translation_mm": 0.12108478376388947,
+          "rotation_deg": 0.009519126520821992
+        },
+        {
+          "iteration": 37,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9966977962676797,
+          "median_point_to_plane_mm": 1.4760487430197573,
+          "translation_mm": 0.2381305487326352,
+          "rotation_deg": 0.020820609957362665
+        },
+        {
+          "iteration": 38,
+          "correspondences": 1601,
+          "feature_correspondences": 733,
+          "plane_correspondences": 868,
+          "mean_similarity": 0.9967863880043719,
+          "median_point_to_plane_mm": 1.4763385611497084,
+          "translation_mm": 0.2947078446458871,
+          "rotation_deg": 0.025626058456419087
+        },
+        {
+          "iteration": 39,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9967042775747399,
+          "median_point_to_plane_mm": 1.4823935662668497,
+          "translation_mm": 0.2613742962792633,
+          "rotation_deg": 0.020973481157019427
+        },
+        {
+          "iteration": 40,
+          "correspondences": 1603,
+          "feature_correspondences": 734,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9967903469418452,
+          "median_point_to_plane_mm": 1.4762734724171476,
+          "translation_mm": 0.20842183931174055,
+          "rotation_deg": 0.01639886276886045
+        },
+        {
+          "iteration": 41,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9966976045815404,
+          "median_point_to_plane_mm": 1.4897543539042815,
+          "translation_mm": 0.1661486572355137,
+          "rotation_deg": 0.015755996599802854
+        },
+        {
+          "iteration": 42,
+          "correspondences": 1604,
+          "feature_correspondences": 734,
+          "plane_correspondences": 870,
+          "mean_similarity": 0.9967315703965407,
+          "median_point_to_plane_mm": 1.4778515234531764,
+          "translation_mm": 0.16200717089275174,
+          "rotation_deg": 0.014922453855968054
+        },
+        {
+          "iteration": 43,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9966721590811277,
+          "median_point_to_plane_mm": 1.4810835406130487,
+          "translation_mm": 0.12108478376385062,
+          "rotation_deg": 0.009519126520819378
+        },
+        {
+          "iteration": 44,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9966977962676797,
+          "median_point_to_plane_mm": 1.476048743019839,
+          "translation_mm": 0.2381305487326182,
+          "rotation_deg": 0.02082060995735972
+        },
+        {
+          "iteration": 45,
+          "correspondences": 1601,
+          "feature_correspondences": 733,
+          "plane_correspondences": 868,
+          "mean_similarity": 0.9967863880043719,
+          "median_point_to_plane_mm": 1.4763385611497128,
+          "translation_mm": 0.2947078446458482,
+          "rotation_deg": 0.02562605845641509
+        },
+        {
+          "iteration": 46,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9967042775747399,
+          "median_point_to_plane_mm": 1.4823935662668601,
+          "translation_mm": 0.26137429627925013,
+          "rotation_deg": 0.02097348115701827
+        },
+        {
+          "iteration": 47,
+          "correspondences": 1603,
+          "feature_correspondences": 734,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9967903469418452,
+          "median_point_to_plane_mm": 1.476273472417158,
+          "translation_mm": 0.20842183931175298,
+          "rotation_deg": 0.016398862768861742
+        },
+        {
+          "iteration": 48,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9966976045815404,
+          "median_point_to_plane_mm": 1.4897543539043907,
+          "translation_mm": 0.16614865723551872,
+          "rotation_deg": 0.015755996599802726
+        },
+        {
+          "iteration": 49,
+          "correspondences": 1604,
+          "feature_correspondences": 734,
+          "plane_correspondences": 870,
+          "mean_similarity": 0.9967315703965407,
+          "median_point_to_plane_mm": 1.4778515234531482,
+          "translation_mm": 0.16200717089281574,
+          "rotation_deg": 0.014922453855974545
+        },
+        {
+          "iteration": 50,
+          "correspondences": 1604,
+          "feature_correspondences": 735,
+          "plane_correspondences": 869,
+          "mean_similarity": 0.9966721590811277,
+          "median_point_to_plane_mm": 1.4810835406130252,
+          "translation_mm": 0.12108478376395543,
+          "rotation_deg": 0.009519126520827535
+        }
+      ],
+      "transformed_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_11_transformed.pcd",
+      "after_global_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_11_after_global_icp.pcd",
+      "source_high_curvature_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/scan_11_high_curvature.pcd",
+      "target_high_curvature_cloud": "/home/smmg/AAM/data/runs/20261026_143946/inspection_001/construction/coarse_scan/debug/target_before_scan_11_high_curvature.pcd",
+      "kept": false,
+      "reject_reasons": [
+        "final translation 54.976 mm > 35.0 mm"
+      ],
+      "target_points_after_registration": 197648
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+    "is_defect": "no",
+    "defect_type": "",
+    "defect_object": "",
+    "defect_region": "",
+    "segmentation_text_prompt": {
+        "long_defect_prompt": "",
+        "short_object_prompt": "",
+        "balanced_prompt": ""
+    }
+}
