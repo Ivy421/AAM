@@ -1,0 +1,3 @@
+[
+    "[\n  {\n    \"id\": 1,\n    \"object_name\": \"black rectangular panel\",\n    \"segmentation_text_prompt\": {\n      \"long_defect_prompt\": \"black rectangular plastic panel lying on the green table with a chipped and irregular corner edge\",\n      \"short_object_prompt\": \"black rectangular panel\",\n      \"balanced_prompt\": \"black panel with damaged corner edge\"\n    },\n    \"description\": \"A black rectangular object, likely a protective cover or panel, is lying on the desk. The bottom-left corner (relative to the object's orientation) appears irregular and possibly broken or chipped, which is a geometric defect suitable for 3D printing repair.\",\n    \"confidence\": 8\n  }\n]"
+]

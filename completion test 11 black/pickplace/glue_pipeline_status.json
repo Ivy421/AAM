@@ -1,0 +1,25 @@
+{
+  "run_dir": "/home/smmg/AAM/data/runs/20261010_112204",
+  "mode": "execute",
+  "started_at": "2026-10-10T13:20:23",
+  "status": "completed",
+  "current_stage": null,
+  "stages": {
+    "alignment": {
+      "status": "completed",
+      "started_at": "2026-10-10T13:20:23",
+      "finished_at": "2026-10-10T13:22:47"
+    },
+    "brush_pick": {
+      "status": "completed",
+      "started_at": "2026-10-10T13:22:47",
+      "finished_at": "2026-10-10T13:23:09"
+    },
+    "glue_execute": {
+      "status": "completed",
+      "started_at": "2026-10-10T13:23:09",
+      "finished_at": "2026-10-10T13:25:34"
+    }
+  },
+  "finished_at": "2026-10-10T13:25:34"
+}

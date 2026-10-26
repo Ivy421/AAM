@@ -1,0 +1,98 @@
+{
+  "grab_joint_degrees": [
+    145.045,
+    101.599,
+    -75.14,
+    -0.0,
+    68.0,
+    29.857
+  ],
+  "fix_joint_degrees": [
+    4.045,
+    98.162,
+    -62.564,
+    -0.205,
+    61.036,
+    36.74
+  ],
+  "grab_endpose": [
+    -276.09161821011253,
+    192.99572571627394,
+    229.89612544928843,
+    180.0,
+    0.0,
+    -64.8114018804651
+  ],
+  "fix_endpose": [
+    301.8938555089543,
+    21.0653006674744,
+    197.3907644416472,
+    -178.88063416235963,
+    -1.2047019911734935,
+    147.3955068669826
+  ],
+  "leave_clearance_endpose": [
+    -256.091626947476,
+    174.7767224142298,
+    234.89613585986524,
+    179.99999999999943,
+    -2.842170943040401e-14,
+    -64.81140188046523
+  ],
+  "leave_clearance_joint_degrees": [
+    145.687,
+    96.315,
+    -69.315,
+    -0.0,
+    68.0,
+    30.499
+  ],
+  "leave_clearance_status": {
+    "success": true,
+    "reason": "pre_grab_failed_leave_clearance_found",
+    "dz_mm": 5.0000104105767935,
+    "xy_err_mm": 27.054236855351007,
+    "tilt_err_deg": 8.537736462515939e-07,
+    "yaw_err_deg": 1.2722218725854067e-13
+  },
+  "pre_fix_joint_degrees": [
+    4.102,
+    91.787,
+    -54.408,
+    -0.206,
+    59.257,
+    36.803
+  ],
+  "delta_T_base": [
+    [
+      0.9980975097112258,
+      -0.06165517908699376,
+      0.0,
+      0.01476121036567438
+    ],
+    [
+      0.06165517908699376,
+      0.9980975097112258,
+      0.0,
+      -0.03078468523988792
+    ],
+    [
+      0.0,
+      0.0,
+      0.9999999999999998,
+      -0.001571604807541503
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "data_chain": {
+    "orientation_meta": "/home/smmg/AAM/data/runs/20261010_112204/completion/depression/orientation_meta.npz",
+    "fix_points": "/home/smmg/AAM/data/runs/20261010_112204/completion/depression/fix_points_curve_motion.pcd",
+    "segments": "/home/smmg/AAM/data/runs/20261010_112204/completion/depression/glue_brush_adaptive_segments.json",
+    "alignment": "/home/smmg/AAM/data/runs/20261010_112204/pickplace/iterative_correction.json"
+  }
+}

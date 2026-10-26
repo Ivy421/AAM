@@ -1,0 +1,832 @@
+{
+  "coordinate_frame": "base",
+  "data_chain": "motion segments -> delta_T_base -> contact/pre-app -> tangent sweep",
+  "segment_source": "/home/smmg/AAM/data/runs/20261010_112204/completion/depression/glue_brush_adaptive_segments.json",
+  "alignment_source": "/home/smmg/AAM/data/runs/20261010_112204/pickplace/iterative_correction.json",
+  "delta_T_base": [
+    [
+      0.99809751,
+      -0.061655179,
+      0.0,
+      0.01476121
+    ],
+    [
+      0.061655179,
+      0.99809751,
+      0.0,
+      -0.030784685
+    ],
+    [
+      0.0,
+      0.0,
+      1.0,
+      -0.001571605
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "brush_radius_mm": 17.0,
+  "press_depth_mm": 0.0,
+  "input_segment_count": 6,
+  "generated_segment_count": 6,
+  "skipped_segments": [],
+  "pre_app_failed_segment_ids": [],
+  "segments": [
+    {
+      "segment_id": 0,
+      "segment_center_base_m": [
+        0.3088123828177802,
+        0.03418492651381398,
+        0.03278043919245849
+      ],
+      "segment_tangent_unit": [
+        0.5801089126971725,
+        0.8145389182901602,
+        0.0
+      ],
+      "outward_normal_unit": [
+        -0.813611373,
+        0.581409093,
+        0.0
+      ],
+      "contact_reachable": true,
+      "pre_app_reachable": true,
+      "sweep_start_reachable": true,
+      "sweep_end_reachable": true,
+      "tag_z_search_angle_deg": 203.407029,
+      "pre_app_offset_mm": 40.0,
+      "brush_center_pre_base_m": [
+        0.262436535,
+        0.067325245,
+        0.032780439
+      ],
+      "brush_center_contact_base_m": [
+        0.294980989,
+        0.044068881,
+        0.032780439
+      ],
+      "sweep_tangent_unit": [
+        0.580108913,
+        0.814538918,
+        0.0
+      ],
+      "requested_sweep_length_mm": 23.38,
+      "actual_sweep_length_mm": 23.38,
+      "sweep_start_center_base_m": [
+        0.288199386,
+        0.034546738,
+        0.032780439
+      ],
+      "sweep_end_center_base_m": [
+        0.301762593,
+        0.053591024,
+        0.032780439
+      ],
+      "pre_app_endpose": [
+        213.554825,
+        77.84302,
+        243.280511,
+        -180.0,
+        0.0,
+        167.857489
+      ],
+      "contact_endpose": [
+        246.09928,
+        54.586657,
+        243.280511,
+        -180.0,
+        0.0,
+        167.857489
+      ],
+      "sweep_start_endpose": [
+        239.317677,
+        45.064514,
+        243.280511,
+        -180.0,
+        0.0,
+        167.857489
+      ],
+      "sweep_end_endpose": [
+        252.880883,
+        64.108799,
+        243.280511,
+        -180.0,
+        0.0,
+        167.857489
+      ],
+      "pre_app_joint_degrees": [
+        20.027,
+        79.524,
+        -52.548,
+        -0.0,
+        68.0,
+        32.17
+      ],
+      "contact_joint_degrees": [
+        12.506,
+        84.517,
+        -57.524,
+        -0.0,
+        68.0,
+        24.649
+      ],
+      "sweep_start_joint_degrees": [
+        10.664,
+        82.811,
+        -55.768,
+        -0.0,
+        67.957,
+        22.807
+      ],
+      "sweep_end_joint_degrees": [
+        14.226,
+        86.232,
+        -59.336,
+        -0.0,
+        68.0,
+        26.368
+      ],
+      "base_R_tag": [
+        [
+          0.977626808,
+          0.210346914,
+          0.0
+        ],
+        [
+          -0.210346914,
+          0.977626808,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "segment_id": 1,
+      "segment_center_base_m": [
+        0.301530828009931,
+        0.017771329238684505,
+        0.03225321519245849
+      ],
+      "segment_tangent_unit": [
+        0.2522408221742756,
+        0.9676644912514077,
+        0.0
+      ],
+      "outward_normal_unit": [
+        -0.968250905,
+        0.249980371,
+        0.0
+      ],
+      "contact_reachable": true,
+      "pre_app_reachable": true,
+      "sweep_start_reachable": true,
+      "sweep_end_reachable": true,
+      "tag_z_search_angle_deg": 147.210578,
+      "pre_app_offset_mm": 43.533,
+      "brush_center_pre_base_m": [
+        0.242919767,
+        0.032903373,
+        0.032253215
+      ],
+      "brush_center_contact_base_m": [
+        0.285070563,
+        0.022020996,
+        0.032253215
+      ],
+      "sweep_tangent_unit": [
+        0.252240822,
+        0.967664491,
+        0.0
+      ],
+      "requested_sweep_length_mm": 15.271,
+      "actual_sweep_length_mm": 15.271,
+      "sweep_start_center_base_m": [
+        0.283144591,
+        0.014632444,
+        0.032253215
+      ],
+      "sweep_end_center_base_m": [
+        0.286996534,
+        0.029409547,
+        0.032253215
+      ],
+      "pre_app_endpose": [
+        208.989784,
+        69.629404,
+        242.753287,
+        180.0,
+        0.0,
+        132.734399
+      ],
+      "contact_endpose": [
+        251.140579,
+        58.747027,
+        242.753287,
+        180.0,
+        0.0,
+        132.734399
+      ],
+      "sweep_start_endpose": [
+        249.214608,
+        51.358475,
+        242.753287,
+        180.0,
+        0.0,
+        132.734399
+      ],
+      "sweep_end_endpose": [
+        253.066551,
+        66.135578,
+        242.753287,
+        180.0,
+        0.0,
+        132.734399
+      ],
+      "pre_app_joint_degrees": [
+        18.427,
+        78.125,
+        -51.126,
+        -0.0,
+        68.0,
+        65.692
+      ],
+      "contact_joint_degrees": [
+        13.166,
+        85.708,
+        -58.662,
+        -0.0,
+        67.953,
+        60.432
+      ],
+      "sweep_start_joint_degrees": [
+        11.645,
+        85.022,
+        -57.931,
+        -0.0,
+        67.909,
+        58.91
+      ],
+      "sweep_end_joint_degrees": [
+        14.646,
+        86.425,
+        -59.435,
+        -0.0,
+        68.0,
+        61.912
+      ],
+      "base_R_tag": [
+        [
+          0.678598574,
+          0.734509344,
+          0.0
+        ],
+        [
+          -0.734509344,
+          0.678598574,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "segment_id": 2,
+      "segment_center_base_m": [
+        0.3035543692343409,
+        -0.004567012442851029,
+        0.03260940419245849
+      ],
+      "segment_tangent_unit": [
+        0.48843849730770034,
+        -0.8725983235990061,
+        0.0
+      ],
+      "outward_normal_unit": [
+        -0.871614253,
+        -0.490192405,
+        0.0
+      ],
+      "contact_reachable": true,
+      "pre_app_reachable": true,
+      "sweep_start_reachable": true,
+      "sweep_end_reachable": true,
+      "tag_z_search_angle_deg": 141.586089,
+      "pre_app_offset_mm": 40.0,
+      "brush_center_pre_base_m": [
+        0.253872357,
+        -0.03250798,
+        0.032609404
+      ],
+      "brush_center_contact_base_m": [
+        0.288736927,
+        -0.012900283,
+        0.032609404
+      ],
+      "sweep_tangent_unit": [
+        0.488438497,
+        -0.872598324,
+        0.0
+      ],
+      "requested_sweep_length_mm": 13.687,
+      "actual_sweep_length_mm": 13.687,
+      "sweep_start_center_base_m": [
+        0.285394203,
+        -0.006928486,
+        0.032609404
+      ],
+      "sweep_end_center_base_m": [
+        0.292079651,
+        -0.018872081,
+        0.032609404
+      ],
+      "pre_app_endpose": [
+        204.49586,
+        -24.633548,
+        243.109476,
+        180.0,
+        0.0,
+        170.939489
+      ],
+      "contact_endpose": [
+        239.36043,
+        -5.025852,
+        243.109476,
+        180.0,
+        0.0,
+        170.939489
+      ],
+      "sweep_start_endpose": [
+        236.017706,
+        0.945946,
+        243.109476,
+        180.0,
+        0.0,
+        170.939489
+      ],
+      "sweep_end_endpose": [
+        242.703154,
+        -10.997649,
+        243.109476,
+        180.0,
+        0.0,
+        170.939489
+      ],
+      "pre_app_joint_degrees": [
+        -6.869,
+        75.021,
+        -48.402,
+        -0.0,
+        68.0,
+        2.192
+      ],
+      "contact_joint_degrees": [
+        -1.203,
+        81.996,
+        -54.91,
+        -0.0,
+        67.913,
+        7.858
+      ],
+      "sweep_start_joint_degrees": [
+        0.23,
+        81.312,
+        -54.233,
+        -0.0,
+        67.921,
+        9.29
+      ],
+      "sweep_end_joint_degrees": [
+        -2.594,
+        82.707,
+        -55.622,
+        -0.0,
+        67.915,
+        6.466
+      ],
+      "base_R_tag": [
+        [
+          0.987522105,
+          0.15748045,
+          0.0
+        ],
+        [
+          -0.15748045,
+          0.987522105,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "segment_id": 3,
+      "segment_center_base_m": [
+        0.2998156738645083,
+        0.004813684309042637,
+        0.03380730619245849
+      ],
+      "segment_tangent_unit": [
+        0.1528441719003767,
+        -0.9882503018547923,
+        0.0
+      ],
+      "outward_normal_unit": [
+        -0.957916885,
+        -0.287045713,
+        0.0
+      ],
+      "contact_reachable": true,
+      "pre_app_reachable": true,
+      "sweep_start_reachable": true,
+      "sweep_end_reachable": true,
+      "tag_z_search_angle_deg": 146.012902,
+      "pre_app_offset_mm": 40.0,
+      "brush_center_pre_base_m": [
+        0.245214411,
+        -0.011547921,
+        0.033807306
+      ],
+      "brush_center_contact_base_m": [
+        0.283531087,
+        -6.6093e-05,
+        0.033807306
+      ],
+      "sweep_tangent_unit": [
+        0.152844172,
+        -0.988250302,
+        0.0
+      ],
+      "requested_sweep_length_mm": 6.413,
+      "actual_sweep_length_mm": 6.413,
+      "sweep_start_center_base_m": [
+        0.283041001,
+        0.003102676,
+        0.033807306
+      ],
+      "sweep_end_center_base_m": [
+        0.284021173,
+        -0.003234862,
+        0.033807306
+      ],
+      "pre_app_endpose": [
+        197.477581,
+        3.326223,
+        244.307378,
+        -180.0,
+        0.0,
+        162.694244
+      ],
+      "contact_endpose": [
+        235.794257,
+        14.808051,
+        244.307378,
+        -180.0,
+        0.0,
+        162.694244
+      ],
+      "sweep_start_endpose": [
+        235.30417,
+        17.97682,
+        244.307378,
+        -180.0,
+        0.0,
+        162.694244
+      ],
+      "sweep_end_endpose": [
+        236.284343,
+        11.639282,
+        244.307378,
+        -180.0,
+        0.0,
+        162.694244
+      ],
+      "pre_app_joint_degrees": [
+        0.965,
+        73.014,
+        -46.922,
+        -0.0,
+        68.0,
+        18.271
+      ],
+      "contact_joint_degrees": [
+        3.594,
+        81.238,
+        -54.417,
+        0.0,
+        68.0,
+        20.898
+      ],
+      "sweep_start_joint_degrees": [
+        4.369,
+        81.183,
+        -54.363,
+        -0.0,
+        68.0,
+        21.675
+      ],
+      "sweep_end_joint_degrees": [
+        2.82,
+        81.3,
+        -54.478,
+        -0.0,
+        68.0,
+        20.126
+      ],
+      "base_R_tag": [
+        [
+          0.954730027,
+          0.297473657,
+          0.0
+        ],
+        [
+          -0.297473657,
+          0.954730027,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "segment_id": 4,
+      "segment_center_base_m": [
+        0.2991416356039428,
+        0.0033936237078727935,
+        0.02928331919245849
+      ],
+      "segment_tangent_unit": [
+        0.28625310086196804,
+        0.9581540388929684,
+        0.0
+      ],
+      "outward_normal_unit": [
+        -0.73523836,
+        0.677808641,
+        0.0
+      ],
+      "contact_reachable": true,
+      "pre_app_reachable": true,
+      "sweep_start_reachable": true,
+      "sweep_end_reachable": true,
+      "tag_z_search_angle_deg": 190.332824,
+      "pre_app_offset_mm": 96.77,
+      "brush_center_pre_base_m": [
+        0.21549381,
+        0.080507689,
+        0.029283319
+      ],
+      "brush_center_contact_base_m": [
+        0.286642583,
+        0.014916371,
+        0.029283319
+      ],
+      "sweep_tangent_unit": [
+        0.286253101,
+        0.958154039,
+        0.0
+      ],
+      "requested_sweep_length_mm": 6.798,
+      "actual_sweep_length_mm": 6.798,
+      "sweep_start_center_base_m": [
+        0.285669553,
+        0.011659417,
+        0.029283319
+      ],
+      "sweep_end_center_base_m": [
+        0.287615614,
+        0.018173324,
+        0.029283319
+      ],
+      "pre_app_endpose": [
+        173.249097,
+        107.255199,
+        239.783391,
+        -180.0,
+        0.0,
+        147.660357
+      ],
+      "contact_endpose": [
+        244.39787,
+        41.663881,
+        239.783391,
+        -180.0,
+        0.0,
+        147.660357
+      ],
+      "sweep_start_endpose": [
+        243.42484,
+        38.406927,
+        239.783391,
+        -180.0,
+        0.0,
+        147.660357
+      ],
+      "sweep_end_endpose": [
+        245.370901,
+        44.920835,
+        239.783391,
+        -180.0,
+        0.0,
+        147.660357
+      ],
+      "pre_app_joint_degrees": [
+        31.761,
+        74.871,
+        -47.549,
+        -0.0,
+        67.678,
+        64.1
+      ],
+      "contact_joint_degrees": [
+        9.675,
+        83.91,
+        -56.059,
+        -0.0,
+        67.148,
+        42.014
+      ],
+      "sweep_start_joint_degrees": [
+        8.966,
+        83.614,
+        -55.752,
+        -0.0,
+        67.139,
+        41.306
+      ],
+      "sweep_end_joint_degrees": [
+        10.374,
+        84.214,
+        -56.374,
+        -0.0,
+        67.16,
+        42.714
+      ],
+      "base_R_tag": [
+        [
+          0.844890305,
+          0.534939597,
+          0.0
+        ],
+        [
+          -0.534939597,
+          0.844890305,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "segment_id": 5,
+      "segment_center_base_m": [
+        0.29944255652562524,
+        0.00959752390106021,
+        0.03131866419245849
+      ],
+      "segment_tangent_unit": [
+        0.2711132270871211,
+        0.9625474627769829,
+        0.0
+      ],
+      "outward_normal_unit": [
+        -0.930969846,
+        0.365096078,
+        0.0
+      ],
+      "contact_reachable": true,
+      "pre_app_reachable": true,
+      "sweep_start_reachable": true,
+      "sweep_end_reachable": true,
+      "tag_z_search_angle_deg": 158.863817,
+      "pre_app_offset_mm": 51.977,
+      "brush_center_pre_base_m": [
+        0.235227414,
+        0.034780613,
+        0.031318664
+      ],
+      "brush_center_contact_base_m": [
+        0.283616069,
+        0.015804157,
+        0.031318664
+      ],
+      "sweep_tangent_unit": [
+        0.271113227,
+        0.962547463,
+        0.0
+      ],
+      "requested_sweep_length_mm": 6.544,
+      "actual_sweep_length_mm": 6.544,
+      "sweep_start_center_base_m": [
+        0.282729035,
+        0.012654872,
+        0.031318664
+      ],
+      "sweep_end_center_base_m": [
+        0.284503104,
+        0.018953443,
+        0.031318664
+      ],
+      "pre_app_endpose": [
+        198.392749,
+        68.592631,
+        241.818736,
+        180.0,
+        0.0,
+        137.450494
+      ],
+      "contact_endpose": [
+        246.781404,
+        49.616175,
+        241.818736,
+        180.0,
+        0.0,
+        137.450494
+      ],
+      "sweep_start_endpose": [
+        245.894369,
+        46.46689,
+        241.818736,
+        180.0,
+        0.0,
+        137.450494
+      ],
+      "sweep_end_endpose": [
+        247.668439,
+        52.765461,
+        241.818736,
+        180.0,
+        0.0,
+        137.450494
+      ],
+      "pre_app_joint_degrees": [
+        19.072,
+        76.032,
+        -49.033,
+        -0.0,
+        68.0,
+        61.622
+      ],
+      "contact_joint_degrees": [
+        11.368,
+        84.537,
+        -57.197,
+        -0.0,
+        67.66,
+        53.917
+      ],
+      "sweep_start_joint_degrees": [
+        10.701,
+        84.244,
+        -56.891,
+        -0.0,
+        67.647,
+        53.251
+      ],
+      "sweep_end_joint_degrees": [
+        12.027,
+        84.836,
+        -57.512,
+        -0.0,
+        67.676,
+        54.576
+      ],
+      "base_R_tag": [
+        [
+          0.73669129,
+          0.67622921,
+          0.0
+        ],
+        [
+          -0.67622921,
+          0.73669129,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ]
+}

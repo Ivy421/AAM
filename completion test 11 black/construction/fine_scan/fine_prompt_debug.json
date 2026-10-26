@@ -1,0 +1,21 @@
+{
+  "defect_roi_center_world_m": [
+    0.413273,
+    0.037891,
+    0.031851
+  ],
+  "object_center_world_m": [
+    0.545738,
+    0.057753,
+    0.039778
+  ],
+  "safe_prompt_world_m": [
+    0.479506,
+    0.047822,
+    0.035814
+  ],
+  "safe_prompt_alpha": 0.5,
+  "prompt_source": "object_center",
+  "valid_png_names": [],
+  "records": []
+}

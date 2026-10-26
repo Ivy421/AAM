@@ -1,0 +1,35 @@
+{
+  "move": true,
+  "contact_x_target_m": 0.4,
+  "initial_fix_curve_max_x_m": 0.4279363751411438,
+  "planned_delta_base_m": [
+    0.1,
+    0.0
+  ],
+  "final_delta_base_m": [
+    0.12217249051172148,
+    0.0005168287062484525
+  ],
+  "final_fix_curve_max_x_m": 0.30576388462942233,
+  "odom_before": [
+    0.1964714652457064,
+    0.039619320936294396,
+    -0.16808874607086177
+  ],
+  "odom_after": [
+    0.3170085599917702,
+    0.019689610955295617,
+    -0.1665972687981345
+  ],
+  "executed": true,
+  "transformed_pcds": [
+    "/home/smmg/AAM/data/runs/20261010_112204/completion/depression/fix_points_motion.pcd",
+    "/home/smmg/AAM/data/runs/20261010_112204/completion/depression/fix_points_curve_motion.pcd",
+    "/home/smmg/AAM/data/runs/20261010_112204/completion/depression/model_motion.pcd",
+    "/home/smmg/AAM/data/runs/20261010_112204/completion/depression/top_defect_margin_motion.pcd",
+    "/home/smmg/AAM/data/runs/20261010_112204/completion/depression/top_plane_motion.pcd",
+    "/home/smmg/AAM/data/runs/20261010_112204/completion/depression/u_side_plane_motion.pcd",
+    "/home/smmg/AAM/data/runs/20261010_112204/completion/depression/v_side_plane_motion.pcd",
+    "/home/smmg/AAM/data/runs/20261010_112204/completion/depression/fine_fuse_motion.pcd"
+  ]
+}
